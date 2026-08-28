@@ -1,0 +1,31 @@
+{
+  "name": "crm_repo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imethblueplantsolutions-lab/Customer-Relationship-Management-CRM-System-with-Meta-Campaign-WhatsApp-Lead-Management.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/imethblueplantsolutions-lab/Customer-Relationship-Management-CRM-System-with-Meta-Campaign-WhatsApp-Lead-Management/issues"
+  },
+  "homepage": "https://github.com/imethblueplantsolutions-lab/Customer-Relationship-Management-CRM-System-with-Meta-Campaign-WhatsApp-Lead-Management#readme",
+  "dependencies": {
+    "@prisma/client": "^7.10.0",
+    "bullmq": "^6.3.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "helmet": "^8.3.0",
+    "ioredis": "^6.0.0",
+    "jsonwebtoken": "^9.0.3"
+  }
+}
