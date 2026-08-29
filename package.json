@@ -24,13 +24,17 @@
   },
   "homepage": "https://github.com/imethblueplantsolutions-lab/Customer-Relationship-Management-CRM-System-with-Meta-Campaign-WhatsApp-Lead-Management#readme",
   "dependencies": {
-    "@prisma/client": "^7.10.0",
-    "bullmq": "^6.3.1",
+    "@prisma/client": "^6.19.3",
+    "bullmq": "^6.3.2",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "helmet": "^8.3.0",
     "ioredis": "^6.0.0",
     "jsonwebtoken": "^9.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14",
+    "prisma": "^6.19.3"
   }
 }
