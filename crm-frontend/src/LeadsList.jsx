@@ -29,12 +29,12 @@ export default function LeadsList() {
 
   const getStatusBadgeClass = (status) => {
     switch (status) {
-      case 'NEW': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'CONTACTED': return 'bg-amber-100 text-amber-800 border-amber-200';
-      case 'QUALIFIED': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'CONVERTED': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-      case 'LOST': return 'bg-rose-100 text-rose-800 border-rose-200';
-      default: return 'bg-slate-100 text-slate-800 border-slate-200';
+      case 'NEW': return 'bg-[#dcf8c6] text-[#075e54] border border-[#25d366]/40 font-bold';
+      case 'CONTACTED': return 'bg-amber-100 text-amber-900 border border-amber-300 font-semibold';
+      case 'QUALIFIED': return 'bg-teal-100 text-teal-900 border border-[#128c7e]/40 font-semibold';
+      case 'CONVERTED': return 'bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold';
+      case 'LOST': return 'bg-rose-100 text-rose-800 border border-rose-200 font-medium';
+      default: return 'bg-slate-100 text-slate-700 border border-slate-200 font-medium';
     }
   };
 
@@ -46,19 +46,21 @@ export default function LeadsList() {
     <div className="max-w-6xl mx-auto space-y-6 font-sans">
       <AddLeadForm onLeadAdded={fetchLeads} />
 
-      <div className="bg-white p-6 border border-slate-200 rounded-xl shadow-sm space-y-6">
+      <div className="bg-white p-6 border border-slate-200/80 rounded-2xl shadow-sm space-y-6">
         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-slate-100 pb-4">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Lead Management</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Filter by pipeline stage or click a contact to view interaction history.</p>
+            <h2 className="text-xl font-bold text-[#075e54] flex items-center gap-2">
+              <span>📋</span> WhatsApp Lead Management
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">Filter by pipeline stage or select a contact to open the live chat console.</p>
           </div>
           <div className="flex items-center gap-2">
-            <label htmlFor="status-filter" className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Status:</label>
+            <label htmlFor="status-filter" className="text-xs font-bold text-slate-600 uppercase tracking-wider">Status:</label>
             <select 
               id="status-filter"
               value={statusFilter} 
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3.5 py-2 border border-slate-300 rounded-lg text-slate-900 bg-white font-medium text-sm focus:ring-2 focus:ring-blue-500 shadow-sm cursor-pointer"
+              className="px-3.5 py-2 border border-slate-300 rounded-xl text-slate-900 bg-white font-medium text-sm focus:ring-2 focus:ring-[#128c7e] focus:outline-none shadow-2xs cursor-pointer"
             >
               <option value="" className="text-slate-900">All Statuses</option>
               <option value="NEW" className="text-slate-900">New</option>
@@ -71,17 +73,17 @@ export default function LeadsList() {
         </div>
 
         {isLoading ? (
-          <div className="text-center p-12 text-slate-500 font-medium">Loading leads...</div>
+          <div className="text-center p-12 text-[#075e54] font-semibold">Loading prospects...</div>
         ) : error ? (
-          <div className="text-center p-6 text-red-600 bg-red-50 rounded-lg text-sm">{error}</div>
+          <div className="text-center p-6 text-red-600 bg-red-50 rounded-xl text-sm font-medium">{error}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  <th className="py-3.5 px-4">Name</th>
+                <tr className="bg-slate-50/70 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  <th className="py-3.5 px-4">Customer Name</th>
                   <th className="py-3.5 px-4">WhatsApp Phone</th>
-                  <th className="py-3.5 px-4">Status</th>
+                  <th className="py-3.5 px-4">Pipeline Status</th>
                   <th className="py-3.5 px-4">Category</th>
                   <th className="py-3.5 px-4">Created Date</th>
                   <th className="py-3.5 px-4 text-right">Action</th>
@@ -95,12 +97,12 @@ export default function LeadsList() {
                     <tr 
                       key={lead.id} 
                       onClick={() => setSelectedLeadId(lead.id)}
-                      className="hover:bg-slate-50/80 transition-colors cursor-pointer"
+                      className="hover:bg-[#dcf8c6]/20 transition-colors cursor-pointer"
                     >
-                      <td className="py-4 px-4 font-semibold text-blue-600 hover:underline">{lead.name || 'Unknown'}</td>
-                      <td className="py-4 px-4 text-slate-600 font-mono text-xs">{lead.phoneNumber}</td>
+                      <td className="py-4 px-4 font-bold text-[#075e54] hover:underline">{lead.name || 'Unknown'}</td>
+                      <td className="py-4 px-4 text-slate-700 font-mono text-xs font-medium">{lead.phoneNumber}</td>
                       <td className="py-4 px-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${getStatusBadgeClass(lead.status)}`}>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs ${getStatusBadgeClass(lead.status)}`}>
                           {lead.status}
                         </span>
                       </td>
@@ -112,9 +114,9 @@ export default function LeadsList() {
                             e.stopPropagation();
                             setSelectedLeadId(lead.id);
                           }}
-                          className="px-3 py-1.5 bg-white border border-slate-200 rounded-md text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-2xs"
+                          className="px-3.5 py-1.5 bg-[#dcf8c6] border border-[#25d366]/40 rounded-xl text-xs font-bold text-[#075e54] hover:bg-[#25d366] hover:text-white shadow-2xs transition-all cursor-pointer"
                         >
-                          View Details &rarr;
+                          Open Chat &rarr;
                         </button>
                       </td>
                     </tr>
