@@ -1,0 +1,43 @@
+{
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "WABA_ID_TEST",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "15550234567",
+              "phone_number_id": "PHONE_ID_TEST"
+            },
+            "contacts": [
+              {
+                "profile": { "name": "Test User" },
+                "wa_id": "15550000000"
+              }
+            ],
+            "messages": [
+              {
+                "from": "15550000000",
+                "id": "wamid.LOADTEST123",
+                "timestamp": "1725091200",
+                "text": { "body": "Load testing message" },
+                "type": "text",
+                "referral": {
+                  "source_url": "https://fb.me/test",
+                  "source_id": "ad_123",
+                  "source_type": "ad",
+                  "headline": "Testing Ad",
+                  "body": "Testing Ad Body",
+                  "ctwa_clid": "clid_123"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}

@@ -1,46 +1,42 @@
 const express = require('express');
 const router = express.Router();
 const prisma = require('../config/db');
+const { tenantStorage } = require('../middleware/tenant');
 
-// List leads with filtering, search, and pagination
+// GET: Fetch all leads for current tenant with optional filtering
 router.get('/', async (req, res) => {
   try {
-    const { status, category, search, ownerId, page = 1, limit = 20 } = req.query;
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    const take = parseInt(limit);
+    const { status, category, search, page = 1, limit = 50 } = req.query;
+    const store = tenantStorage.getStore();
+    const tenantId = store?.tenantId;
 
-    const where = {
-      isDeleted: false,
-    };
-
+    const where = { tenantId };
     if (status) where.status = status;
     if (category) where.category = category;
-    if (ownerId) where.ownerId = ownerId;
-
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
-        { phoneNumber: { contains: search } },
-        { notes: { contains: search, mode: 'insensitive' } }
+        { phoneNumber: { contains: search } }
       ];
     }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const take = parseInt(limit);
 
     const [leads, total] = await Promise.all([
       prisma.lead.findMany({
         where,
+        orderBy: { updatedAt: 'desc' },
         include: {
-          owner: { select: { id: true, name: true, email: true } },
-          attribution: true,
-          _count: { select: { messages: true, followups: true } }
+          assignedTo: { select: { id: true, email: true, role: true } },
         },
-        orderBy: { lastActivityAt: 'desc' },
         skip,
         take
       }),
       prisma.lead.count({ where })
     ]);
 
-    res.json({
+    res.status(200).json({
       success: true,
       data: leads,
       pagination: {
@@ -51,157 +47,72 @@ router.get('/', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('[Leads API] List error:', error);
-    res.status(500).json({ success: false, message: 'Failed to retrieve leads' });
+    console.error('Error fetching leads:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch leads' });
   }
 });
 
-// Get single lead details with full thread and followups
+// GET: Fetch single lead by ID
 router.get('/:id', async (req, res) => {
   try {
-    const { id } = req.params;
-    const lead = await prisma.lead.findUnique({
-      where: { id },
+    const store = tenantStorage.getStore();
+    const tenantId = store?.tenantId;
+
+    const lead = await prisma.lead.findFirst({
+      where: { id: req.params.id, tenantId },
       include: {
-        owner: { select: { id: true, name: true, email: true } },
-        attribution: true,
-        messages: { orderBy: { timestamp: 'asc' } },
-        followups: {
-          include: { createdBy: { select: { id: true, name: true } } },
-          orderBy: { createdAt: 'desc' }
-        },
-        auditLogs: { orderBy: { createdAt: 'desc' }, take: 20 }
+        assignedTo: { select: { id: true, email: true, role: true } },
       }
     });
 
-    if (!lead || lead.isDeleted) {
-      return res.status(404).json({ success: false, message: 'Lead not found' });
-    }
-
-    res.json({ success: true, data: lead });
+    if (!lead) return res.status(404).json({ success: false, error: 'Lead not found' });
+    res.status(200).json({ success: true, data: lead });
   } catch (error) {
-    console.error('[Leads API] Detail error:', error);
-    res.status(500).json({ success: false, message: 'Failed to retrieve lead' });
+    console.error('Error fetching lead:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch lead' });
   }
 });
 
-// Manually create a lead
-router.post('/', async (req, res) => {
-  try {
-    const { phoneNumber, name, status, category, tags, notes, ownerId, sourceChannel } = req.body;
-
-    if (!phoneNumber || !name) {
-      return res.status(400).json({ success: false, message: 'Phone number and Name are required' });
-    }
-
-    const existing = await prisma.lead.findUnique({ where: { phoneNumber } });
-    if (existing) {
-      return res.status(409).json({
-        success: false,
-        message: 'A lead with this phone number already exists',
-        existingLeadId: existing.id
-      });
-    }
-
-    const lead = await prisma.lead.create({
-      data: {
-        phoneNumber,
-        name,
-        status: status || 'NEW',
-        category: category || null,
-        tags: tags || [],
-        notes: notes || null,
-        ownerId: ownerId || null,
-        sourceChannel: sourceChannel || 'Manual Entry'
-      }
-    });
-
-    res.status(201).json({ success: true, data: lead });
-  } catch (error) {
-    console.error('[Leads API] Create error:', error);
-    res.status(500).json({ success: false, message: 'Failed to create lead' });
-  }
-});
-
-// Update a lead
+// PUT: Update lead
 router.put('/:id', async (req, res) => {
   try {
-    const { id } = req.params;
-    const { name, status, category, tags, notes, ownerId } = req.body;
+    const store = tenantStorage.getStore();
+    const tenantId = store?.tenantId;
+    const { status, category, assignedToId, tags, name } = req.body;
 
-    const lead = await prisma.lead.update({
-      where: { id },
+    const updatedLead = await prisma.lead.updateMany({
+      where: { id: req.params.id, tenantId },
       data: {
-        ...(name && { name }),
         ...(status && { status }),
         ...(category !== undefined && { category }),
+        ...(assignedToId !== undefined && { assignedToId }),
         ...(tags !== undefined && { tags }),
-        ...(notes !== undefined && { notes }),
-        ...(ownerId !== undefined && { ownerId }),
-        lastActivityAt: new Date()
+        ...(name && { name }),
+        updatedAt: new Date()
       }
     });
 
-    res.json({ success: true, data: lead });
+    res.status(200).json({ success: true, data: updatedLead });
   } catch (error) {
-    console.error('[Leads API] Update error:', error);
-    res.status(500).json({ success: false, message: 'Failed to update lead' });
+    console.error('Error updating lead:', error);
+    res.status(500).json({ success: false, error: 'Failed to update lead' });
   }
 });
 
-// Soft-delete a lead
+// DELETE: Delete lead
 router.delete('/:id', async (req, res) => {
   try {
-    const { id } = req.params;
-    await prisma.lead.update({
-      where: { id },
-      data: { isDeleted: true }
+    const store = tenantStorage.getStore();
+    const tenantId = store?.tenantId;
+
+    await prisma.lead.deleteMany({
+      where: { id: req.params.id, tenantId }
     });
 
-    res.json({ success: true, message: 'Lead deleted successfully' });
+    res.status(200).json({ success: true, message: 'Lead deleted successfully' });
   } catch (error) {
-    console.error('[Leads API] Delete error:', error);
-    res.status(500).json({ success: false, message: 'Failed to delete lead' });
-  }
-});
-
-// Add a follow-up activity
-router.post('/:id/followups', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { type, dueAt, outcome, note, createdById } = req.body;
-
-    // Fallback or find system user if none provided
-    let userId = createdById;
-    if (!userId) {
-      const defaultUser = await prisma.user.findFirst();
-      userId = defaultUser ? defaultUser.id : null;
-    }
-
-    if (!userId) {
-      return res.status(400).json({ success: false, message: 'A valid createdById user is required' });
-    }
-
-    const followup = await prisma.followup.create({
-      data: {
-        leadId: id,
-        type: type || 'CALL',
-        dueAt: dueAt ? new Date(dueAt) : null,
-        outcome: outcome || null,
-        note: note || null,
-        createdById: userId
-      }
-    });
-
-    await prisma.lead.update({
-      where: { id },
-      data: { lastActivityAt: new Date() }
-    });
-
-    res.status(201).json({ success: true, data: followup });
-  } catch (error) {
-    console.error('[Leads API] Followup error:', error);
-    res.status(500).json({ success: false, message: 'Failed to add follow-up' });
+    console.error('Error deleting lead:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete lead' });
   }
 });
 

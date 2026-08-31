@@ -8,7 +8,12 @@ export default function DashboardStats() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/dashboard/stats');
+        const response = await fetch('http://localhost:3000/api/dashboard/stats', {
+          headers: {
+            'x-tenant-id': 'WABA_ID_TEST',
+            'Content-Type': 'application/json'
+          }
+        });
         if (!response.ok) throw new Error('Failed to fetch dashboard statistics');
         const json = await response.json();
         setStats(json.data);
@@ -26,7 +31,7 @@ export default function DashboardStats() {
   if (error) return <div style={{ padding: '20px', color: 'red', fontFamily: 'sans-serif' }}>Error: {error}</div>;
 
   return (
-    <div style={{ fontFamily: 'sans-serif', padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+    <div style={{ fontFamily: 'sans-serif', padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
       <h1>Meta CRM Dashboard</h1>
       
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
@@ -53,22 +58,22 @@ export default function DashboardStats() {
 
       <div>
         <h2>Recent Leads</h2>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', background: '#fff', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
           <thead>
             <tr style={{ background: '#f5f5f5' }}>
-              <th style={{ borderBottom: '2px solid #ddd', padding: '10px' }}>Name</th>
-              <th style={{ borderBottom: '2px solid #ddd', padding: '10px' }}>Phone</th>
-              <th style={{ borderBottom: '2px solid #ddd', padding: '10px' }}>Status</th>
-              <th style={{ borderBottom: '2px solid #ddd', padding: '10px' }}>Source</th>
+              <th style={{ borderBottom: '2px solid #ddd', padding: '10px 16px' }}>Name</th>
+              <th style={{ borderBottom: '2px solid #ddd', padding: '10px 16px' }}>Phone</th>
+              <th style={{ borderBottom: '2px solid #ddd', padding: '10px 16px' }}>Status</th>
+              <th style={{ borderBottom: '2px solid #ddd', padding: '10px 16px' }}>Source</th>
             </tr>
           </thead>
           <tbody>
             {stats.recentLeads?.length > 0 ? (
               stats.recentLeads.map(lead => (
-                <tr key={lead.id}>
-                  <td style={{ borderBottom: '1px solid #eee', padding: '10px' }}>{lead.name}</td>
-                  <td style={{ borderBottom: '1px solid #eee', padding: '10px' }}>{lead.phoneNumber}</td>
-                  <td style={{ borderBottom: '1px solid #eee', padding: '10px' }}>
+                <tr key={lead.id} style={{ borderBottom: '1px solid #eee' }}>
+                  <td style={{ padding: '10px 16px' }}>{lead.name}</td>
+                  <td style={{ padding: '10px 16px' }}>{lead.phoneNumber}</td>
+                  <td style={{ padding: '10px 16px' }}>
                     <span style={{ 
                       padding: '4px 8px', 
                       borderRadius: '4px', 
@@ -80,7 +85,7 @@ export default function DashboardStats() {
                       {lead.status}
                     </span>
                   </td>
-                  <td style={{ borderBottom: '1px solid #eee', padding: '10px' }}>{lead.sourceChannel}</td>
+                  <td style={{ padding: '10px 16px' }}>{lead.category || 'Organic'}</td>
                 </tr>
               ))
             ) : (

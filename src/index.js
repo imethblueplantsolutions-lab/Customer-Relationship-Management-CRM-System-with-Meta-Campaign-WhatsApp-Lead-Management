@@ -2,50 +2,47 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const { extractTenantMiddleware } = require('./middleware/tenant');
 
-const webhookRoutes = require('./routes/webhook');
-const leadsRoutes = require('./routes/leads');
-const dashboardRoutes = require('./routes/dashboard');
+// Initialize BullMQ background workers
+require('./workers/webhookWorker');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Security & Middleware
+// Security & CORS
 app.use(helmet());
-app.use(cors());
-app.use(express.json());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id']
+}));
+
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Health Check
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'UP',
-    timestamp: new Date().toISOString(),
-    service: 'Meta CRM WhatsApp Lead Manager'
-  });
-});
+app.get('/health', (req, res) => res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() }));
 
-// API Routes
-app.use('/api/webhook', webhookRoutes);
-app.use('/api/leads', leadsRoutes);
-app.use('/api/dashboard', dashboardRoutes);
+// Webhook bypasses tenant middleware to ensure immediate 200 OK
+app.use('/api/webhook', require('./routes/webhook'));
+
+// Rest of the API sits behind Tenant Context Injection
+app.use(extractTenantMiddleware);
+app.use('/api/dashboard', require('./routes/dashboard'));
+app.use('/api/leads', require('./routes/leads'));
 
 // Global Error Handler
 app.use((err, req, res, next) => {
-  console.error('[Server Error]', err.stack);
-  res.status(500).json({
-    success: false,
-    message: 'An unexpected internal server error occurred',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
-  });
+  console.error('[Server Error]:', err.stack);
+  res.status(500).json({ error: 'Internal Server Error' });
 });
 
-// Start Server
 app.listen(PORT, () => {
-  console.log(`=========================================`);
-  console.log(`🚀 Meta CRM Server is running on port ${PORT}`);
-  console.log(`📡 Webhook Endpoint: http://localhost:${PORT}/api/webhook`);
-  console.log(`🩺 Health Check:     http://localhost:${PORT}/health`);
-  console.log(`📊 Dashboard API:    http://localhost:${PORT}/api/dashboard/stats`);
-  console.log(`=========================================`);
+  console.log(`======================================================`);
+  console.log(`🚀 Meta CRM Server running on port ${PORT}`);
+  console.log(`⚡ BullMQ Webhook Queue & Worker Pool Active (Concurrency: 25)`);
+  console.log(`🔒 Multi-Tenant Context Injection Middleware Active`);
+  console.log(`💾 Redis Cache Layer & Distributed Locking Active`);
+  console.log(`======================================================`);
 });

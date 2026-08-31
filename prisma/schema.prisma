@@ -7,134 +7,40 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  AGENT
-  TEAM_LEAD
-  ADMIN
-}
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String
+  wabaId    String?  @unique // WhatsApp Business Account ID for webhook mapping
+  createdAt DateTime @default(now())
 
-enum UserStatus {
-  ACTIVE
-  DISABLED
-}
-
-enum LeadStatus {
-  NEW
-  CONTACTED
-  QUALIFIED
-  CONVERTED
-  LOST
-}
-
-enum MessageDirection {
-  INBOUND
-  OUTBOUND
-}
-
-enum FollowupType {
-  CALL
-  MESSAGE
-  MEETING
-  OTHER
+  leads     Lead[]
+  users     User[]
 }
 
 model User {
-  id           String      @id @default(uuid())
-  email        String      @unique
-  name         String
-  passwordHash String?
-  role         Role        @default(AGENT)
-  status       UserStatus  @default(ACTIVE)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-
-  assignedLeads Lead[]     @relation("LeadOwner")
-  followups     Followup[]
-  auditLogs     AuditLog[]
+  id             String   @id @default(uuid())
+  email          String   @unique
+  role           String   @default("AGENT")
+  isActive       Boolean  @default(true)
+  tenantId       String
+  tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  assignedLeads  Lead[]
 }
 
 model Lead {
-  id             String               @id @default(uuid())
-  phoneNumber    String               @unique
-  name           String
-  status         LeadStatus           @default(NEW)
-  category       String?              // e.g. Hot, Warm, Cold
-  tags           String[]             @default([])
-  sourceChannel  String               @default("WhatsApp / Meta campaign")
-  notes          String?
-  ownerId        String?
-  owner          User?                @relation("LeadOwner", fields: [ownerId], references: [id])
-  isDeleted      Boolean              @default(false)
-  lastActivityAt DateTime             @default(now())
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @updatedAt
+  id             String   @id @default(uuid())
+  phoneNumber    String
+  name           String?
+  status         String   @default("NEW")
+  category       String?
+  tags           String[] @default([])
+  tenantId       String
+  tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  assignedToId   String?
+  assignedTo     User?    @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  attribution    CampaignAttribution?
-  messages       Message[]
-  followups      Followup[]
-  auditLogs      AuditLog[]
-
-  @@index([phoneNumber])
-  @@index([status])
-  @@index([ownerId])
-}
-
-model CampaignAttribution {
-  id         String   @id @default(uuid())
-  leadId     String   @unique
-  lead       Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  sourceUrl  String?
-  adId       String?
-  sourceType String?  // ad vs post
-  headline   String?
-  body       String?
-  ctwaClid   String?  // Click identifier for CTWA
-  capturedAt DateTime @default(now())
-}
-
-model Message {
-  id         String           @id @default(uuid())
-  messageId  String           @unique // Meta WhatsApp message id for de-duplication
-  leadId     String
-  lead       Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  direction  MessageDirection @default(INBOUND)
-  body       String
-  timestamp  DateTime         @default(now())
-  rawPayload Json?
-  createdAt  DateTime         @default(now())
-
-  @@index([leadId])
-  @@index([messageId])
-}
-
-model Followup {
-  id          String       @id @default(uuid())
-  leadId      String
-  lead        Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  type        FollowupType @default(CALL)
-  dueAt       DateTime?
-  completedAt DateTime?
-  outcome     String?
-  note        String?
-  createdById String
-  createdBy   User         @relation(fields: [createdById], references: [id])
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-
-  @@index([leadId])
-  @@index([dueAt])
-}
-
-model AuditLog {
-  id        String   @id @default(uuid())
-  leadId    String?
-  lead      Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  action    String
-  details   Json?
-  createdAt DateTime @default(now())
-
-  @@index([leadId])
-  @@index([userId])
+  @@unique([tenantId, phoneNumber])
+  @@index([tenantId, status])
 }
