@@ -1,14 +1,63 @@
 require('dotenv').config();
 const express = require('express');
+const http = require('http');
 const cors = require('cors');
 const helmet = require('helmet');
+const jwt = require('jsonwebtoken');
+const { Server } = require('socket.io');
+const { createAdapter } = require('@socket.io/redis-adapter');
+const redisClient = require('./config/redis');
 const { extractTenantMiddleware } = require('./middleware/tenant');
+
+const app = express();
+const server = http.createServer(app);
+const PORT = process.env.PORT || 3000;
+
+// Initialize Socket.IO with Redis Adapter
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
+});
+
+const pubClient = redisClient.duplicate();
+const subClient = redisClient.duplicate();
+io.adapter(createAdapter(pubClient, subClient));
+
+// Socket.IO Authentication & Tenant Room Allocation
+io.use((socket, next) => {
+  const token = socket.handshake.auth?.token;
+  if (!token) {
+    return next(new Error('Authentication error: No token provided'));
+  }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'development_jwt_secret_key');
+    socket.user = decoded;
+    socket.tenantId = decoded.tenantId;
+    next();
+  } catch (err) {
+    console.warn('[Socket Auth Error]:', err.message);
+    next(new Error('Authentication error: Invalid token'));
+  }
+});
+
+io.on('connection', (socket) => {
+  const room = `tenant:${socket.tenantId}`;
+  socket.join(room);
+  console.log(`🔌 [Socket.IO] Client connected: ${socket.id} (Tenant: ${socket.tenantId})`);
+
+  socket.on('disconnect', () => {
+    socket.leave(room);
+    console.log(`🔌 [Socket.IO] Client disconnected: ${socket.id}`);
+  });
+});
+
+// Export io
+module.exports = { app, server, io };
 
 // Initialize BullMQ background workers
 require('./workers/webhookWorker');
-
-const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Security & CORS
 app.use(helmet());
@@ -24,13 +73,16 @@ app.use(express.urlencoded({ extended: true }));
 // Health Check
 app.get('/health', (req, res) => res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() }));
 
-// Webhook bypasses tenant middleware to ensure immediate 200 OK
+// Public Routes (Bypassing tenant middleware)
 app.use('/api/webhook', require('./routes/webhook'));
+app.use('/api/auth', require('./routes/auth'));
 
-// Rest of the API sits behind Tenant Context Injection
+// Protected Routes (Behind Tenant Context Injection)
 app.use(extractTenantMiddleware);
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/leads', require('./routes/leads'));
+app.use('/api/settings', require('./routes/settings'));
+app.use('/api/users', require('./routes/users'));
 
 // Global Error Handler
 app.use((err, req, res, next) => {
@@ -38,11 +90,14 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal Server Error' });
 });
 
-app.listen(PORT, () => {
+// Start HTTP Server
+server.listen(PORT, () => {
   console.log(`======================================================`);
-  console.log(`🚀 Meta CRM Server running on port ${PORT}`);
+  console.log(`🚀 Meta CRM Server & WebSockets running on port ${PORT}`);
   console.log(`⚡ BullMQ Webhook Queue & Worker Pool Active (Concurrency: 25)`);
-  console.log(`🔒 Multi-Tenant Context Injection Middleware Active`);
-  console.log(`💾 Redis Cache Layer & Distributed Locking Active`);
+  console.log(`📡 Socket.IO Real-Time Engine Active with Redis Adapter`);
+  console.log(`🔑 Auth & JWT Service Mounted at /api/auth`);
+  console.log(`⚙️ Settings Service Mounted at /api/settings`);
+  console.log(`👥 Users & Agent Routing Mounted at /api/users`);
   console.log(`======================================================`);
 });
