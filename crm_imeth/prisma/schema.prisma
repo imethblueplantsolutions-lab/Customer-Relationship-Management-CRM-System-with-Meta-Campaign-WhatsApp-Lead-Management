@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id                 String   @id @default(uuid())
+  name               String
+  wabaId             String?  @unique // WhatsApp Business Account ID for webhook mapping
+  metaAccessToken    String?
+  metaPhoneNumberId  String?
+  createdAt          DateTime @default(now())
+
+  leads              Lead[]
+  users              User[]
+  pipelines          Pipeline[]
+  deals              Deal[]
+  flows              Flow[]
+}
+
+model User {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  password       String
+  role           String   @default("AGENT")
+  isActive       Boolean  @default(true)
+  tenantId       String
+  tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  assignedLeads    Lead[]
+  dealAssignments  Deal[]   @relation("DealAssignment")
+}
+
+model Lead {
+  id             String               @id @default(uuid())
+  phoneNumber    String
+  name           String?
+  status         String               @default("NEW")
+  category       String?
+  tags           String[]             @default([])
+  tenantId       String
+  tenant         Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  assignedToId   String?
+  assignedTo     User?                @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  attribution    CampaignAttribution?
+  messages       Message[]
+  followups      Followup[]
+  deals          Deal[]
+
+  @@unique([tenantId, phoneNumber])
+  @@index([tenantId, status])
+}
+
+model CampaignAttribution {
+  id         String   @id @default(uuid())
+  leadId     String   @unique
+  lead       Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  sourceUrl  String?
+  adId       String?
+  sourceType String?
+  headline   String?
+  body       String?
+  ctwaClid   String?
+  createdAt  DateTime @default(now())
+}
+
+model Message {
+  id         String   @id @default(uuid())
+  messageId  String   @unique
+  leadId     String
+  lead       Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  direction  String   @default("INBOUND")
+  body       String
+  timestamp  String?
+  createdAt  DateTime @default(now())
+
+  @@index([leadId])
+}
+
+model Followup {
+  id        String    @id @default(uuid())
+  leadId    String
+  lead      Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  type      String    @default("CALL")
+  dueAt     DateTime?
+  note      String?
+  completed Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([leadId])
+  @@index([dueAt])
+}
+
+model Pipeline {
+  id        String          @id @default(uuid())
+  tenantId  String
+  tenant    Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name      String
+  createdAt DateTime        @default(now())
+  stages    PipelineStage[]
+  deals     Deal[]
+
+  @@index([tenantId])
+}
+
+model PipelineStage {
+  id         String   @id @default(uuid())
+  pipelineId String
+  pipeline   Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  name       String
+  color      String   @default("#3b82f6")
+  position   Int
+  createdAt  DateTime @default(now())
+  deals      Deal[]
+
+  @@index([pipelineId])
+}
+
+model Deal {
+  id                String        @id @default(uuid())
+  pipelineId        String
+  pipeline          Pipeline      @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  stageId           String
+  stage             PipelineStage @relation(fields: [stageId], references: [id])
+  tenantId          String
+  tenant            Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  leadId            String?
+  lead              Lead?         @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  assignedToId      String?
+  assignedTo        User?         @relation("DealAssignment", fields: [assignedToId], references: [id], onDelete: SetNull)
+  title             String
+  value             Float         @default(0)
+  currency          String        @default("USD")
+  notes             String?
+  expectedCloseDate DateTime?
+  status            String        @default("open")
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([tenantId])
+  @@index([pipelineId])
+  @@index([stageId])
+}
+
+model Flow {
+  id             String     @id @default(uuid())
+  tenantId       String
+  tenant         Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name           String
+  description    String?
+  status         String     @default("draft")
+  triggerType    String     @default("keyword")
+  triggerConfig  Json       @default("{}")
+  entryNodeId    String?
+  executionCount Int        @default(0)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  nodes          FlowNode[]
+
+  @@index([tenantId])
+}
+
+model FlowNode {
+  id       String @id @default(uuid())
+  flowId   String
+  flow     Flow   @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  nodeKey  String
+  nodeType String
+  config   Json   @default("{}")
+  posX     Float  @default(0)
+  posY     Float  @default(0)
+
+  @@unique([flowId, nodeKey])
+  @@index([flowId])
+}
