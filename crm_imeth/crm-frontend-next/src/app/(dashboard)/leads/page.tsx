@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { apiClient } from "@/lib/api-client";
 import type { Lead } from "@/types";
-import { Search, Plus, ChevronRight, Phone, Tag } from "lucide-react";
+import { Search, Plus, ChevronRight, Phone, Tag, Users } from "lucide-react";
 import Link from "next/link";
 
 const STATUS_COLORS: Record<string, string> = {
