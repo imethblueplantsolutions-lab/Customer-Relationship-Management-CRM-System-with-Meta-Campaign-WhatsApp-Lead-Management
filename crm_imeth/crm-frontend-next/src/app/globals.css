@@ -1,26 +1,83 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* WhatsApp-inspired palette */
+  --wa-dark-teal: #075e54;
+  --wa-teal: #128c7e;
+  --wa-green: #25d366;
+  --wa-light-green: #dcf8c6;
+  --wa-cream: #ece5dd;
+  --wa-chat-bg: #e5ddd5;
+
+  /* Semantic tokens */
+  --color-bg: #f8fafc;
+  --color-bg-card: #ffffff;
+  --color-bg-sidebar: #0f172a;
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+  --color-border: #e2e8f0;
+  --color-primary: #128c7e;
+  --color-primary-hover: #075e54;
+  --color-accent: #25d366;
+  --color-danger: #ef4444;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Pipeline board horizontal scroll */
+.pipeline-scroll {
+  scroll-behavior: smooth;
+}
+@media (hover: none), (pointer: coarse) {
+  .pipeline-scroll::-webkit-scrollbar {
+    height: 0;
+    display: none;
+  }
+  .pipeline-scroll {
+    scrollbar-width: none;
+  }
+}
+
+/* XYFlow / React Flow overrides */
+.react-flow__node {
+  border-radius: 12px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+.react-flow__edge-path {
+  stroke: #94a3b8 !important;
+  stroke-width: 2 !important;
+}
+.react-flow__handle {
+  width: 10px !important;
+  height: 10px !important;
+  border: 2px solid #128c7e !important;
+  background: white !important;
 }
