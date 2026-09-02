@@ -102,7 +102,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-[#edf8f2] flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans overflow-x-hidden">
+    <div className="relative min-h-screen w-full bg-[#edf8f2] flex items-center justify-center p-5 sm:p-6 lg:p-8 font-sans overflow-x-hidden">
       {/* Decorative Ambient Background Glows */}
       <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-[#25d366]/20 blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-[#128c7e]/20 blur-3xl pointer-events-none" />
@@ -162,7 +162,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={handleQuickFill}
-                className="px-4 py-2 rounded-lg bg-white hover:bg-emerald-50 text-[#075e54] text-xs font-bold border border-[#a7f3d0] shadow-xs transition-all cursor-pointer hover:scale-105 active:scale-95 shrink-0"
+                className="px-5 py-3 rounded-lg bg-white hover:bg-emerald-50 text-[#075e54] text-xs font-bold border border-[#a7f3d0] shadow-xs transition-all cursor-pointer hover:scale-105 active:scale-95 shrink-0"
               >
                 Auto-fill
               </button>

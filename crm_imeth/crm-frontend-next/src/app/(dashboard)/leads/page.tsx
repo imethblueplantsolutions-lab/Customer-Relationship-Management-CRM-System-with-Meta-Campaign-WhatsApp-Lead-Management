@@ -118,11 +118,10 @@ export default function LeadsPage() {
             setFormError("");
             setFormSuccess("");
           }}
-          className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold shadow-md transition-all cursor-pointer ${
-            showAddForm
-              ? "bg-slate-200 text-slate-700 hover:bg-slate-300"
-              : "bg-[#128c7e] text-white hover:bg-[#075e54]"
-          }`}
+          className={`inline-flex items-center gap-3 rounded-xl px-7 py-4 text-sm font-bold shadow-md transition-all cursor-pointer ${showAddForm
+            ? "bg-slate-200 text-slate-700 hover:bg-slate-300"
+            : "bg-[#128c7e] text-white hover:bg-[#075e54]"
+            }`}
         >
           {showAddForm ? (
             <>
