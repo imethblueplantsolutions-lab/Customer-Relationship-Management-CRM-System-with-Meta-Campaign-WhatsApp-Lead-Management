@@ -85,10 +85,10 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-8 max-w-2xl">
       <div>
         <h2 className="text-2xl font-bold text-slate-800">Settings</h2>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-sm text-slate-500 mt-2">
           Configure Meta WhatsApp Business API credentials
         </p>
       </div>
@@ -107,7 +107,7 @@ export default function SettingsPage() {
 
       <div className="rounded-2xl bg-white border border-slate-200/60 shadow-sm divide-y divide-slate-100">
         {/* WABA ID */}
-        <div className="p-6">
+        <div className="p-7">
           <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
             <Smartphone className="h-4 w-4 text-[#128c7e]" />
             WhatsApp Business Account ID (WABA)
@@ -117,15 +117,15 @@ export default function SettingsPage() {
             value={wabaId}
             onChange={(e) => setWabaId(e.target.value)}
             placeholder="e.g. 123456789012345"
-            className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none"
+            className="mt-3 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none"
           />
-          <p className="mt-1.5 text-xs text-slate-400">
+          <p className="mt-2 text-xs text-slate-400">
             Found in Meta Business Suite → WhatsApp Manager → Business Account Settings
           </p>
         </div>
 
         {/* Access Token */}
-        <div className="p-6">
+        <div className="p-7">
           <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
             <Key className="h-4 w-4 text-[#128c7e]" />
             Meta Access Token
@@ -135,15 +135,15 @@ export default function SettingsPage() {
             value={accessToken}
             onChange={(e) => setAccessToken(e.target.value)}
             placeholder="••••••••••••••••"
-            className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none"
+            className="mt-3 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none"
           />
-          <p className="mt-1.5 text-xs text-slate-400">
+          <p className="mt-2 text-xs text-slate-400">
             Permanent system user token with whatsapp_business_messaging permission
           </p>
         </div>
 
         {/* Phone Number ID */}
-        <div className="p-6">
+        <div className="p-7">
           <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
             <Smartphone className="h-4 w-4 text-[#128c7e]" />
             Phone Number ID
@@ -153,7 +153,7 @@ export default function SettingsPage() {
             value={phoneNumberId}
             onChange={(e) => setPhoneNumberId(e.target.value)}
             placeholder="e.g. 109876543210123"
-            className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none"
+            className="mt-3 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none"
           />
         </div>
       </div>

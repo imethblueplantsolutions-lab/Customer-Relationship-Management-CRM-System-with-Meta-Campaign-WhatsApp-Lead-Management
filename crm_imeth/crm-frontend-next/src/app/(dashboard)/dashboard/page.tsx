@@ -76,27 +76,27 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h2 className="text-2xl font-bold text-slate-800">Dashboard</h2>
-        <p className="text-sm text-slate-500 mt-1">Campaign & Lead Analytics Overview</p>
+        <p className="text-sm text-slate-500 mt-2">Campaign & Lead Analytics Overview</p>
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {statCards.map((card) => {
           const Icon = card.icon;
           return (
             <div
               key={card.label}
-              className="rounded-2xl bg-white border border-slate-200/60 p-5 shadow-sm hover:shadow-md transition-shadow"
+              className="rounded-2xl bg-white border border-slate-200/60 p-6 shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-widest">
                     {card.label}
                   </p>
-                  <p className="text-3xl font-extrabold text-slate-800 mt-1">
+                  <p className="text-3xl font-extrabold text-slate-800 mt-2">
                     {card.value}
                   </p>
                 </div>
@@ -110,10 +110,10 @@ export default function DashboardPage() {
       </div>
 
       {/* Charts row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-7">
         {/* Bar Chart */}
         <div className="rounded-2xl bg-white border border-slate-200/60 p-6 shadow-sm">
-          <h3 className="text-sm font-bold text-slate-700 mb-4">Leads by Status</h3>
+          <h3 className="text-sm font-bold text-slate-700 mb-5">Leads by Status</h3>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={statusData} barSize={36}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -137,7 +137,7 @@ export default function DashboardPage() {
 
         {/* Pie Chart */}
         <div className="rounded-2xl bg-white border border-slate-200/60 p-6 shadow-sm">
-          <h3 className="text-sm font-bold text-slate-700 mb-4">Status Distribution</h3>
+          <h3 className="text-sm font-bold text-slate-700 mb-5">Status Distribution</h3>
           <ResponsiveContainer width="100%" height={260}>
             <PieChart>
               <Pie
@@ -165,23 +165,23 @@ export default function DashboardPage() {
 
       {/* Recent Leads */}
       <div className="rounded-2xl bg-white border border-slate-200/60 p-6 shadow-sm">
-        <h3 className="text-sm font-bold text-slate-700 mb-4">Recent Leads</h3>
+        <h3 className="text-sm font-bold text-slate-700 mb-5">Recent Leads</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-100">
-                <th className="pb-3 text-left font-semibold text-slate-500 text-xs uppercase tracking-wider">Name</th>
-                <th className="pb-3 text-left font-semibold text-slate-500 text-xs uppercase tracking-wider">Phone</th>
-                <th className="pb-3 text-left font-semibold text-slate-500 text-xs uppercase tracking-wider">Status</th>
-                <th className="pb-3 text-left font-semibold text-slate-500 text-xs uppercase tracking-wider">Updated</th>
+                <th className="pb-4 text-left font-semibold text-slate-500 text-xs uppercase tracking-widest">Name</th>
+                <th className="pb-4 text-left font-semibold text-slate-500 text-xs uppercase tracking-widest">Phone</th>
+                <th className="pb-4 text-left font-semibold text-slate-500 text-xs uppercase tracking-widest">Status</th>
+                <th className="pb-4 text-left font-semibold text-slate-500 text-xs uppercase tracking-widest">Updated</th>
               </tr>
             </thead>
             <tbody>
               {stats.recentLeads.map((lead) => (
                 <tr key={lead.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                  <td className="py-3 font-medium text-slate-800">{lead.name || "—"}</td>
-                  <td className="py-3 text-slate-600">{lead.phoneNumber}</td>
-                  <td className="py-3">
+                  <td className="py-4 font-medium text-slate-800">{lead.name || "—"}</td>
+                  <td className="py-4 text-slate-600">{lead.phoneNumber}</td>
+                  <td className="py-4">
                     <span
                       className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold"
                       style={{
@@ -192,7 +192,7 @@ export default function DashboardPage() {
                       {lead.status}
                     </span>
                   </td>
-                  <td className="py-3 text-slate-500 text-xs">
+                  <td className="py-4 text-slate-500 text-xs">
                     {new Date(lead.updatedAt).toLocaleDateString()}
                   </td>
                 </tr>

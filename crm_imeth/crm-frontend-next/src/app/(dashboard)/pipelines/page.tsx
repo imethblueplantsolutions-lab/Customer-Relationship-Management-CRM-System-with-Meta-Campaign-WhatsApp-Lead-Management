@@ -194,7 +194,7 @@ export default function PipelinesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -254,7 +254,7 @@ export default function PipelinesPage() {
           onDragEnd={handleDragEnd}
           onDragCancel={() => setActiveDealId(null)}
         >
-          <div className="pipeline-scroll flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 lg:snap-none">
+          <div className="pipeline-scroll flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 lg:snap-none">
             {stages.map((stage) => {
               const stageDeals = dealsByStage.get(stage.id) ?? [];
               const totalValue = stageDeals.reduce((s, d) => s + (d.value || 0), 0);
@@ -383,7 +383,7 @@ function StageColumn({
   const { setNodeRef, isOver } = useDroppable({ id: stage.id });
 
   return (
-    <div className="flex w-[85vw] min-w-[260px] max-w-[320px] shrink-0 snap-start flex-col rounded-2xl border border-slate-200/60 bg-white/80 p-4 lg:w-auto lg:max-w-none lg:flex-1 lg:basis-[260px] lg:shrink lg:snap-none shadow-sm">
+    <div className="flex w-[85vw] min-w-[260px] max-w-[320px] shrink-0 snap-start flex-col rounded-2xl border border-slate-200/60 bg-white/80 p-5 lg:w-auto lg:max-w-none lg:flex-1 lg:basis-[260px] lg:shrink lg:snap-none shadow-sm">
       <div className="-mx-4 -mt-4 h-[3px] rounded-t-2xl" style={{ backgroundColor: stage.color }} />
       <div className="flex items-center justify-between pt-3">
         <h3 className="truncate text-sm font-semibold text-slate-800">{stage.name}</h3>
@@ -449,7 +449,7 @@ function DealCard({
 
   return (
     <div
-      className={`group relative w-full rounded-xl border border-slate-200/50 bg-slate-50/70 pl-4 pr-3 py-3 text-left shadow-sm transition-all ${
+      className={`group relative w-full rounded-xl border border-slate-200/50 bg-slate-50/70 pl-4 pr-3 py-4 text-left shadow-sm transition-all ${
         isOverlay
           ? "shadow-xl"
           : "hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white hover:shadow-md"

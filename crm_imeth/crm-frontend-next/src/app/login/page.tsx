@@ -117,7 +117,7 @@ export default function LoginPage() {
       <div className="relative z-10 w-full max-w-6xl min-h-[720px] bg-white rounded-xl shadow-[0_25px_70px_rgba(7,94,84,0.12)] border border-slate-100 overflow-hidden grid grid-cols-1 md:grid-cols-2">
 
         {/* ================= LEFT HALF: Form & Clean Inputs ================= */}
-        <div className="min-w-0 p-8 sm:p-12 lg:p-14 flex flex-col justify-between bg-white">
+        <div className="min-w-0 p-6 sm:p-10 lg:p-12 flex flex-col justify-between bg-white">
 
           {/* Top Bar: Brand & Status Pill */}
           <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -138,21 +138,21 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Center Form Section */}
-          <div className="py-6 flex flex-col gap-6">
+          {/* Center Form Section (Properly centered horizontally and vertically) */}
+          <div className="w-full max-w-[400px] mx-auto my-auto py-4 flex flex-col gap-5">
 
             {/* Greeting Header */}
-            <div className="text-center">
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            <div className="w-full flex flex-col items-center justify-center text-center">
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight text-center">
                 Welcome Back!
               </h1>
-              <p className="mt-2 text-sm text-slate-500 max-w-sm mx-auto leading-relaxed">
+              <p className="mt-2 text-sm text-slate-500 max-w-sm text-center leading-relaxed">
                 Log in to your account to manage your WhatsApp leads, pipelines & automations.
               </p>
             </div>
 
             {/* Quick Demo Credentials Autofill Pill */}
-            <div className="p-3.5 rounded-xl bg-[#f0faf5] border border-[#d2f4e3] flex items-center justify-between gap-3">
+            <div className="w-full p-3.5 rounded-xl bg-[#f0faf5] border border-[#d2f4e3] flex items-center justify-between gap-3">
               <div className="text-xs min-w-0">
                 <p className="text-[#075e54] font-semibold flex items-center gap-1.5 text-sm">
                   <Sparkles className="w-4 h-4 text-[#25d366] shrink-0" /> Demo Admin
@@ -187,7 +187,7 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
               {/* Email Input */}
-              <div className="relative flex items-center">
+              <div className="relative flex items-center w-full">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none z-10" />
                 <input
                   type="email"
@@ -195,12 +195,13 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="Your email address"
-                  className="w-full h-13 rounded-xl bg-[#f4f7f6] border border-transparent pl-12 pr-4 text-sm text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-[#128c7e] focus:ring-4 focus:ring-[#128c7e]/10 focus:outline-none"
+                  style={{ paddingLeft: "48px", paddingRight: "16px" }}
+                  className="w-full h-12 rounded-xl bg-[#f4f7f6] border border-transparent text-sm text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-[#128c7e] focus:ring-4 focus:ring-[#128c7e]/10 focus:outline-none"
                 />
               </div>
 
               {/* Password Input */}
-              <div className="relative flex items-center">
+              <div className="relative flex items-center w-full">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none z-10" />
                 <input
                   type={showPassword ? "text" : "password"}
@@ -208,7 +209,8 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="Your password"
-                  className="w-full h-13 rounded-xl bg-[#f4f7f6] border border-transparent pl-12 pr-12 text-sm text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-[#128c7e] focus:ring-4 focus:ring-[#128c7e]/10 focus:outline-none"
+                  style={{ paddingLeft: "48px", paddingRight: "48px" }}
+                  className="w-full h-12 rounded-xl bg-[#f4f7f6] border border-transparent text-sm text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-[#128c7e] focus:ring-4 focus:ring-[#128c7e]/10 focus:outline-none"
                 />
                 <button
                   type="button"

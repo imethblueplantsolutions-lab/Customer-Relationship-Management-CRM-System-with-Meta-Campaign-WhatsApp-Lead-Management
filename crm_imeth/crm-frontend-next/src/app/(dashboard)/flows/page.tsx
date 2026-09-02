@@ -114,11 +114,11 @@ export default function FlowsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-800">Automation Flows</h2>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-slate-500 mt-2">
             {flows.length} flow{flows.length !== 1 ? "s" : ""} configured
           </p>
         </div>
@@ -145,7 +145,7 @@ export default function FlowsPage() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {flows.map((flow) => (
             <div
               key={flow.id}
@@ -158,7 +158,7 @@ export default function FlowsPage() {
                 }`}
               />
 
-              <div className="p-5">
+              <div className="p-6">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div
@@ -171,7 +171,7 @@ export default function FlowsPage() {
                     <div className="min-w-0">
                       <h3 className="text-sm font-bold text-slate-800 truncate">{flow.name}</h3>
                       {flow.description && (
-                        <p className="text-xs text-slate-400 truncate mt-0.5">{flow.description}</p>
+                        <p className="text-xs text-slate-400 truncate mt-1">{flow.description}</p>
                       )}
                     </div>
                   </div>
@@ -213,7 +213,7 @@ export default function FlowsPage() {
                 </div>
 
                 {/* Meta row */}
-                <div className="mt-4 flex items-center justify-between">
+                <div className="mt-5 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
@@ -238,7 +238,7 @@ export default function FlowsPage() {
                 {/* Edit button */}
                 <Link
                   href={`/flows/${flow.id}`}
-                  className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-white hover:border-[#128c7e] hover:text-[#128c7e] transition-all"
+                  className="mt-5 flex w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-semibold text-slate-700 hover:bg-white hover:border-[#128c7e] hover:text-[#128c7e] transition-all"
                 >
                   <FileEdit className="h-3.5 w-3.5" /> Open Editor
                 </Link>
