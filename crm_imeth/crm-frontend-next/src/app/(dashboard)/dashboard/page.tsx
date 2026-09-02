@@ -15,6 +15,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import type { PieLabelRenderProps } from "recharts";
 import { Users, UserCheck, TrendingUp, Clock } from "lucide-react";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -138,26 +139,60 @@ export default function DashboardPage() {
         {/* Pie Chart */}
         <div className="rounded-2xl bg-white border border-slate-200/60 p-6 shadow-sm">
           <h3 className="text-sm font-bold text-slate-700 mb-5">Status Distribution</h3>
-          <ResponsiveContainer width="100%" height={260}>
+          <ResponsiveContainer width="100%" height={320}>
             <PieChart>
               <Pie
                 data={statusData}
                 cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={100}
-                paddingAngle={4}
+                cy="45%"
+                innerRadius={55}
+                outerRadius={90}
+                paddingAngle={3}
                 dataKey="value"
-                label={(props: { name?: string; percent?: number }) =>
-                  `${props.name ?? ""} ${((props.percent ?? 0) * 100).toFixed(0)}%`
-                }
-                labelLine={false}
+                label={(props: PieLabelRenderProps) => {
+                  const cx = Number(props.cx ?? 0);
+                  const cy = Number(props.cy ?? 0);
+                  const midAngle = Number(props.midAngle ?? 0);
+                  const oR = Number(props.outerRadius ?? 0);
+                  const name = String(props.name ?? "");
+                  const percent = Number(props.percent ?? 0);
+                  const fill = String(props.fill ?? "#94a3b8");
+
+                  const RADIAN = Math.PI / 180;
+                  const radius = oR + 28;
+                  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                  return (
+                    <text
+                      x={x}
+                      y={y}
+                      fill={fill}
+                      textAnchor={x > cx ? "start" : "end"}
+                      dominantBaseline="central"
+                      fontSize={11}
+                      fontWeight={600}
+                    >
+                      {name} {(percent * 100).toFixed(0)}%
+                    </text>
+                  );
+                }}
+                labelLine={{
+                  stroke: "#cbd5e1",
+                  strokeWidth: 1,
+                }}
               >
                 {statusData.map((entry, index) => (
                   <Cell key={index} fill={entry.fill} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip
+                contentStyle={{
+                  borderRadius: "12px",
+                  border: "1px solid #e2e8f0",
+                  fontSize: "12px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                }}
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>
