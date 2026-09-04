@@ -86,9 +86,6 @@ export default function DashboardLayout({
                 <h1 className="text-fluid-title font-bold tracking-tight text-white truncate">
                   WhatsApp CRM
                 </h1>
-                <p className="text-fluid-meta text-emerald-400 font-medium truncate">
-                  Meta Hub Live
-                </p>
               </div>
             )}
           </div>
