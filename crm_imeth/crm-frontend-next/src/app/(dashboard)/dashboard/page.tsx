@@ -84,7 +84,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {statCards.map((card) => {
           const Icon = card.icon;
           return (
@@ -111,7 +111,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Charts row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-7">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Bar Chart */}
         <div className="rounded-2xl bg-white border border-slate-200/60 p-6 shadow-sm">
           <h3 className="text-sm font-bold text-slate-700 mb-5">Leads by Status</h3>

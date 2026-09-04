@@ -117,7 +117,10 @@ export default function DashboardLayout({
         </div>
 
         {/* Navigation Items */}
-        <nav className="flex-1 space-y-1.5 px-3 py-4 overflow-y-auto">
+        <nav
+          className="flex flex-1 flex-col gap-8 px-4 py-6 overflow-y-auto"
+          style={{ gap: "32px" }}
+        >
           {NAV_ITEMS.map((item) => {
             const isActive = pathname.startsWith(item.href);
             const Icon = item.icon;
@@ -126,7 +129,7 @@ export default function DashboardLayout({
                 key={item.href}
                 href={item.href}
                 title={isCollapsed ? item.label : undefined}
-                className={`flex items-center gap-3 rounded-xl px-3.5 py-3 text-fluid-nav font-medium transition-all group ${
+                className={`flex items-center gap-4 rounded-xl px-4 py-3 text-fluid-nav font-medium transition-all group ${
                   isActive
                     ? "bg-[#128c7e] text-white shadow-md shadow-[#128c7e]/30"
                     : "text-slate-300 hover:bg-white/5 hover:text-white"
@@ -144,10 +147,10 @@ export default function DashboardLayout({
         </nav>
 
         {/* User Info & Logout Section */}
-        <div className="border-t border-white/10 p-3">
+        <div className="border-t border-white/10 p-4">
           <div
-            className={`flex items-center gap-3 rounded-xl bg-white/5 p-2.5 ${
-              isCollapsed ? "justify-center flex-col gap-2" : ""
+            className={`flex items-center gap-4 rounded-xl bg-white/5 p-3 ${
+              isCollapsed ? "justify-center flex-col gap-4" : ""
             }`}
           >
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#128c7e] to-[#25d366] text-xs font-bold text-white shadow-sm">
