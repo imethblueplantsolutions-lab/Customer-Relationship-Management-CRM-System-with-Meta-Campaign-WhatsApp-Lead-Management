@@ -71,9 +71,17 @@ export default function LoginPage() {
     }
   };
 
-  const handleQuickFill = () => {
-    setEmail("admin@crm.com");
-    setPassword("admin123");
+  const handleQuickFill = (role: "ADMIN" | "TEAM_LEAD" | "AGENT" = "ADMIN") => {
+    if (role === "ADMIN") {
+      setEmail("admin@crm.com");
+      setPassword("admin123");
+    } else if (role === "TEAM_LEAD") {
+      setEmail("teamlead@crm.com");
+      setPassword("teamlead123");
+    } else if (role === "AGENT") {
+      setEmail("agent@crm.com");
+      setPassword("agent123");
+    }
     setError("");
   };
 
@@ -151,21 +159,49 @@ export default function LoginPage() {
               </p>
             </div>
 
-            {/* Quick Demo Credentials Autofill Pill */}
-            <div className="w-full p-3.5 rounded-xl bg-[#f0faf5] border border-[#d2f4e3] flex items-center justify-between gap-3">
-              <div className="text-xs min-w-0">
-                <p className="text-[#075e54] font-semibold flex items-center gap-1.5 text-sm">
-                  <Sparkles className="w-4 h-4 text-[#25d366] shrink-0" /> Demo Admin
+            {/* Quick Demo Credentials Autofill Pills */}
+            <div className="w-full p-3.5 rounded-xl bg-[#f0faf5] border border-[#d2f4e3] space-y-2.5">
+              <div className="flex items-center justify-between">
+                <p className="text-[#075e54] font-bold text-xs flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-[#25d366] shrink-0" /> Quick Test Accounts
                 </p>
-                <p className="text-slate-500 text-xs mt-0.5 truncate">admin@crm.com • admin123</p>
+                <span className="text-[10px] text-slate-400 font-medium">Click role to auto-fill</span>
               </div>
-              <button
-                type="button"
-                onClick={handleQuickFill}
-                className="px-5 py-3 rounded-lg bg-white hover:bg-emerald-50 text-[#075e54] text-xs font-bold border border-[#a7f3d0] shadow-xs transition-all cursor-pointer hover:scale-105 active:scale-95 shrink-0"
-              >
-                Auto-fill
-              </button>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleQuickFill("ADMIN")}
+                  className={`py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer text-center border ${
+                    email === "admin@crm.com"
+                      ? "bg-[#128c7e] text-white border-[#128c7e] shadow-xs"
+                      : "bg-white hover:bg-emerald-50 text-slate-700 border-slate-200"
+                  }`}
+                >
+                  Admin
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickFill("TEAM_LEAD")}
+                  className={`py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer text-center border ${
+                    email === "teamlead@crm.com"
+                      ? "bg-[#128c7e] text-white border-[#128c7e] shadow-xs"
+                      : "bg-white hover:bg-emerald-50 text-slate-700 border-slate-200"
+                  }`}
+                >
+                  Team Lead
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickFill("AGENT")}
+                  className={`py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer text-center border ${
+                    email === "agent@crm.com"
+                      ? "bg-[#128c7e] text-white border-[#128c7e] shadow-xs"
+                      : "bg-white hover:bg-emerald-50 text-slate-700 border-slate-200"
+                  }`}
+                >
+                  Sales Agent
+                </button>
+              </div>
             </div>
 
             {/* Error & Success Alerts */}

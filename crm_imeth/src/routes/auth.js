@@ -78,12 +78,53 @@ router.post('/seed', async (req, res) => {
       }
     });
 
+    const teamLeadPassword = await bcrypt.hash('teamlead123', 10);
+    const agentPassword = await bcrypt.hash('agent123', 10);
+
+    const teamLeadUser = await prisma.user.upsert({
+      where: { email: 'teamlead@crm.com' },
+      update: {
+        password: teamLeadPassword,
+        tenantId: tenant.id,
+        role: 'TEAM_LEAD',
+        isActive: true
+      },
+      create: {
+        email: 'teamlead@crm.com',
+        password: teamLeadPassword,
+        role: 'TEAM_LEAD',
+        tenantId: tenant.id,
+        isActive: true
+      }
+    });
+
+    const agentUser = await prisma.user.upsert({
+      where: { email: 'agent@crm.com' },
+      update: {
+        password: agentPassword,
+        tenantId: tenant.id,
+        role: 'AGENT',
+        isActive: true
+      },
+      create: {
+        email: 'agent@crm.com',
+        password: agentPassword,
+        role: 'AGENT',
+        tenantId: tenant.id,
+        isActive: true
+      }
+    });
+
     res.status(201).json({
       success: true,
-      message: 'Admin user and tenant seeded successfully',
+      message: 'Admin, Team Lead, and Sales Agent seeded successfully',
       data: {
         tenant,
-        user: { email: adminUser.email, role: adminUser.role, tenantId: adminUser.tenantId }
+        users: [
+          { email: adminUser.email, role: adminUser.role },
+          { email: teamLeadUser.email, role: teamLeadUser.role },
+          { email: agentUser.email, role: agentUser.role }
+        ]
       }
     });
   } catch (error) {
