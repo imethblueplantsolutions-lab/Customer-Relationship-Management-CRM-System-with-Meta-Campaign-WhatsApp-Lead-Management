@@ -18,6 +18,8 @@ export interface Lead {
   assignedToId?: string;
   assignedTo?: { id: string; email: string; role: string };
   attribution?: CampaignAttribution;
+  messages?: Message[];
+  followups?: Followup[];
   _count?: { followups: number; messages: number };
   createdAt: string;
   updatedAt: string;

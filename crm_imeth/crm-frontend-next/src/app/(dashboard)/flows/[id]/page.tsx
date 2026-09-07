@@ -31,6 +31,7 @@ import {
   Play,
   Loader2,
   Trash2,
+  X,
 } from "lucide-react";
 
 // ─── Node type config ────────────────────────────────────────
@@ -56,15 +57,16 @@ function StartNode({ data }: { data: Record<string, unknown> }) {
 }
 
 function SendMessageNode({ data }: { data: Record<string, unknown> }) {
+  const text = (data.config as Record<string, string>)?.text;
   return (
-    <div className="rounded-xl border-2 border-blue-300 bg-blue-50 px-5 py-3 shadow-md min-w-[180px]">
+    <div className="rounded-xl border-2 border-blue-300 bg-blue-50 px-5 py-3 shadow-md min-w-[180px] hover:border-blue-500 cursor-pointer transition-colors">
       <Handle type="target" position={Position.Top} className="!bg-blue-500" />
       <div className="flex items-center gap-2">
         <MessageSquare className="h-4 w-4 text-blue-600" />
         <span className="text-sm font-bold text-blue-700">Send Message</span>
       </div>
-      <p className="mt-1 text-xs text-blue-500 truncate max-w-[200px]">
-        {(data.config as Record<string, string>)?.text || "Configure message..."}
+      <p className="mt-1 text-xs text-blue-600 truncate max-w-[200px]">
+        {text || "Click to type message..."}
       </p>
       <Handle type="source" position={Position.Bottom} className="!bg-blue-500" />
     </div>
@@ -72,15 +74,16 @@ function SendMessageNode({ data }: { data: Record<string, unknown> }) {
 }
 
 function ConditionNode({ data }: { data: Record<string, unknown> }) {
+  const keyword = (data.config as Record<string, string>)?.subject_key;
   return (
-    <div className="rounded-xl border-2 border-purple-300 bg-purple-50 px-5 py-3 shadow-md min-w-[180px]">
+    <div className="rounded-xl border-2 border-purple-300 bg-purple-50 px-5 py-3 shadow-md min-w-[180px] hover:border-purple-500 cursor-pointer transition-colors">
       <Handle type="target" position={Position.Top} className="!bg-purple-500" />
       <div className="flex items-center gap-2">
         <GitBranch className="h-4 w-4 text-purple-600" />
         <span className="text-sm font-bold text-purple-700">Condition</span>
       </div>
-      <p className="mt-1 text-[10px] text-purple-500">
-        {(data.config as Record<string, string>)?.subject_key || "Set condition..."}
+      <p className="mt-1 text-xs font-semibold text-purple-700 truncate max-w-[200px]">
+        {keyword ? `Matches: "${keyword}"` : "Click to set condition..."}
       </p>
       <Handle type="source" position={Position.Bottom} id="true" className="!bg-emerald-500" style={{ left: "30%" }} />
       <Handle type="source" position={Position.Bottom} id="false" className="!bg-red-500" style={{ left: "70%" }} />
@@ -134,6 +137,34 @@ export default function FlowEditorPage() {
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const selectedNode = useMemo(
+    () => nodes.find((n) => n.id === selectedNodeId) || null,
+    [nodes, selectedNodeId]
+  );
+
+  const updateNodeConfig = (nodeId: string, key: string, value: string) => {
+    setNodes((nds) =>
+      nds.map((n) => {
+        if (n.id === nodeId) {
+          const currentConfig =
+            ((n.data as Record<string, unknown>)?.config as Record<string, unknown>) || {};
+          return {
+            ...n,
+            data: {
+              ...n.data,
+              config: {
+                ...currentConfig,
+                [key]: value,
+              },
+            },
+          };
+        }
+        return n;
+      })
+    );
+  };
 
   // ─── Load flow ─────────────────────────────────────────────
   useEffect(() => {
@@ -377,6 +408,8 @@ export default function FlowEditorPage() {
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
+            onNodeClick={(_, node) => setSelectedNodeId(node.id)}
+            onPaneClick={() => setSelectedNodeId(null)}
             nodeTypes={nodeTypes}
             fitView
             fitViewOptions={{ padding: 0.3 }}
@@ -402,6 +435,121 @@ export default function FlowEditorPage() {
             />
           </ReactFlow>
         </div>
+
+        {/* Node Configuration Inspector Drawer */}
+        {selectedNode && (
+          <div className="w-80 shrink-0 border-l border-slate-200 bg-white p-5 space-y-4 overflow-y-auto shadow-lg z-10">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Block Configuration
+                </span>
+                <h3 className="text-sm font-bold text-slate-800 capitalize">
+                  {selectedNode.type?.replace("_", " ")}
+                </h3>
+              </div>
+              <button
+                onClick={() => setSelectedNodeId(null)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer"
+                title="Close settings"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {selectedNode.type === "condition" && (
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    Match Keyword / Reply Condition
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. YES, 1, PRICE"
+                    value={
+                      ((selectedNode.data as Record<string, unknown>)?.config as Record<string, string>)?.subject_key || ""
+                    }
+                    onChange={(e) => updateNodeConfig(selectedNode.id, "subject_key", e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none"
+                    autoFocus
+                  />
+                  <p className="mt-1.5 text-[11px] text-slate-500 leading-normal">
+                    If the customer's reply matches this text, the flow branches out through the 🟢 <strong>Green (Yes)</strong> handle. Otherwise, it routes through the 🔴 <strong>Red (No)</strong> handle.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {selectedNode.type === "send_message" && (
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    WhatsApp Message Text
+                  </label>
+                  <textarea
+                    rows={6}
+                    placeholder="Type the message to send to the customer on WhatsApp..."
+                    value={
+                      ((selectedNode.data as Record<string, unknown>)?.config as Record<string, string>)?.text || ""
+                    }
+                    onChange={(e) => updateNodeConfig(selectedNode.id, "text", e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 p-3 text-xs text-slate-800 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none leading-relaxed"
+                    autoFocus
+                  />
+                  <p className="mt-1.5 text-[11px] text-slate-500 leading-normal">
+                    This message will be sent automatically to the customer's WhatsApp chat.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {selectedNode.type === "handoff" && (
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    Department or Agent Note
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Sales Team, Urgent Inquiries"
+                    value={
+                      ((selectedNode.data as Record<string, unknown>)?.config as Record<string, string>)?.department || ""
+                    }
+                    onChange={(e) => updateNodeConfig(selectedNode.id, "department", e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none"
+                  />
+                  <p className="mt-1.5 text-[11px] text-slate-500 leading-normal">
+                    Alerts human agents on the CRM dashboard when a lead reaches this point.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {selectedNode.type === "start" && (
+              <p className="text-xs text-slate-500 leading-relaxed">
+                This is the entry point. Whatever block is connected below this will run when the flow begins.
+              </p>
+            )}
+
+            {selectedNode.type === "end" && (
+              <p className="text-xs text-slate-500 leading-relaxed">
+                This block ends the automated chat session.
+              </p>
+            )}
+
+            {selectedNode.type !== "start" && (
+              <button
+                onClick={() => {
+                  deleteSelectedNodes();
+                  setSelectedNodeId(null);
+                }}
+                className="w-full mt-4 flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-100 transition-colors cursor-pointer"
+              >
+                <Trash2 className="h-3.5 w-3.5" /> Delete Block
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
