@@ -80,7 +80,7 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <div>
         <h2 className="text-2xl font-bold text-slate-800">Dashboard</h2>
-        <p className="text-sm text-slate-500 mt-2">Campaign & Lead Analytics Overview</p>
+        <p className="text-md text-slate-500 mt-2">Campaign & Lead Analytics Overview</p>
       </div>
 
       {/* Stat Cards */}

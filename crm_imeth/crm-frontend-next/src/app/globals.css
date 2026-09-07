@@ -4,13 +4,16 @@
   /* WhatsApp-inspired palette */
   --wa-dark-teal: #075e54;
   --wa-teal: #128c7e;
-  --wa-green: #25d366;
+  --wa-green: #4c8c62;
   --wa-light-green: #dcf8c6;
   --wa-cream: #ece5dd;
   --wa-chat-bg: #e5ddd5;
 
   /* Semantic tokens */
-  --color-bg: #f8fafc;
+  --color-bg: #f0fdf4;
+  --color-bg-gradient: radial-gradient(ellipse at 55% 40%,
+      #ece5dd 0%,
+      #dcf8c6 100%);
   --color-bg-card: #ffffff;
   --color-bg-sidebar: #0f172a;
   --color-text: #0f172a;
@@ -19,9 +22,12 @@
   --color-primary: #128c7e;
   --color-primary-hover: #075e54;
   /* Fluid typography tokens using clamp() */
-  --fluid-nav: clamp(0.875rem, 1vw + 0.5rem, 1rem); /* 14px -> 16px */
-  --fluid-title: clamp(0.8125rem, 1.2vw + 0.25rem, 1rem); /* 13px -> 16px */
-  --fluid-meta: clamp(0.6875rem, 1vw + 0.2rem, 0.875rem); /* 11px -> 14px */
+  --fluid-nav: clamp(0.875rem, 1vw + 0.5rem, 1rem);
+  /* 14px -> 16px */
+  --fluid-title: clamp(0.8125rem, 1.2vw + 0.25rem, 1rem);
+  /* 13px -> 16px */
+  --fluid-meta: clamp(0.6875rem, 1vw + 0.2rem, 0.875rem);
+  /* 11px -> 14px */
 }
 
 @theme {
@@ -43,6 +49,7 @@
 }
 
 @layer base {
+
   *,
   ::after,
   ::before {
@@ -61,16 +68,35 @@ body {
   word-spacing: 0.05em;
 }
 
+/* Dashboard main content area – radial green gradient */
+.page-bg-gradient {
+  background: var(--color-bg-gradient);
+  min-height: 100%;
+}
+
 /* Global typography spacing for headings */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   line-height: 1.4;
   letter-spacing: -0.01em;
   word-spacing: 0.02em;
 }
 
-h1 { margin-bottom: 0.5em; }
-h2 { margin-bottom: 0.4em; }
-h3 { margin-bottom: 0.3em; }
+h1 {
+  margin-bottom: 0.5em;
+}
+
+h2 {
+  margin-bottom: 0.4em;
+}
+
+h3 {
+  margin-bottom: 0.3em;
+}
 
 /* Paragraph & description spacing */
 p {
@@ -86,7 +112,8 @@ label {
 }
 
 /* Table cell spacing */
-th, td {
+th,
+td {
   letter-spacing: 0.01em;
   word-spacing: 0.04em;
 }
@@ -96,13 +123,16 @@ th, td {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 9999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
@@ -111,11 +141,14 @@ th, td {
 .pipeline-scroll {
   scroll-behavior: smooth;
 }
-@media (hover: none), (pointer: coarse) {
+
+@media (hover: none),
+(pointer: coarse) {
   .pipeline-scroll::-webkit-scrollbar {
     height: 0;
     display: none;
   }
+
   .pipeline-scroll {
     scrollbar-width: none;
   }
@@ -126,10 +159,12 @@ th, td {
   border-radius: 12px !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
 }
+
 .react-flow__edge-path {
   stroke: #94a3b8 !important;
   stroke-width: 2 !important;
 }
+
 .react-flow__handle {
   width: 10px !important;
   height: 10px !important;
