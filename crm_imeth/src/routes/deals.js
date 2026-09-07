@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const prisma = require('../config/db');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, authorize } = require('../middleware/auth');
 
 router.use(authenticate);
 
@@ -31,8 +31,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE: Delete deal
-router.delete('/:id', async (req, res) => {
+// DELETE: Delete deal (ADMIN & TEAM_LEAD only)
+router.delete('/:id', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
   try {
     await prisma.deal.delete({
       where: { id: req.params.id, tenantId: req.user.tenantId }
@@ -44,3 +44,4 @@ router.delete('/:id', async (req, res) => {
 });
 
 module.exports = router;
+

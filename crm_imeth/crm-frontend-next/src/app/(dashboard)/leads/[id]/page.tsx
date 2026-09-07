@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { apiClient } from "@/lib/api-client";
+import { useAuth } from "@/hooks/use-auth";
 import type { Lead, Message, Followup } from "@/types";
 import {
   ArrowLeft,
@@ -22,6 +23,13 @@ import {
   Layers,
   Check,
   Megaphone,
+  Pencil,
+  Save,
+  X,
+  Mail,
+  MessageCircle,
+  FileText,
+  Trash2,
 } from "lucide-react";
 
 const STATUS_OPTIONS = [
@@ -35,10 +43,20 @@ const STATUS_OPTIONS = [
 export default function LeadDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const { user } = useAuth();
+
+  const isAgent = user?.role === "AGENT";
+  const canManageAssignment = user?.role === "ADMIN" || user?.role === "TEAM_LEAD";
+  const canDeleteLead = user?.role === "ADMIN" || user?.role === "TEAM_LEAD";
 
   const [lead, setLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // Agent list for assignment (Admin / Team Lead)
+  const [agents, setAgents] = useState<{ id: string; email: string; role: string }[]>([]);
+  const [assigningLead, setAssigningLead] = useState(false);
+  const [deletingLead, setDeletingLead] = useState(false);
 
   // Messaging state
   const [messageText, setMessageText] = useState("");
@@ -54,7 +72,30 @@ export default function LeadDetailPage() {
   const [followupType, setFollowupType] = useState("CALL");
   const [followupNote, setFollowupNote] = useState("");
   const [followupDueAt, setFollowupDueAt] = useState("");
+  const [followupAssignee, setFollowupAssignee] = useState("");
   const [addingFollowup, setAddingFollowup] = useState(false);
+
+  // Edit details state
+  const [editMode, setEditMode] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editDisplayName, setEditDisplayName] = useState("");
+  const [editWhatsappNumber, setEditWhatsappNumber] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editNotes, setEditNotes] = useState("");
+  const [savingDetails, setSavingDetails] = useState(false);
+
+  // Load active agents list if admin or team lead
+  useEffect(() => {
+    if (canManageAssignment) {
+      apiClient<{ id: string; email: string; role: string }[]>("/users")
+        .then((res) => {
+          if (res.success && res.data) {
+            setAgents(res.data);
+          }
+        })
+        .catch((err) => console.warn("Could not load users list:", err));
+    }
+  }, [canManageAssignment]);
 
   // ─── Fetch Lead Details ──────────────────────────────────────
   const fetchLead = useCallback(async () => {
@@ -152,6 +193,7 @@ export default function LeadDetailPage() {
           type: followupType,
           note: followupNote.trim(),
           dueAt: followupDueAt ? new Date(followupDueAt).toISOString() : null,
+          assignedToId: canManageAssignment && followupAssignee ? followupAssignee : undefined,
         }),
       });
 
@@ -166,12 +208,130 @@ export default function LeadDetailPage() {
         });
         setFollowupNote("");
         setFollowupDueAt("");
+        setFollowupAssignee("");
         setShowFollowupForm(false);
       }
     } catch (err) {
       console.error("Failed to schedule follow-up:", err);
     } finally {
       setAddingFollowup(false);
+    }
+  };
+
+  // ─── Toggle Followup Completed Status ────────────────────────
+  const handleToggleFollowupComplete = async (followupId: string, currentCompleted: boolean) => {
+    if (!lead) return;
+    try {
+      const res = await apiClient<Followup>(`/leads/${lead.id}/followups/${followupId}`, {
+        method: "PUT",
+        body: JSON.stringify({ completed: !currentCompleted }),
+      });
+      if (res.success && res.data) {
+        setLead((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            followups: (prev.followups || []).map((f) => (f.id === followupId ? res.data! : f)),
+          };
+        });
+      }
+    } catch (err) {
+      console.error("Failed to update follow-up status:", err);
+    }
+  };
+
+  // ─── Assign Lead (Admin / Team Lead) ──────────────────────────
+  const handleAssignLead = async (agentId: string) => {
+    if (!lead || !canManageAssignment) return;
+    setAssigningLead(true);
+    try {
+      const targetId = agentId === "" ? null : agentId;
+      const res = await apiClient<Lead>(`/leads/${lead.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ assignedToId: targetId }),
+      });
+      if (res.success) {
+        const selectedAgent = agents.find((a) => a.id === agentId);
+        setLead((prev) =>
+          prev
+            ? {
+                ...prev,
+                assignedToId: targetId || undefined,
+                assignedTo: selectedAgent ? { id: selectedAgent.id, email: selectedAgent.email, role: selectedAgent.role } : undefined,
+              }
+            : null
+        );
+      }
+    } catch (err) {
+      console.error("Failed to assign lead:", err);
+    } finally {
+      setAssigningLead(false);
+    }
+  };
+
+  // ─── Delete Lead (Admin / Team Lead) ──────────────────────────
+  const handleDeleteLead = async () => {
+    if (!lead || !canDeleteLead || deletingLead) return;
+    if (!window.confirm(`Are you sure you want to delete lead "${lead.name || lead.phoneNumber}"? This action cannot be undone.`)) {
+      return;
+    }
+    setDeletingLead(true);
+    try {
+      const res = await apiClient(`/leads/${lead.id}`, { method: "DELETE" });
+      if (res.success) {
+        router.push("/leads");
+      }
+    } catch (err) {
+      console.error("Failed to delete lead:", err);
+      alert("Failed to delete lead. Please try again.");
+      setDeletingLead(false);
+    }
+  };
+
+  // ─── Enter Edit Mode ─────────────────────────────────────────
+  const enterEditMode = () => {
+    if (!lead) return;
+    setEditName(lead.name || "");
+    setEditDisplayName(lead.displayName || "");
+    setEditWhatsappNumber(lead.whatsappNumber || "");
+    setEditEmail(lead.email || "");
+    setEditNotes(lead.notes || "");
+    setEditMode(true);
+  };
+
+  // ─── Save Lead Details ───────────────────────────────────────
+  const handleSaveDetails = async () => {
+    if (!lead) return;
+    setSavingDetails(true);
+    try {
+      await apiClient(`/leads/${lead.id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          name: editName,
+          displayName: editDisplayName,
+          whatsappNumber: editWhatsappNumber,
+          email: editEmail,
+          notes: editNotes,
+        }),
+      });
+      // Optimistic update
+      setLead((prev) =>
+        prev
+          ? {
+              ...prev,
+              name: editName,
+              displayName: editDisplayName,
+              whatsappNumber: editWhatsappNumber,
+              email: editEmail,
+              notes: editNotes,
+            }
+          : null
+      );
+      setEditMode(false);
+    } catch (err) {
+      console.error("Failed to save lead details:", err);
+    } finally {
+      setSavingDetails(false);
     }
   };
 
@@ -235,6 +395,19 @@ export default function LeadDetailPage() {
 
         {/* Quick Actions & Status Badge Dropdown */}
         <div className="flex items-center gap-3">
+          {/* Delete Lead Button (Admin / Team Lead only) */}
+          {canDeleteLead && (
+            <button
+              onClick={handleDeleteLead}
+              disabled={deletingLead}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2 text-xs font-bold text-red-700 hover:bg-red-100 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+              title="Delete Lead"
+            >
+              <Trash2 className="h-3.5 w-3.5 text-red-600" />
+              <span className="hidden sm:inline">{deletingLead ? "Deleting..." : "Delete Lead"}</span>
+            </button>
+          )}
+
           {/* WhatsApp Direct Link */}
           <a
             href={`https://wa.me/${lead.phoneNumber.replace(/[^0-9]/g, "")}`}
@@ -436,6 +609,28 @@ export default function LeadDetailPage() {
                     />
                   </div>
                 </div>
+
+                {/* Role-aware Assign To Dropdown (Admin / Team Lead can delegate to any sales agent) */}
+                {canManageAssignment && (
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                      Assign Reminder To
+                    </label>
+                    <select
+                      value={followupAssignee}
+                      onChange={(e) => setFollowupAssignee(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-[#128c7e] focus:outline-none"
+                    >
+                      <option value="">Assign to myself ({user?.email})</option>
+                      {agents.map((ag) => (
+                        <option key={ag.id} value={ag.id}>
+                          {ag.email} ({ag.role})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-[11px] font-semibold text-slate-600 mb-1">
                     Notes / Next Action
@@ -471,20 +666,56 @@ export default function LeadDetailPage() {
                 {lead.followups.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/70 p-3"
+                    className={`flex items-center justify-between rounded-xl border p-3 transition-colors ${
+                      item.completed
+                        ? "border-emerald-100 bg-emerald-50/40"
+                        : "border-slate-100 bg-slate-50/70"
+                    }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-700 text-xs font-bold">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleFollowupComplete(item.id, item.completed)}
+                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors cursor-pointer ${
+                          item.completed
+                            ? "bg-emerald-600 border-emerald-600 text-white"
+                            : "border-slate-300 bg-white hover:border-[#128c7e]"
+                        }`}
+                        title={item.completed ? "Mark as pending" : "Mark as completed"}
+                      >
+                        {item.completed && <Check className="h-3 w-3" />}
+                      </button>
+                      <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
+                        item.completed ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
+                      }`}>
                         {item.type.charAt(0)}
                       </div>
-                      <div>
-                        <p className="text-xs font-semibold text-slate-800">{item.note || item.type}</p>
-                        <p className="text-[10px] text-slate-400">
-                          {item.dueAt ? `Due: ${new Date(item.dueAt).toLocaleString()}` : "No due date set"}
+                      <div className="min-w-0">
+                        <p className={`text-xs font-semibold truncate ${item.completed ? "text-slate-400 line-through" : "text-slate-800"}`}>
+                          {item.note || item.type}
                         </p>
+                        <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 mt-0.5">
+                          <span>
+                            {item.dueAt ? `Due: ${new Date(item.dueAt).toLocaleString()}` : "No due date set"}
+                          </span>
+                          {item.assignedTo && (
+                            <>
+                              <span>•</span>
+                              <span className="text-emerald-700 font-medium">
+                                Assigned: {item.assignedTo.email}
+                              </span>
+                            </>
+                          )}
+                          {item.createdBy && item.createdBy.id !== item.assignedTo?.id && (
+                            <>
+                              <span>•</span>
+                              <span>By: {item.createdBy.email}</span>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <span className="inline-flex items-center rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-600">
+                    <span className="inline-flex shrink-0 items-center rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-600 ml-2">
                       {item.type}
                     </span>
                   </div>
@@ -572,62 +803,226 @@ export default function LeadDetailPage() {
 
           {/* Lead Details & Metadata Card */}
           <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
-            <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
-              <UserIcon className="h-4 w-4 text-slate-500" /> Lead Overview
-            </h3>
-
-            <div className="space-y-3.5 text-xs">
-              <div>
-                <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-0.5">
-                  Assigned Agent
-                </span>
-                <p className="font-semibold text-slate-800">
-                  {lead.assignedTo?.email || "Unassigned"}
-                </p>
-              </div>
-
-              <div>
-                <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-0.5">
-                  Phone Number
-                </span>
-                <p className="font-mono text-slate-800">{lead.phoneNumber}</p>
-              </div>
-
-              <div>
-                <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-0.5">
-                  Tags
-                </span>
-                {(!lead.tags || lead.tags.length === 0) ? (
-                  <p className="text-slate-400">No tags assigned</p>
-                ) : (
-                  <div className="flex flex-wrap gap-1.5 mt-1">
-                    {lead.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="inline-flex items-center rounded-lg bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[11px] font-semibold text-emerald-700"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="pt-2 border-t border-slate-100 grid grid-cols-2 gap-2 text-[11px]">
-                <div>
-                  <span className="text-slate-400 block">Created</span>
-                  <span className="text-slate-700 font-medium">
-                    {new Date(lead.createdAt).toLocaleDateString()}
-                  </span>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <UserIcon className="h-4 w-4 text-slate-500" /> Lead Overview
+              </h3>
+              {!editMode ? (
+                <button
+                  onClick={enterEditMode}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#128c7e] hover:text-[#075e54] hover:underline cursor-pointer transition-colors"
+                >
+                  <Pencil className="h-3 w-3" />
+                  Edit Details
+                </button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setEditMode(false)}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-slate-700 cursor-pointer"
+                  >
+                    <X className="h-3 w-3" />
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveDetails}
+                    disabled={savingDetails}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-white bg-[#128c7e] hover:bg-[#075e54] px-3 py-1.5 rounded-lg disabled:opacity-50 cursor-pointer transition-colors"
+                  >
+                    {savingDetails ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Save className="h-3 w-3" />
+                    )}
+                    Save
+                  </button>
                 </div>
-                <div>
-                  <span className="text-slate-400 block">Last Active</span>
-                  <span className="text-slate-700 font-medium">
-                    {new Date(lead.updatedAt).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
+              )}
             </div>
+
+            {editMode ? (
+              /* ─── Edit Mode ─── */
+              <div className="space-y-3">
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-1">
+                    Client Name
+                  </label>
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder="e.g. Katherine Lim"
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-1">
+                    Display Name
+                  </label>
+                  <input
+                    type="text"
+                    value={editDisplayName}
+                    onChange={(e) => setEditDisplayName(e.target.value)}
+                    placeholder="e.g. Katherine"
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-0.5">Display name is what your clients will see</p>
+                </div>
+
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-1">
+                    WhatsApp Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={editWhatsappNumber}
+                    onChange={(e) => setEditWhatsappNumber(e.target.value)}
+                    placeholder="e.g. +94 1234 5678"
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 font-mono placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-1">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    placeholder="e.g. katherine@example.com"
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-1">
+                    Notes
+                  </label>
+                  <textarea
+                    value={editNotes}
+                    onChange={(e) => setEditNotes(e.target.value)}
+                    rows={3}
+                    placeholder="Add notes about your client here..."
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all resize-none"
+                  />
+                </div>
+              </div>
+            ) : (
+              /* ─── Read Mode ─── */
+              <div className="space-y-3.5 text-xs">
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-0.5">
+                    Client Name
+                  </span>
+                  <p className="font-semibold text-slate-800">{lead.name || "—"}</p>
+                </div>
+
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-0.5">
+                    Display Name
+                  </span>
+                  <p className="font-semibold text-slate-800">{lead.displayName || "—"}</p>
+                </div>
+
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-0.5">
+                    Mobile Number
+                  </span>
+                  <p className="font-mono text-slate-800">{lead.phoneNumber}</p>
+                </div>
+
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-0.5">
+                    WhatsApp Number
+                  </span>
+                  <p className="font-mono text-slate-800">{lead.whatsappNumber || "—"}</p>
+                </div>
+
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-0.5">
+                    Email Address
+                  </span>
+                  <p className="text-slate-800">{lead.email || "—"}</p>
+                </div>
+
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-0.5">
+                    Assigned Agent
+                  </span>
+                  {canManageAssignment ? (
+                    <div className="mt-1">
+                      <select
+                        value={lead.assignedToId || ""}
+                        onChange={(e) => handleAssignLead(e.target.value)}
+                        disabled={assigningLead}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-800 focus:border-[#128c7e] focus:outline-none cursor-pointer"
+                      >
+                        <option value="">Unassigned</option>
+                        {agents.map((ag) => (
+                          <option key={ag.id} value={ag.id}>
+                            {ag.email} ({ag.role})
+                          </option>
+                        ))}
+                      </select>
+                      {assigningLead && (
+                        <p className="text-[10px] text-[#128c7e] mt-0.5">Saving assignment...</p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="font-semibold text-slate-800">
+                      {lead.assignedTo?.email || "Unassigned"}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-0.5">
+                    Tags
+                  </span>
+                  {(!lead.tags || lead.tags.length === 0) ? (
+                    <p className="text-slate-400">No tags assigned</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      {lead.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="inline-flex items-center rounded-lg bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[11px] font-semibold text-emerald-700"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Notes Section */}
+                <div className="pt-2 border-t border-slate-100">
+                  <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-0.5">
+                    Notes
+                  </span>
+                  <p className="text-slate-700 whitespace-pre-wrap leading-relaxed">
+                    {lead.notes || "No notes added."}
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-slate-100 grid grid-cols-2 gap-2 text-[11px]">
+                  <div>
+                    <span className="text-slate-400 block">Created</span>
+                    <span className="text-slate-700 font-medium">
+                      {new Date(lead.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block">Last Active</span>
+                    <span className="text-slate-700 font-medium">
+                      {new Date(lead.updatedAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

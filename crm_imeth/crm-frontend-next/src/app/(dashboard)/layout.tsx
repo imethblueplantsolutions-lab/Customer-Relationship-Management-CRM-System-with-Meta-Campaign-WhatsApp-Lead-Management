@@ -118,7 +118,12 @@ export default function DashboardLayout({
           className="flex flex-1 flex-col gap-8 px-4 py-6 overflow-y-auto"
           style={{ gap: "32px" }}
         >
-          {NAV_ITEMS.map((item) => {
+          {NAV_ITEMS.filter((item) => {
+            if (user?.role === "AGENT") {
+              return item.href !== "/flows" && item.href !== "/settings";
+            }
+            return true;
+          }).map((item) => {
             const isActive = pathname.startsWith(item.href);
             const Icon = item.icon;
             return (

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const prisma = require('../config/db');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, authorize } = require('../middleware/auth');
 
 router.use(authenticate);
 
@@ -18,8 +18,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST: Create flow
-router.post('/', async (req, res) => {
+// POST: Create flow (ADMIN & TEAM_LEAD only)
+router.post('/', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
   try {
     const { name, description, triggerType } = req.body;
     const flow = await prisma.flow.create({
@@ -50,8 +50,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// PUT: Update flow metadata
-router.put('/:id', async (req, res) => {
+// PUT: Update flow metadata (ADMIN & TEAM_LEAD only)
+router.put('/:id', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
   try {
     const { name, description, triggerType, triggerConfig, entryNodeId } = req.body;
     const flow = await prisma.flow.update({
@@ -64,8 +64,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// PUT: Bulk save nodes (canvas state)
-router.put('/:id/nodes', async (req, res) => {
+// PUT: Bulk save nodes (canvas state) (ADMIN & TEAM_LEAD only)
+router.put('/:id/nodes', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
   try {
     const { nodes } = req.body; // Expects array of node objects
     const flowId = req.params.id;
@@ -96,8 +96,8 @@ router.put('/:id/nodes', async (req, res) => {
   }
 });
 
-// DELETE: Delete flow
-router.delete('/:id', async (req, res) => {
+// DELETE: Delete flow (ADMIN & TEAM_LEAD only)
+router.delete('/:id', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
   try {
     await prisma.flow.delete({
       where: { id: req.params.id, tenantId: req.user.tenantId }
@@ -108,8 +108,8 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// POST: Activate flow
-router.post('/:id/activate', async (req, res) => {
+// POST: Activate flow (ADMIN & TEAM_LEAD only)
+router.post('/:id/activate', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
   try {
     const flow = await prisma.flow.update({
       where: { id: req.params.id, tenantId: req.user.tenantId },
@@ -121,8 +121,8 @@ router.post('/:id/activate', async (req, res) => {
   }
 });
 
-// POST: Deactivate flow
-router.post('/:id/deactivate', async (req, res) => {
+// POST: Deactivate flow (ADMIN & TEAM_LEAD only)
+router.post('/:id/deactivate', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
   try {
     const flow = await prisma.flow.update({
       where: { id: req.params.id, tenantId: req.user.tenantId },
@@ -135,3 +135,4 @@ router.post('/:id/deactivate', async (req, res) => {
 });
 
 module.exports = router;
+

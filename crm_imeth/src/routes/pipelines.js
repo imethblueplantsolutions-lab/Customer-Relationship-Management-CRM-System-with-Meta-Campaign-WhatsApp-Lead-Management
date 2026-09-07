@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const prisma = require('../config/db');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, authorize } = require('../middleware/auth');
 
 router.use(authenticate);
 
@@ -18,8 +18,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST: Create a new pipeline with default stages
-router.post('/', async (req, res) => {
+// POST: Create a new pipeline with default stages (ADMIN & TEAM_LEAD only)
+router.post('/', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
   try {
     const { name } = req.body;
     const pipeline = await prisma.pipeline.create({
@@ -44,8 +44,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT: Rename pipeline
-router.put('/:id', async (req, res) => {
+// PUT: Rename pipeline (ADMIN & TEAM_LEAD only)
+router.put('/:id', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
   try {
     const { name } = req.body;
     const pipeline = await prisma.pipeline.update({
@@ -58,8 +58,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE: Delete pipeline
-router.delete('/:id', async (req, res) => {
+// DELETE: Delete pipeline (ADMIN & TEAM_LEAD only)
+router.delete('/:id', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
   try {
     await prisma.pipeline.delete({
       where: { id: req.params.id, tenantId: req.user.tenantId }
@@ -83,8 +83,8 @@ router.get('/:id/stages', async (req, res) => {
   }
 });
 
-// PUT: Bulk update stages
-router.put('/:id/stages', async (req, res) => {
+// PUT: Bulk update stages (ADMIN & TEAM_LEAD only)
+router.put('/:id/stages', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
   try {
     const { stages } = req.body;
     await prisma.$transaction(

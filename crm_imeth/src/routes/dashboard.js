@@ -4,12 +4,17 @@ const prisma = require('../config/db');
 const CacheService = require('../services/cacheService');
 const { tenantStorage } = require('../middleware/tenant');
 
-// GET: Fetch dashboard analytics and lead statistics
+// GET: Fetch dashboard analytics and lead statistics (Role-aware)
 router.get('/stats', async (req, res) => {
   try {
     const store = tenantStorage.getStore();
-    const tenantId = store?.tenantId;
-    const cacheKey = `tenant:${tenantId}:dashboard:stats`;
+    const tenantId = req.user?.tenantId || store?.tenantId;
+    const isAgent = req.user?.role === 'AGENT';
+    const currentUserId = req.user?.userId || req.user?.id;
+
+    const cacheKey = isAgent && currentUserId
+      ? `tenant:${tenantId}:dashboard:stats:agent:${currentUserId}`
+      : `tenant:${tenantId}:dashboard:stats`;
 
     // Check Redis cache first
     const cachedData = await CacheService.get(cacheKey);
@@ -17,18 +22,35 @@ router.get('/stats', async (req, res) => {
       return res.status(200).json({ success: true, data: cachedData, cached: true });
     }
 
-    const [totalLeads, leadsByStatus, recentLeads] = await Promise.all([
-      prisma.lead.count({ where: { tenantId } }),
+    const leadWhere = { tenantId };
+    if (isAgent && currentUserId) {
+      leadWhere.assignedToId = currentUserId;
+    }
+
+    const followupWhere = {
+      completed: false,
+      lead: { tenantId }
+    };
+    if (isAgent && currentUserId) {
+      followupWhere.assignedToId = currentUserId;
+    }
+
+    const [totalLeads, leadsByStatus, recentLeads, pendingFollowups] = await Promise.all([
+      prisma.lead.count({ where: leadWhere }),
       prisma.lead.groupBy({
         by: ['status'],
         _count: { status: true },
-        where: { tenantId }
+        where: leadWhere
       }),
       prisma.lead.findMany({
-        where: { tenantId },
+        where: leadWhere,
         take: 5,
-        orderBy: { updatedAt: 'desc' }
-      })
+        orderBy: { updatedAt: 'desc' },
+        include: {
+          assignedTo: { select: { id: true, email: true, role: true } }
+        }
+      }),
+      prisma.followup.count({ where: followupWhere })
     ]);
 
     const formattedStatusCounts = leadsByStatus.reduce((acc, curr) => {
@@ -45,7 +67,7 @@ router.get('/stats', async (req, res) => {
     const result = {
       totalLeads,
       statusBreakdown: formattedStatusCounts,
-      pendingFollowups: 0,
+      pendingFollowups,
       recentLeads
     };
 
@@ -60,3 +82,4 @@ router.get('/stats', async (req, res) => {
 });
 
 module.exports = router;
+

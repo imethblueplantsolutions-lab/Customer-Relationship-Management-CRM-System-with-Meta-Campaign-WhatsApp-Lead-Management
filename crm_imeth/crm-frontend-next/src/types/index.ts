@@ -11,6 +11,10 @@ export interface Lead {
   id: string;
   phoneNumber: string;
   name?: string;
+  displayName?: string;
+  whatsappNumber?: string;
+  email?: string;
+  notes?: string;
   status: string;
   category?: string;
   tags: string[];
@@ -50,6 +54,10 @@ export interface Message {
 export interface Followup {
   id: string;
   leadId: string;
+  createdById?: string;
+  createdBy?: { id: string; email: string; role?: string };
+  assignedToId?: string;
+  assignedTo?: { id: string; email: string; role?: string };
   type: string;
   dueAt?: string;
   note?: string;

@@ -3,23 +3,24 @@ const router = express.Router();
 const prisma = require('../config/db');
 const CacheService = require('../services/cacheService');
 const { tenantStorage } = require('../middleware/tenant');
+const { authorize } = require('../middleware/auth');
 
-// Role authorization middleware helper
-const authorize = (roles = []) => (req, res, next) => {
-  if (!req.user || (roles.length && !roles.includes(req.user.role))) {
-    return res.status(403).json({ success: false, error: 'Forbidden: Insufficient privileges' });
-  }
-  next();
-};
-
-// GET: Fetch all leads for current tenant with optional filtering
+// GET: Fetch leads for current tenant (Agents see only assigned leads; Admins & Team Leads see all)
 router.get('/', async (req, res) => {
   try {
     const { status, category, search, page = 1, limit = 50 } = req.query;
     const store = tenantStorage.getStore();
     const tenantId = req.user?.tenantId || store?.tenantId;
+    const isAgent = req.user?.role === 'AGENT';
+    const currentUserId = req.user?.userId || req.user?.id;
 
     const where = { tenantId };
+
+    // Agent role restriction: can only view assigned leads
+    if (isAgent && currentUserId) {
+      where.assignedToId = currentUserId;
+    }
+
     if (status) where.status = status;
     if (category) where.category = category;
     if (search) {
@@ -63,12 +64,14 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST: Manually add a new customer lead (Restricted to Admin & Team Lead)
-router.post('/', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
+// POST: Manually add a new customer lead (Accessible to Admin, Team Lead & Agent)
+router.post('/', authorize(['ADMIN', 'TEAM_LEAD', 'AGENT']), async (req, res) => {
   try {
-    const { phoneNumber, name, category, tags } = req.body;
+    const { phoneNumber, name, displayName, whatsappNumber, email, notes, category, tags, assignedToId } = req.body;
     const store = tenantStorage.getStore();
     const tenantId = req.user?.tenantId || store?.tenantId;
+    const isAgent = req.user?.role === 'AGENT';
+    const currentUserId = req.user?.userId || req.user?.id;
 
     if (!phoneNumber) {
       return res.status(400).json({ success: false, error: 'Phone number is required' });
@@ -81,14 +84,25 @@ router.post('/', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
       create: { id: tenantId, name: `Tenant ${tenantId}` }
     });
 
+    // Agents automatically assign the lead to themselves; Admins/Team Leads can assign to any user
+    const finalAssignedToId = isAgent ? currentUserId : (assignedToId || null);
+
     const newLead = await prisma.lead.create({
       data: {
         phoneNumber,
         name: name || phoneNumber,
+        displayName: displayName || null,
+        whatsappNumber: whatsappNumber || null,
+        email: email || null,
+        notes: notes || null,
         category: category || 'Manual Entry',
         tags: tags || [],
         status: 'NEW',
-        tenantId
+        tenantId,
+        assignedToId: finalAssignedToId
+      },
+      include: {
+        assignedTo: { select: { id: true, email: true, role: true } }
       }
     });
 
@@ -109,18 +123,31 @@ router.get('/:id', async (req, res) => {
   try {
     const store = tenantStorage.getStore();
     const tenantId = req.user?.tenantId || store?.tenantId;
+    const isAgent = req.user?.role === 'AGENT';
+    const currentUserId = req.user?.userId || req.user?.id;
+
+    const where = { id: req.params.id, tenantId };
+    if (isAgent && currentUserId) {
+      where.assignedToId = currentUserId;
+    }
 
     const lead = await prisma.lead.findFirst({
-      where: { id: req.params.id, tenantId },
+      where,
       include: {
         assignedTo: { select: { id: true, email: true, role: true } },
         attribution: true,
         messages: { orderBy: { createdAt: 'asc' } },
-        followups: { orderBy: { dueAt: 'asc' } }
+        followups: {
+          orderBy: { dueAt: 'asc' },
+          include: {
+            createdBy: { select: { id: true, email: true, role: true } },
+            assignedTo: { select: { id: true, email: true, role: true } }
+          }
+        }
       }
     });
 
-    if (!lead) return res.status(404).json({ success: false, error: 'Lead not found' });
+    if (!lead) return res.status(404).json({ success: false, error: 'Lead not found or access denied' });
     res.status(200).json({ success: true, data: lead });
   } catch (error) {
     console.error('Error fetching lead:', error);
@@ -199,18 +226,42 @@ router.post('/:id/messages', async (req, res) => {
   }
 });
 
-// PUT: Update lead status, assignee, or metadata
+// PUT: Update lead status, assignee, or metadata (Admin/Team Lead can assign; Agents cannot reassign)
 router.put('/:id', async (req, res) => {
   try {
     const store = tenantStorage.getStore();
     const tenantId = req.user?.tenantId || store?.tenantId;
-    const { status, category, assignedToId, tags, name } = req.body;
+    const isAgent = req.user?.role === 'AGENT';
+    const currentUserId = req.user?.userId || req.user?.id;
+    const { status, category, assignedToId, tags, name, displayName, whatsappNumber, email, notes } = req.body;
+
+    const existingLead = await prisma.lead.findFirst({
+      where: { id: req.params.id, tenantId }
+    });
+
+    if (!existingLead) {
+      return res.status(404).json({ success: false, error: 'Lead not found' });
+    }
+
+    // Agents can only edit their own assigned leads
+    if (isAgent && existingLead.assignedToId !== currentUserId) {
+      return res.status(403).json({ success: false, error: 'Forbidden: You can only edit your assigned leads' });
+    }
+
+    // Agents cannot assign or reassign leads
+    if (assignedToId !== undefined && isAgent) {
+      return res.status(403).json({ success: false, error: 'Forbidden: Sales agents cannot assign leads to other agents' });
+    }
 
     const updateData = {
       ...(status && { status }),
       ...(category !== undefined && { category }),
       ...(tags !== undefined && { tags }),
-      ...(name && { name }),
+      ...(name !== undefined && { name }),
+      ...(displayName !== undefined && { displayName: displayName || null }),
+      ...(whatsappNumber !== undefined && { whatsappNumber: whatsappNumber || null }),
+      ...(email !== undefined && { email: email || null }),
+      ...(notes !== undefined && { notes: notes || null }),
       updatedAt: new Date()
     };
 
@@ -218,9 +269,12 @@ router.put('/:id', async (req, res) => {
       updateData.assignedToId = assignedToId === '' ? null : assignedToId;
     }
 
-    const updatedLead = await prisma.lead.updateMany({
-      where: { id: req.params.id, tenantId },
-      data: updateData
+    const updatedLead = await prisma.lead.update({
+      where: { id: req.params.id },
+      data: updateData,
+      include: {
+        assignedTo: { select: { id: true, email: true, role: true } }
+      }
     });
 
     await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
@@ -232,12 +286,15 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// POST: Add follow-up activity to a lead
+// POST: Add follow-up activity / reminder to a lead
+// Admins & Team Leads can assign to any agent; Agents can only assign to themselves
 router.post('/:id/followups', async (req, res) => {
   try {
     const store = tenantStorage.getStore();
     const tenantId = req.user?.tenantId || store?.tenantId;
-    const { type, note, dueAt } = req.body;
+    const isAgent = req.user?.role === 'AGENT';
+    const currentUserId = req.user?.userId || req.user?.id;
+    const { type, note, dueAt, assignedToId } = req.body;
 
     const lead = await prisma.lead.findFirst({
       where: { id: req.params.id, tenantId }
@@ -247,12 +304,30 @@ router.post('/:id/followups', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Lead not found' });
     }
 
+    if (isAgent && lead.assignedToId !== currentUserId) {
+      return res.status(403).json({ success: false, error: 'Forbidden: You can only add follow-ups to your assigned leads' });
+    }
+
+    // Agent can only assign follow-ups to themselves
+    let targetAssigneeId = null;
+    if (isAgent) {
+      targetAssigneeId = currentUserId;
+    } else {
+      targetAssigneeId = assignedToId || currentUserId || null;
+    }
+
     const followup = await prisma.followup.create({
       data: {
         leadId: req.params.id,
+        createdById: currentUserId || null,
+        assignedToId: targetAssigneeId,
         type: type || 'CALL',
         note: note || '',
         dueAt: dueAt ? new Date(dueAt) : null,
+      },
+      include: {
+        createdBy: { select: { id: true, email: true, role: true } },
+        assignedTo: { select: { id: true, email: true, role: true } }
       }
     });
 
@@ -270,8 +345,53 @@ router.post('/:id/followups', async (req, res) => {
   }
 });
 
-// DELETE: Delete lead
-router.delete('/:id', async (req, res) => {
+// PUT: Update or complete follow-up activity
+router.put('/:id/followups/:followupId', async (req, res) => {
+  try {
+    const store = tenantStorage.getStore();
+    const tenantId = req.user?.tenantId || store?.tenantId;
+    const isAgent = req.user?.role === 'AGENT';
+    const currentUserId = req.user?.userId || req.user?.id;
+    const { completed, note, dueAt, type } = req.body;
+
+    const followup = await prisma.followup.findFirst({
+      where: { id: req.params.followupId, leadId: req.params.id },
+      include: { lead: true }
+    });
+
+    if (!followup || followup.lead.tenantId !== tenantId) {
+      return res.status(404).json({ success: false, error: 'Follow-up not found' });
+    }
+
+    if (isAgent && followup.assignedToId !== currentUserId && followup.createdById !== currentUserId) {
+      return res.status(403).json({ success: false, error: 'Forbidden: You can only update your own follow-ups' });
+    }
+
+    const updated = await prisma.followup.update({
+      where: { id: req.params.followupId },
+      data: {
+        ...(completed !== undefined && { completed: Boolean(completed) }),
+        ...(note !== undefined && { note }),
+        ...(dueAt !== undefined && { dueAt: dueAt ? new Date(dueAt) : null }),
+        ...(type !== undefined && { type })
+      },
+      include: {
+        createdBy: { select: { id: true, email: true, role: true } },
+        assignedTo: { select: { id: true, email: true, role: true } }
+      }
+    });
+
+    await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
+
+    res.status(200).json({ success: true, data: updated });
+  } catch (error) {
+    console.error('Error updating followup:', error);
+    res.status(500).json({ success: false, error: 'Failed to update follow-up' });
+  }
+});
+
+// DELETE: Delete lead (Admin & Team Lead only)
+router.delete('/:id', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
   try {
     const store = tenantStorage.getStore();
     const tenantId = req.user?.tenantId || store?.tenantId;
@@ -290,3 +410,4 @@ router.delete('/:id', async (req, res) => {
 });
 
 module.exports = router;
+

@@ -25,4 +25,16 @@ const authenticate = (req, res, next) => {
   }
 };
 
-module.exports = { authenticate };
+/**
+ * Role authorization middleware.
+ * Usage: authorize(['ADMIN', 'TEAM_LEAD'])
+ */
+const authorize = (roles = []) => (req, res, next) => {
+  if (!req.user || (roles.length && !roles.includes(req.user.role))) {
+    return res.status(403).json({ success: false, error: 'Forbidden: Insufficient privileges' });
+  }
+  next();
+};
+
+module.exports = { authenticate, authorize };
+
