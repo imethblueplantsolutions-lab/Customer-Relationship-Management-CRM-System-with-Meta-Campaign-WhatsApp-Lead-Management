@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
+import { useSocket } from "@/hooks/use-socket";
+import { apiClient } from "@/lib/api-client";
 import Link from "next/link";
+import type { Notification } from "@/types";
 import {
   LayoutDashboard,
   Users,
@@ -15,6 +18,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  Bell,
+  CheckCheck,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -31,12 +36,70 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { isAuthenticated, isLoading, user, logout } = useAuth();
+  const { socket } = useSocket();
   const router = useRouter();
   const pathname = usePathname();
 
   // State for mobile drawer and desktop collapsed sidebar
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // ── Notification state ──────────────────────────────────
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  // Fetch notifications on load
+  useEffect(() => {
+    if (!user) return;
+    apiClient<Notification[]>("/notifications")
+      .then((res) => { if (res.success && res.data) setNotifications(res.data); })
+      .catch(() => {});
+    apiClient<{ count: number }>("/notifications/unread-count")
+      .then((res) => { if (res.success && res.data) setUnreadCount(res.data.count); })
+      .catch(() => {});
+  }, [user]);
+
+  // Listen for real-time notifications via Socket.IO
+  useEffect(() => {
+    if (!socket) return;
+    const handleNew = (notif: Notification) => {
+      setNotifications((prev) => [notif, ...prev]);
+      setUnreadCount((prev) => prev + 1);
+    };
+    socket.on("new_notification", handleNew);
+    return () => { socket.off("new_notification", handleNew); };
+  }, [socket]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleOutside = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotifOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, []);
+
+  const handleNotifClick = async (notif: Notification) => {
+    if (!notif.isRead) {
+      await apiClient(`/notifications/${notif.id}/read`, { method: "PUT" }).catch(() => {});
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notif.id ? { ...n, isRead: true } : n))
+      );
+    }
+    setNotifOpen(false);
+    if (notif.linkUrl) router.push(notif.linkUrl);
+  };
+
+  const markAllRead = async () => {
+    await apiClient("/notifications/read-all", { method: "PUT" }).catch(() => {});
+    setUnreadCount(0);
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  };
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -148,8 +211,69 @@ export default function DashboardLayout({
           })}
         </nav>
 
-        {/* User Info & Logout Section */}
-        <div className="border-t border-white/10 p-4">
+          {/* User Info, Logout & Notification Bell Section */}
+        <div className="border-t border-white/10 p-4 space-y-3">
+          {/* Notification Bell */}
+          <div className="relative" ref={notifRef}>
+            <button
+              onClick={() => setNotifOpen(!notifOpen)}
+              className={`relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-slate-300 hover:bg-white/5 hover:text-white transition-colors cursor-pointer ${isCollapsed ? "justify-center" : ""}`}
+              title="Notifications"
+            >
+              <Bell className="h-5 w-5 shrink-0" />
+              {!isCollapsed && <span className="text-sm font-medium">Notifications</span>}
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 left-6 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {/* Notification Dropdown */}
+            {notifOpen && (
+              <div className="absolute bottom-full left-0 mb-2 w-80 rounded-2xl border border-slate-700 bg-[#0f172a] shadow-2xl overflow-hidden z-50">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">Notifications</h3>
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={markAllRead}
+                      className="flex items-center gap-1 text-[10px] font-semibold text-emerald-400 hover:text-emerald-300 cursor-pointer"
+                    >
+                      <CheckCheck className="h-3 w-3" /> Mark all read
+                    </button>
+                  )}
+                </div>
+                <div className="max-h-80 overflow-y-auto divide-y divide-white/5">
+                  {notifications.length === 0 ? (
+                    <div className="px-4 py-8 text-center">
+                      <Bell className="mx-auto h-8 w-8 text-slate-600 mb-2" />
+                      <p className="text-xs text-slate-500">No notifications yet</p>
+                    </div>
+                  ) : (
+                    notifications.map((notif) => (
+                      <button
+                        key={notif.id}
+                        onClick={() => handleNotifClick(notif)}
+                        className={`w-full text-left px-4 py-3 hover:bg-white/5 transition-colors cursor-pointer ${
+                          !notif.isRead ? "border-l-2 border-[#25d366]" : ""
+                        }`}
+                      >
+                        <p className={`text-xs font-semibold truncate ${
+                          !notif.isRead ? "text-white" : "text-slate-400"
+                        }`}>{notif.title}</p>
+                        <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-2">{notif.body}</p>
+                        <p className="text-[10px] text-slate-600 mt-1">
+                          {new Date(notif.createdAt).toLocaleString()}
+                        </p>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* User card + logout */}
           <div
             className={`flex items-center gap-4 rounded-xl bg-white/5 p-3 ${
               isCollapsed ? "justify-center flex-col gap-4" : ""

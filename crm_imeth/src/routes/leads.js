@@ -108,6 +108,25 @@ router.post('/', authorize(['ADMIN', 'TEAM_LEAD', 'AGENT']), async (req, res) =>
 
     await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
 
+    // Notify assigned agent if different from creator
+    if (finalAssignedToId && finalAssignedToId !== currentUserId) {
+      try {
+        const notification = await prisma.notification.create({
+          data: {
+            userId: finalAssignedToId,
+            type: 'LEAD_ASSIGNED',
+            title: 'New Lead Assigned to You',
+            body: `You have been assigned a new lead: ${name || phoneNumber}`,
+            linkUrl: `/leads/${newLead.id}`
+          }
+        });
+        const { io } = require('../index');
+        if (io) io.to(`user:${finalAssignedToId}`).emit('new_notification', notification);
+      } catch (e) {
+        console.warn('[Notification] Failed to notify agent on lead assign:', e.message);
+      }
+    }
+
     res.status(201).json({ success: true, data: newLead });
   } catch (error) {
     if (error.code === 'P2002') {
@@ -337,6 +356,25 @@ router.post('/:id/followups', async (req, res) => {
     });
 
     await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
+
+    // Notify assigned agent if different from creator
+    if (targetAssigneeId && targetAssigneeId !== currentUserId) {
+      try {
+        const notification = await prisma.notification.create({
+          data: {
+            userId: targetAssigneeId,
+            type: 'FOLLOWUP_ASSIGNED',
+            title: 'New Follow-up Assigned to You',
+            body: `A ${type || 'CALL'} task was assigned to you for lead: ${lead.name || lead.phoneNumber}`,
+            linkUrl: `/leads/${req.params.id}`
+          }
+        });
+        const { io } = require('../index');
+        if (io) io.to(`user:${targetAssigneeId}`).emit('new_notification', notification);
+      } catch (e) {
+        console.warn('[Notification] Failed to notify agent on followup assign:', e.message);
+      }
+    }
 
     res.status(201).json({ success: true, data: followup });
   } catch (error) {

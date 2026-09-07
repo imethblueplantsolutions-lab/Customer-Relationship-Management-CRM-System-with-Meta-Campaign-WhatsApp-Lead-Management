@@ -23,17 +23,20 @@ model Tenant {
 }
 
 model User {
-  id             String   @id @default(uuid())
-  email          String   @unique
-  password       String
-  role           String   @default("AGENT")
-  isActive       Boolean  @default(true)
-  tenantId       String
-  tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  assignedLeads    Lead[]
-  dealAssignments  Deal[]     @relation("DealAssignment")
-  createdFollowups  Followup[] @relation("FollowupCreator")
-  assignedFollowups Followup[] @relation("FollowupAssignment")
+  id                String         @id @default(uuid())
+  email             String         @unique
+  password          String
+  role              String         @default("AGENT")
+  isActive          Boolean        @default(true)
+  tenantId          String
+  tenant            Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  assignedLeads     Lead[]
+  dealAssignments   Deal[]         @relation("DealAssignment")
+  createdFollowups  Followup[]     @relation("FollowupCreator")
+  assignedFollowups Followup[]     @relation("FollowupAssignment")
+  notifications     Notification[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 }
 
 model Lead {
@@ -189,4 +192,18 @@ model FlowNode {
 
   @@unique([flowId, nodeKey])
   @@index([flowId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   @default("FOLLOWUP_ASSIGNED")
+  title     String
+  body      String
+  linkUrl   String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
 }

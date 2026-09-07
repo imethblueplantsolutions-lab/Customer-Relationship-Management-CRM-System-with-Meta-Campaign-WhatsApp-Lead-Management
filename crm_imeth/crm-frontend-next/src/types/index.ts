@@ -146,3 +146,15 @@ export interface DashboardStats {
   pendingFollowups: number;
   recentLeads: Lead[];
 }
+
+// ─── Notifications ─────────────────────────────────────────
+export interface Notification {
+  id: string;
+  userId: string;
+  type: string;
+  title: string;
+  body: string;
+  linkUrl: string | null;
+  isRead: boolean;
+  createdAt: string;
+}

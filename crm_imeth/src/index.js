@@ -43,12 +43,16 @@ io.use((socket, next) => {
 });
 
 io.on('connection', (socket) => {
-  const room = `tenant:${socket.tenantId}`;
-  socket.join(room);
-  console.log(`🔌 [Socket.IO] Client connected: ${socket.id} (Tenant: ${socket.tenantId})`);
+  const tenantRoom = `tenant:${socket.tenantId}`;
+  const userRoom = `user:${socket.user?.userId || socket.user?.id}`;
+
+  socket.join(tenantRoom);
+  socket.join(userRoom);
+  console.log(`🔌 [Socket.IO] Client connected: ${socket.id} (Tenant: ${socket.tenantId}, User Room: ${userRoom})`);
 
   socket.on('disconnect', () => {
-    socket.leave(room);
+    socket.leave(tenantRoom);
+    socket.leave(userRoom);
     console.log(`🔌 [Socket.IO] Client disconnected: ${socket.id}`);
   });
 });
@@ -86,6 +90,7 @@ app.use('/api/deals', require('./routes/deals'));
 app.use('/api/flows', require('./routes/flows'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/users', require('./routes/users'));
+app.use('/api/notifications', require('./routes/notifications'));
 
 // Global Error Handler
 app.use((err, req, res, next) => {
