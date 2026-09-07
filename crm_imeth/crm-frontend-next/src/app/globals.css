@@ -12,8 +12,8 @@
   /* Semantic tokens */
   --color-bg: #f0fdf4;
   --color-bg-gradient: radial-gradient(ellipse at 55% 40%,
-      #ece5dd 0%,
-      #dcf8c6 100%);
+      #dcf8c6 0%,
+      #25d366 100%);
   --color-bg-card: #ffffff;
   --color-bg-sidebar: #0f172a;
   --color-text: #0f172a;
