@@ -1241,15 +1241,17 @@ export default function LeadDetailPage() {
                           </div>
                         </div>
 
-                        {/* Delete Activity Button */}
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteActivity(activity.id)}
-                          className="shrink-0 p-1.5 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                          title="Delete activity"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        {/* Delete Activity Button — hidden for system-generated entries */}
+                        {!["TASK_SCHEDULED", "TASK_COMPLETED", "SYSTEM_ASSIGNMENT"].includes(activity.type) && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteActivity(activity.id)}
+                            className="shrink-0 p-1.5 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                            title="Delete activity"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
