@@ -69,6 +69,7 @@ export default function LeadDetailPage() {
   // Status dropdown state
   const [statusMenuOpen, setStatusMenuOpen] = useState(false);
   const [statusUpdating, setStatusUpdating] = useState(false);
+  const statusMenuRef = useRef<HTMLDivElement>(null);
 
   // Follow-up form state
   const [showFollowupForm, setShowFollowupForm] = useState(false);
@@ -237,6 +238,17 @@ export default function LeadDetailPage() {
       socket.off("new_message", handleNewMessage);
     };
   }, [socket, params.id]);
+
+  // Close status dropdown when clicking outside
+  useEffect(() => {
+    const handleOutside = (e: MouseEvent) => {
+      if (statusMenuRef.current && !statusMenuRef.current.contains(e.target as Node)) {
+        setStatusMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, []);
 
   // ─── Fetch Lead Details ──────────────────────────────────────
   const fetchLead = useCallback(async () => {
@@ -711,7 +723,7 @@ export default function LeadDetailPage() {
           </a>
 
           {/* Interactive Status Selector */}
-          <div className="relative">
+          <div className="relative" ref={statusMenuRef}>
             <button
               onClick={() => setStatusMenuOpen(!statusMenuOpen)}
               disabled={statusUpdating}

@@ -39,6 +39,8 @@ export async function apiClient<T = unknown>(
       localStorage.removeItem('user');
       window.location.href = '/login';
     }
+    // Return early — do not attempt to parse body after redirect
+    return { success: false, error: 'Session expired. Please log in again.' } as ApiResponse<T>;
   }
 
   const data = await response.json();
@@ -46,4 +48,5 @@ export async function apiClient<T = unknown>(
     throw new Error(data.error || 'API Request Failed');
   }
   return data as ApiResponse<T>;
+
 }

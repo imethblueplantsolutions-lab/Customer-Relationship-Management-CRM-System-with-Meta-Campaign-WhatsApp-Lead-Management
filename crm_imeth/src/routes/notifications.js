@@ -32,6 +32,21 @@ router.get('/unread-count', async (req, res) => {
   }
 });
 
+// PUT: Mark all notifications as read (MUST be before /:id/read to avoid Express matching 'read-all' as an id)
+router.put('/read-all', async (req, res) => {
+  try {
+    const userId = req.user?.userId || req.user?.id;
+    await prisma.notification.updateMany({
+      where: { userId, isRead: false },
+      data: { isRead: true }
+    });
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Error marking all notifications as read:', error);
+    res.status(500).json({ success: false, error: 'Failed to mark all as read' });
+  }
+});
+
 // PUT: Mark a single notification as read
 router.put('/:id/read', async (req, res) => {
   try {
@@ -44,21 +59,6 @@ router.put('/:id/read', async (req, res) => {
   } catch (error) {
     console.error('Error marking notification as read:', error);
     res.status(500).json({ success: false, error: 'Failed to mark notification as read' });
-  }
-});
-
-// PUT: Mark all notifications as read
-router.put('/read-all', async (req, res) => {
-  try {
-    const userId = req.user?.userId || req.user?.id;
-    await prisma.notification.updateMany({
-      where: { userId, isRead: false },
-      data: { isRead: true }
-    });
-    res.status(200).json({ success: true });
-  } catch (error) {
-    console.error('Error marking all notifications as read:', error);
-    res.status(500).json({ success: false, error: 'Failed to mark all as read' });
   }
 });
 

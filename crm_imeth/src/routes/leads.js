@@ -26,6 +26,8 @@ router.get('/', async (req, res) => {
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
+        { displayName: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
         { phoneNumber: { contains: search } }
       ];
     }
@@ -722,9 +724,13 @@ router.delete('/:id', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
     const store = tenantStorage.getStore();
     const tenantId = req.user?.tenantId || store?.tenantId;
 
-    await prisma.lead.deleteMany({
+    const result = await prisma.lead.deleteMany({
       where: { id: req.params.id, tenantId }
     });
+
+    if (result.count === 0) {
+      return res.status(404).json({ success: false, error: 'Lead not found or access denied' });
+    }
 
     await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
 
@@ -734,6 +740,7 @@ router.delete('/:id', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
     res.status(500).json({ success: false, error: 'Failed to delete lead' });
   }
 });
+
 
 module.exports = router;
 

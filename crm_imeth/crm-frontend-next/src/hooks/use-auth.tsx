@@ -33,7 +33,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    // Refresh profile from server to guarantee freshest real-time account data
+    // Refresh profile from server to guarantee freshest real-time account data.
+    // Keep isLoading=true until this resolves to avoid a flash redirect to /login.
     if (storedToken) {
       apiClient<User>("/users/me")
         .then((res) => {
@@ -42,11 +43,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             localStorage.setItem("user", JSON.stringify(res.data));
           }
         })
-        .catch(() => {});
+        .catch(() => {})
+        .finally(() => setIsLoading(false));
+    } else {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   }, []);
+
 
   const login = useCallback(async (email: string, password: string) => {
     const res = await apiClient<{ token: string; user: User }>("/auth/login", {

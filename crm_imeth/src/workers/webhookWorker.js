@@ -33,12 +33,19 @@ const webhookWorker = new Worker('webhook-ingestion', async (job) => {
   });
 
   // 3. Persist / Upsert Lead in PostgreSQL
+  // Only update name if it's still the raw phone number (never manually edited by an agent)
+  const existingLead = await prisma.lead.findUnique({
+    where: { tenantId_phoneNumber: { tenantId, phoneNumber } },
+    select: { name: true }
+  });
+  const shouldUpdateName = !existingLead || existingLead.name === phoneNumber;
+
   const lead = await prisma.lead.upsert({
     where: { 
       tenantId_phoneNumber: { tenantId, phoneNumber } 
     },
     update: { 
-      name: customerName,
+      ...(shouldUpdateName && { name: customerName }),
       updatedAt: new Date() 
     },
     create: {
