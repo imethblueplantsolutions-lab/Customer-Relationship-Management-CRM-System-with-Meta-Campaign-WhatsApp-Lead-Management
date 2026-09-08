@@ -21,7 +21,7 @@ export interface Lead {
   tags: string[];
   tenantId: string;
   assignedToId?: string;
-  assignedTo?: { id: string; email: string; role: string };
+  assignedTo?: { id: string; name?: string; email: string; role: string };
   attribution?: CampaignAttribution;
   messages?: Message[];
   followups?: Followup[];
@@ -57,9 +57,9 @@ export interface Followup {
   id: string;
   leadId: string;
   createdById?: string;
-  createdBy?: { id: string; email: string; role?: string };
+  createdBy?: { id: string; name?: string; email: string; role?: string };
   assignedToId?: string;
-  assignedTo?: { id: string; email: string; role?: string };
+  assignedTo?: { id: string; name?: string; email: string; role?: string };
   type: string;
   dueAt?: string;
   note?: string;
