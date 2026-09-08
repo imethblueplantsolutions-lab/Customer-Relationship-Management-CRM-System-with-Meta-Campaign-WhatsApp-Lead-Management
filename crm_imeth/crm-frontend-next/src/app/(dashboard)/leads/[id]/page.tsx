@@ -136,14 +136,26 @@ export default function LeadDetailPage() {
       if (data.leadId === params.id && data.activity) {
         setLead((prev) => {
           if (!prev) return prev;
+          // Already have the real activity — skip
           if (prev.activities?.some((a) => a.id === data.activity.id)) return prev;
-          const updatedActivities = [...(prev.activities || []), data.activity].sort(
+          // Replace an optimistic placeholder of the same type (created by this client)
+          // so we don't show two identical timeline entries.
+          const hasOptimistic = prev.activities?.some(
+            (a) => a.id.startsWith("optimistic_") && a.type === data.activity.type
+          );
+          const base = hasOptimistic
+            ? (prev.activities || []).filter(
+                (a) => !(a.id.startsWith("optimistic_") && a.type === data.activity.type)
+              )
+            : prev.activities || [];
+          const updatedActivities = [...base, data.activity].sort(
             (a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
           );
           return { ...prev, activities: updatedActivities };
         });
       }
     };
+
 
     // 2. When an activity is deleted
     const handleActivityDeleted = (data: { leadId: string; activityId: string }) => {
@@ -328,11 +340,40 @@ export default function LeadDetailPage() {
 
       if (res.success && res.data) {
         const newFollowup = res.data;
+
+        // Build a local optimistic TASK_SCHEDULED activity so the timeline
+        // reflects the scheduled task immediately — without waiting for the
+        // socket event (which still arrives and is safely deduped by id).
+        const assigneeUser = newFollowup.assignedTo;
+        const assigneeName = assigneeUser?.name || assigneeUser?.email?.split("@")[0] || "";
+        const dueText = followupDueAt
+          ? ` (Due: ${new Date(followupDueAt).toLocaleString()})`
+          : "";
+        const assignText = assigneeName ? ` [Assigned: ${assigneeName}]` : "";
+
+        const optimisticActivity: Activity = {
+          id: `optimistic_task_${Date.now()}`,
+          leadId: lead.id,
+          createdById: user?.id,
+          createdBy: user
+            ? { id: user.id, name: user.name, email: user.email, role: user.role }
+            : undefined,
+          type: "TASK_SCHEDULED",
+          title: `Follow-up Scheduled: ${followupType}`,
+          description: `Scheduled ${followupType} task: "${followupNote.trim() || "No notes"}"${dueText}${assignText}`,
+          occurredAt: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+        };
+
         setLead((prev) => {
           if (!prev) return prev;
+          const updatedActivities = [...(prev.activities || []), optimisticActivity].sort(
+            (a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
+          );
           return {
             ...prev,
             followups: [...(prev.followups || []), newFollowup],
+            activities: updatedActivities,
           };
         });
         setFollowupNote("");
@@ -356,11 +397,39 @@ export default function LeadDetailPage() {
         body: JSON.stringify({ completed: !currentCompleted }),
       });
       if (res.success && res.data) {
+        const updatedFollowup = res.data;
+        const isNowCompleted = !currentCompleted;
+
         setLead((prev) => {
           if (!prev) return prev;
+
+          let updatedActivities = prev.activities || [];
+
+          // When a task is marked DONE, immediately inject a TASK_COMPLETED
+          // activity into the timeline so it appears without waiting for socket.
+          if (isNowCompleted) {
+            const completedActivity: Activity = {
+              id: `optimistic_done_${Date.now()}`,
+              leadId: lead.id,
+              createdById: user?.id,
+              createdBy: user
+                ? { id: user.id, name: user.name, email: user.email, role: user.role }
+                : undefined,
+              type: "TASK_COMPLETED",
+              title: `Follow-up Completed: ${updatedFollowup.type || "Task"}`,
+              description: `Marked ${updatedFollowup.type || "task"} as done: "${updatedFollowup.note || "Completed task"}"`,
+              occurredAt: new Date().toISOString(),
+              createdAt: new Date().toISOString(),
+            };
+            updatedActivities = [...updatedActivities, completedActivity].sort(
+              (a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
+            );
+          }
+
           return {
             ...prev,
-            followups: (prev.followups || []).map((f) => (f.id === followupId ? res.data! : f)),
+            followups: (prev.followups || []).map((f) => (f.id === followupId ? updatedFollowup : f)),
+            activities: updatedActivities,
           };
         });
       }
