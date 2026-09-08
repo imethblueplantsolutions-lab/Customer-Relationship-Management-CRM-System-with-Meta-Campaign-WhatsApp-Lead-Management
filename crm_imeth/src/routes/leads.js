@@ -162,6 +162,12 @@ router.get('/:id', async (req, res) => {
             createdBy: { select: { id: true, email: true, role: true } },
             assignedTo: { select: { id: true, email: true, role: true } }
           }
+        },
+        activities: {
+          orderBy: { occurredAt: 'asc' },
+          include: {
+            createdBy: { select: { id: true, email: true, role: true } }
+          }
         }
       }
     });
@@ -425,6 +431,87 @@ router.put('/:id/followups/:followupId', async (req, res) => {
   } catch (error) {
     console.error('Error updating followup:', error);
     res.status(500).json({ success: false, error: 'Failed to update follow-up' });
+  }
+});
+
+// POST: Create activity / timeline entry for a lead
+router.post('/:id/activities', async (req, res) => {
+  try {
+    const store = tenantStorage.getStore();
+    const tenantId = req.user?.tenantId || store?.tenantId;
+    const isAgent = req.user?.role === 'AGENT';
+    const currentUserId = req.user?.userId || req.user?.id;
+    const { type, title, description, occurredAt } = req.body;
+
+    const whereClause = { id: req.params.id, tenantId };
+    if (isAgent && currentUserId) {
+      whereClause.assignedToId = currentUserId;
+    }
+
+    const lead = await prisma.lead.findFirst({ where: whereClause });
+    if (!lead) {
+      return res.status(404).json({ success: false, error: 'Lead not found' });
+    }
+
+    const activity = await prisma.activity.create({
+      data: {
+        leadId: req.params.id,
+        createdById: currentUserId || null,
+        type: type || 'NOTE',
+        title: title || null,
+        description: description || null,
+        occurredAt: occurredAt ? new Date(occurredAt) : new Date(),
+      },
+      include: {
+        createdBy: { select: { id: true, email: true, role: true } }
+      }
+    });
+
+    // Update lead's updatedAt timestamp
+    await prisma.lead.update({
+      where: { id: req.params.id },
+      data: { updatedAt: new Date() }
+    });
+
+    await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
+
+    res.status(201).json({ success: true, data: activity });
+  } catch (error) {
+    console.error('Error creating activity:', error);
+    res.status(500).json({ success: false, error: 'Failed to create activity' });
+  }
+});
+
+// DELETE: Remove an activity (creator or Admin/Team Lead)
+router.delete('/:id/activities/:activityId', async (req, res) => {
+  try {
+    const store = tenantStorage.getStore();
+    const tenantId = req.user?.tenantId || store?.tenantId;
+    const isAgent = req.user?.role === 'AGENT';
+    const currentUserId = req.user?.userId || req.user?.id;
+
+    const activity = await prisma.activity.findFirst({
+      where: { id: req.params.activityId, leadId: req.params.id },
+      include: { lead: true }
+    });
+
+    if (!activity || activity.lead.tenantId !== tenantId) {
+      return res.status(404).json({ success: false, error: 'Activity not found' });
+    }
+
+    // Agents can only delete their own activities
+    if (isAgent && activity.createdById !== currentUserId) {
+      return res.status(403).json({ success: false, error: 'Forbidden: You can only delete your own activities' });
+    }
+
+    await prisma.activity.delete({ where: { id: req.params.activityId } });
+
+    await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
+
+    res.status(200).json({ success: true, message: 'Activity deleted' });
+  } catch (error) {
+    console.error('Error deleting activity:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete activity' });
   }
 });
 

@@ -24,6 +24,7 @@ export interface Lead {
   attribution?: CampaignAttribution;
   messages?: Message[];
   followups?: Followup[];
+  activities?: Activity[];
   _count?: { followups: number; messages: number };
   createdAt: string;
   updatedAt: string;
@@ -64,6 +65,19 @@ export interface Followup {
   completed: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+// ─── Activity / Timeline ───────────────────────────────────
+export interface Activity {
+  id: string;
+  leadId: string;
+  createdById?: string;
+  createdBy?: { id: string; email: string; role?: string };
+  type: string;
+  title?: string;
+  description?: string;
+  occurredAt: string;
+  createdAt: string;
 }
 
 // ─── Pipeline / Deal ───────────────────────────────────────

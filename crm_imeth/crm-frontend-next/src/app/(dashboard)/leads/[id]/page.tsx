@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/hooks/use-auth";
-import type { Lead, Message, Followup } from "@/types";
+import type { Lead, Message, Followup, Activity } from "@/types";
 import {
   ArrowLeft,
   Phone,

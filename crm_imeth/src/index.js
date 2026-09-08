@@ -5,15 +5,15 @@ const cors = require('cors');
 const helmet = require('helmet');
 const jwt = require('jsonwebtoken');
 const { Server } = require('socket.io');
-const { createAdapter } = require('@socket.io/redis-adapter');
 const redisClient = require('./config/redis');
+const { isRedisAvailable } = require('./config/redis');
 const { extractTenantMiddleware } = require('./middleware/tenant');
 
 const app = express();
 const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 
-// Initialize Socket.IO with Redis Adapter
+// Initialize Socket.IO (Redis adapter attached only when Redis is available)
 const io = new Server(server, {
   cors: {
     origin: '*',
@@ -21,9 +21,27 @@ const io = new Server(server, {
   }
 });
 
-const pubClient = redisClient.duplicate();
-const subClient = redisClient.duplicate();
-io.adapter(createAdapter(pubClient, subClient));
+// Attempt to attach Redis adapter for Socket.IO (non-blocking)
+function setupRedisAdapter() {
+  try {
+    if (redisClient && isRedisAvailable()) {
+      const { createAdapter } = require('@socket.io/redis-adapter');
+      const pubClient = redisClient.duplicate();
+      const subClient = redisClient.duplicate();
+      pubClient.on('error', (err) => console.warn('⚠️  Redis pubClient error:', err.message));
+      subClient.on('error', (err) => console.warn('⚠️  Redis subClient error:', err.message));
+      io.adapter(createAdapter(pubClient, subClient));
+      console.log('✅ Socket.IO Redis adapter attached');
+    } else {
+      console.warn('⚠️  Redis not available — Socket.IO using in-memory adapter (single-instance only)');
+    }
+  } catch (err) {
+    console.warn('⚠️  Failed to setup Redis adapter:', err.message, '— using in-memory adapter');
+  }
+}
+
+// Try to setup Redis adapter after a short delay to allow connection
+setTimeout(setupRedisAdapter, 3000);
 
 // Socket.IO Authentication & Tenant Room Allocation
 io.use((socket, next) => {
@@ -60,8 +78,14 @@ io.on('connection', (socket) => {
 // Export io
 module.exports = { app, server, io };
 
-// Initialize BullMQ background workers
-require('./workers/webhookWorker');
+// Initialize BullMQ background workers only if Redis is available
+if (redisClient) {
+  try {
+    require('./workers/webhookWorker');
+  } catch (err) {
+    console.warn('⚠️  BullMQ worker failed to initialize:', err.message, '— webhook processing disabled');
+  }
+}
 
 // Security & CORS
 app.use(helmet());

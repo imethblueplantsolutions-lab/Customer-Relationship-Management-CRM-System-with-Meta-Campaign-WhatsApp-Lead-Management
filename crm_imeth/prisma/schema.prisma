@@ -34,6 +34,7 @@ model User {
   dealAssignments   Deal[]         @relation("DealAssignment")
   createdFollowups  Followup[]     @relation("FollowupCreator")
   assignedFollowups Followup[]     @relation("FollowupAssignment")
+  activities        Activity[]     @relation("ActivityCreator")
   notifications     Notification[]
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
@@ -60,6 +61,7 @@ model Lead {
   attribution    CampaignAttribution?
   messages       Message[]
   followups      Followup[]
+  activities     Activity[]
   deals          Deal[]
 
   @@unique([tenantId, phoneNumber])
@@ -206,4 +208,20 @@ model Notification {
   createdAt DateTime @default(now())
 
   @@index([userId, isRead])
+}
+
+model Activity {
+  id          String   @id @default(uuid())
+  leadId      String
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  createdById String?
+  createdBy   User?    @relation("ActivityCreator", fields: [createdById], references: [id])
+  type        String   @default("NOTE")
+  title       String?
+  description String?
+  occurredAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([leadId])
+  @@index([occurredAt])
 }
