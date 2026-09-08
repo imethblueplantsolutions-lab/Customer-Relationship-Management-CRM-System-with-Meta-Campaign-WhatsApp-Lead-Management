@@ -467,8 +467,8 @@ router.post('/:id/followups', async (req, res) => {
         dueAt: dueAt ? new Date(dueAt) : null,
       },
       include: {
-        createdBy: { select: { id: true, email: true, role: true } },
-        assignedTo: { select: { id: true, email: true, role: true } }
+        createdBy: { select: { id: true, name: true, email: true, role: true } },
+        assignedTo: { select: { id: true, name: true, email: true, role: true } }
       }
     });
 
@@ -478,6 +478,38 @@ router.post('/:id/followups', async (req, res) => {
     });
 
     await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
+
+    // Automatically record TASK_SCHEDULED activity on the timeline
+    try {
+      const dueText = dueAt ? ` (Due: ${new Date(dueAt).toLocaleString()})` : '';
+      const assigneeUser = followup.assignedTo || (targetAssigneeId ? await prisma.user.findUnique({
+        where: { id: targetAssigneeId },
+        select: { name: true, email: true }
+      }) : null);
+      const assigneeName = assigneeUser?.name || assigneeUser?.email?.split('@')[0] || '';
+      const assignText = assigneeName ? ` [Assigned: ${assigneeName}]` : '';
+
+      const scheduledActivity = await prisma.activity.create({
+        data: {
+          leadId: req.params.id,
+          createdById: currentUserId || null,
+          type: 'TASK_SCHEDULED',
+          title: `Follow-up Scheduled: ${type || 'Task'}`,
+          description: `Scheduled ${type || 'CALL'} task: "${note || 'No notes'}"${dueText}${assignText}`,
+          occurredAt: new Date()
+        },
+        include: {
+          createdBy: { select: { id: true, name: true, email: true, role: true } }
+        }
+      });
+
+      const { io } = require('../index');
+      if (io) {
+        io.to(`tenant:${tenantId}`).emit('lead_activity_created', { leadId: req.params.id, activity: scheduledActivity });
+      }
+    } catch (actErr) {
+      console.warn('[Activity] Failed to create TASK_SCHEDULED activity:', actErr.message);
+    }
 
     // Notify assigned agent if different from creator
     if (targetAssigneeId && targetAssigneeId !== currentUserId) {
@@ -527,6 +559,8 @@ router.put('/:id/followups/:followupId', async (req, res) => {
       return res.status(403).json({ success: false, error: 'Forbidden: You can only update your own follow-ups' });
     }
 
+    const isNowCompleted = completed !== undefined && Boolean(completed) === true && !followup.completed;
+
     const updated = await prisma.followup.update({
       where: { id: req.params.followupId },
       data: {
@@ -536,12 +570,38 @@ router.put('/:id/followups/:followupId', async (req, res) => {
         ...(type !== undefined && { type })
       },
       include: {
-        createdBy: { select: { id: true, email: true, role: true } },
-        assignedTo: { select: { id: true, email: true, role: true } }
+        createdBy: { select: { id: true, name: true, email: true, role: true } },
+        assignedTo: { select: { id: true, name: true, email: true, role: true } }
       }
     });
 
     await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
+
+    // Automatically record TASK_COMPLETED activity on timeline when completed/done
+    if (isNowCompleted) {
+      try {
+        const completedActivity = await prisma.activity.create({
+          data: {
+            leadId: req.params.id,
+            createdById: currentUserId || null,
+            type: 'TASK_COMPLETED',
+            title: `Follow-up Completed: ${updated.type || 'Task'}`,
+            description: `Marked ${updated.type || 'task'} as done: "${updated.note || 'Completed task'}"`,
+            occurredAt: new Date()
+          },
+          include: {
+            createdBy: { select: { id: true, name: true, email: true, role: true } }
+          }
+        });
+
+        const { io } = require('../index');
+        if (io) {
+          io.to(`tenant:${tenantId}`).emit('lead_activity_created', { leadId: req.params.id, activity: completedActivity });
+        }
+      } catch (actErr) {
+        console.warn('[Activity] Failed to create TASK_COMPLETED activity:', actErr.message);
+      }
+    }
 
     res.status(200).json({ success: true, data: updated });
   } catch (error) {
