@@ -12,7 +12,7 @@ router.get('/', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
 
     const users = await prisma.user.findMany({
       where: { tenantId, isActive: true },
-      select: { id: true, email: true, role: true }
+      select: { id: true, name: true, email: true, role: true }
     });
     res.status(200).json({ success: true, data: users });
   } catch (error) {

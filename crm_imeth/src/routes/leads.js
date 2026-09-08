@@ -169,7 +169,7 @@ router.get('/:id', async (req, res) => {
         activities: {
           orderBy: { occurredAt: 'asc' },
           include: {
-            createdBy: { select: { id: true, email: true, role: true } }
+            createdBy: { select: { id: true, name: true, email: true, role: true } }
           }
         }
       }
@@ -466,7 +466,7 @@ router.post('/:id/activities', async (req, res) => {
     const tenantId = req.user?.tenantId || store?.tenantId;
     const isAgent = req.user?.role === 'AGENT';
     const currentUserId = req.user?.userId || req.user?.id;
-    const { type, title, description, occurredAt } = req.body;
+    const { type, title, description, occurredAt, createdById } = req.body;
 
     const whereClause = { id: req.params.id, tenantId };
     if (isAgent && currentUserId) {
@@ -478,17 +478,19 @@ router.post('/:id/activities', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Lead not found' });
     }
 
+    const targetCreatorId = (!isAgent && createdById) ? createdById : currentUserId;
+
     const activity = await prisma.activity.create({
       data: {
         leadId: req.params.id,
-        createdById: currentUserId || null,
+        createdById: targetCreatorId || null,
         type: type || 'NOTE',
         title: title || null,
         description: description || null,
         occurredAt: occurredAt ? new Date(occurredAt) : new Date(),
       },
       include: {
-        createdBy: { select: { id: true, email: true, role: true } }
+        createdBy: { select: { id: true, name: true, email: true, role: true } }
       }
     });
 

@@ -1,6 +1,7 @@
 // ─── Auth / User ───────────────────────────────────────────
 export interface User {
   id: string;
+  name?: string;
   email: string;
   role: string;
   tenantId: string;
@@ -72,7 +73,7 @@ export interface Activity {
   id: string;
   leadId: string;
   createdById?: string;
-  createdBy?: { id: string; email: string; role?: string };
+  createdBy?: { id: string; name?: string; email: string; role?: string };
   type: string;
   title?: string;
   description?: string;
