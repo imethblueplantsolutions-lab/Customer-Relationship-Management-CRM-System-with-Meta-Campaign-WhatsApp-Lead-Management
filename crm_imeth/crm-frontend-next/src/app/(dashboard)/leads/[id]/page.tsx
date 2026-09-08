@@ -405,9 +405,8 @@ export default function LeadDetailPage() {
 
           let updatedActivities = prev.activities || [];
 
-          // When a task is marked DONE, immediately inject a TASK_COMPLETED
-          // activity into the timeline so it appears without waiting for socket.
           if (isNowCompleted) {
+            // Task marked DONE → inject a TASK_COMPLETED activity immediately
             const completedActivity: Activity = {
               id: `optimistic_done_${Date.now()}`,
               leadId: lead.id,
@@ -424,6 +423,25 @@ export default function LeadDetailPage() {
             updatedActivities = [...updatedActivities, completedActivity].sort(
               (a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
             );
+          } else {
+            // Task un-done → remove the most recent TASK_COMPLETED activity
+            // that matches this followup's note so the timeline stays in sync.
+            const noteToMatch = updatedFollowup.note || "";
+            let removed = false;
+            updatedActivities = [...updatedActivities]
+              .reverse()
+              .filter((a) => {
+                if (
+                  !removed &&
+                  a.type === "TASK_COMPLETED" &&
+                  (a.description?.includes(noteToMatch) || noteToMatch === "")
+                ) {
+                  removed = true;
+                  return false; // drop this one entry
+                }
+                return true;
+              })
+              .reverse();
           }
 
           return {
@@ -437,6 +455,8 @@ export default function LeadDetailPage() {
       console.error("Failed to update follow-up status:", err);
     }
   };
+
+
 
   // ─── Assign Lead (Admin / Team Lead) ──────────────────────────
   const handleAssignLead = async (agentId: string) => {
