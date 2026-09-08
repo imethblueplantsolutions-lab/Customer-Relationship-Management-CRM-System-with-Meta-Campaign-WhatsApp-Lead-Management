@@ -111,12 +111,15 @@ router.post('/', authorize(['ADMIN', 'TEAM_LEAD', 'AGENT']), async (req, res) =>
     // Notify assigned agent if different from creator
     if (finalAssignedToId && finalAssignedToId !== currentUserId) {
       try {
+        const assignerName = req.user?.email 
+          ? `${req.user.email.split('@')[0]} (${req.user.role === 'ADMIN' ? 'Admin' : req.user.role === 'TEAM_LEAD' ? 'Team Lead' : 'Manager'})` 
+          : 'Team Lead/Admin';
         const notification = await prisma.notification.create({
           data: {
             userId: finalAssignedToId,
             type: 'LEAD_ASSIGNED',
             title: 'New Lead Assigned to You',
-            body: `You have been assigned a new lead: ${name || phoneNumber}`,
+            body: `${assignerName} assigned you a new lead: ${name || phoneNumber}`,
             linkUrl: `/leads/${newLead.id}`
           }
         });
@@ -303,6 +306,28 @@ router.put('/:id', async (req, res) => {
     });
 
     await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
+
+    // Notify assigned sales agent if lead was newly assigned or reassigned by Admin/Team Lead
+    if (updateData.assignedToId && updateData.assignedToId !== existingLead.assignedToId && updateData.assignedToId !== currentUserId) {
+      try {
+        const assignerName = req.user?.email 
+          ? `${req.user.email.split('@')[0]} (${req.user.role === 'ADMIN' ? 'Admin' : req.user.role === 'TEAM_LEAD' ? 'Team Lead' : 'Manager'})` 
+          : 'Team Lead/Admin';
+        const notification = await prisma.notification.create({
+          data: {
+            userId: updateData.assignedToId,
+            type: 'LEAD_ASSIGNED',
+            title: 'Lead Assigned to You',
+            body: `${assignerName} assigned you lead: ${updatedLead.name || updatedLead.phoneNumber}`,
+            linkUrl: `/leads/${updatedLead.id}`
+          }
+        });
+        const { io } = require('../index');
+        if (io) io.to(`user:${updateData.assignedToId}`).emit('new_notification', notification);
+      } catch (e) {
+        console.warn('[Notification] Failed to notify agent on lead reassign:', e.message);
+      }
+    }
 
     res.status(200).json({ success: true, data: updatedLead });
   } catch (error) {

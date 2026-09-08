@@ -262,7 +262,7 @@ export default function LoginPage() {
                 <span className="text-slate-400">Protected by Role Auth</span>
                 <button
                   type="button"
-                  onClick={handleQuickFill}
+                  onClick={() => handleQuickFill("ADMIN")}
                   className="text-[#128c7e] hover:text-[#075e54] font-semibold hover:underline cursor-pointer"
                 >
                   Need password reset?

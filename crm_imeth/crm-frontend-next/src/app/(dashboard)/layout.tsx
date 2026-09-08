@@ -50,6 +50,9 @@ export default function DashboardLayout({
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
+  const [toastNotif, setToastNotif] = useState<Notification | null>(null);
+  const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   // Fetch notifications on load
   useEffect(() => {
     if (!user) return;
@@ -67,9 +70,18 @@ export default function DashboardLayout({
     const handleNew = (notif: Notification) => {
       setNotifications((prev) => [notif, ...prev]);
       setUnreadCount((prev) => prev + 1);
+      setToastNotif(notif);
+
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+      toastTimerRef.current = setTimeout(() => {
+        setToastNotif(null);
+      }, 7000);
     };
     socket.on("new_notification", handleNew);
-    return () => { socket.off("new_notification", handleNew); };
+    return () => {
+      socket.off("new_notification", handleNew);
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
   }, [socket]);
 
   // Close dropdown on outside click
@@ -354,6 +366,53 @@ export default function DashboardLayout({
           </div>
         </main>
       </div>
+
+      {/* Real-time Floating Notification Toast for Assigned Leads */}
+      {toastNotif && (
+        <div className="fixed top-5 right-5 z-50 max-w-sm w-full animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="flex items-start gap-3 rounded-2xl border border-emerald-500/40 bg-[#0f172a]/95 backdrop-blur-md p-4 shadow-2xl ring-1 ring-emerald-500/20 text-white">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30">
+              <Bell className="h-5 w-5 animate-pulse" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-1">
+                <p className="text-xs font-bold text-white truncate">{toastNotif.title}</p>
+                <button
+                  type="button"
+                  onClick={() => setToastNotif(null)}
+                  className="p-1 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-300 mt-1 leading-snug line-clamp-2">
+                {toastNotif.body}
+              </p>
+              {toastNotif.linkUrl && (
+                <div className="mt-2.5 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleNotifClick(toastNotif);
+                      setToastNotif(null);
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-[#128c7e] px-2.5 py-1 text-[11px] font-semibold text-white shadow hover:bg-[#075e54] transition-all cursor-pointer"
+                  >
+                    View Lead →
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setToastNotif(null)}
+                    className="text-[11px] font-medium text-slate-400 hover:text-slate-200 cursor-pointer"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

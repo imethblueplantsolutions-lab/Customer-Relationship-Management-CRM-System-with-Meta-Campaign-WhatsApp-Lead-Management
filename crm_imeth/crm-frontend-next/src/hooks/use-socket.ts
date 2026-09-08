@@ -1,7 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const SOCKET_URL =
+  process.env.NEXT_PUBLIC_SOCKET_URL ||
+  (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_API_URL?.startsWith('http')
+    ? process.env.NEXT_PUBLIC_API_URL.replace(/\/api\/?$/, '')
+    : 'http://localhost:4000');
 
 export function useSocket() {
   const [isConnected, setIsConnected] = useState(false);
@@ -13,8 +17,8 @@ export function useSocket() {
 
     const socketInstance = io(SOCKET_URL, {
       auth: { token },
-      transports: ['websocket'],
-      reconnectionAttempts: 5,
+      transports: ['websocket', 'polling'],
+      reconnectionAttempts: 10,
       reconnectionDelay: 1000,
     });
 

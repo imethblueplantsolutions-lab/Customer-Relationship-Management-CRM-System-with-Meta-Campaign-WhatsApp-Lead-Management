@@ -84,6 +84,16 @@ export default function LeadDetailPage() {
   const [editNotes, setEditNotes] = useState("");
   const [savingDetails, setSavingDetails] = useState(false);
 
+  // Activity / Timeline state
+  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
+  const [activityForm, setActivityForm] = useState({
+    type: "NOTE",
+    title: "",
+    description: "",
+    occurredAt: new Date().toISOString().slice(0, 16),
+  });
+  const [isSubmittingActivity, setIsSubmittingActivity] = useState(false);
+
   // Load active agents list if admin or team lead
   useEffect(() => {
     if (canManageAssignment) {
@@ -332,6 +342,76 @@ export default function LeadDetailPage() {
       console.error("Failed to save lead details:", err);
     } finally {
       setSavingDetails(false);
+    }
+  };
+
+  // ─── Create Activity (Timeline Entry) ──────────────────────
+  const handleCreateActivity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!lead || isSubmittingActivity) return;
+    setIsSubmittingActivity(true);
+    try {
+      const res = await apiClient<Activity>(`/leads/${lead.id}/activities`, {
+        method: "POST",
+        body: JSON.stringify({
+          type: activityForm.type,
+          title: activityForm.title.trim(),
+          description: activityForm.description.trim(),
+          occurredAt: new Date(activityForm.occurredAt).toISOString(),
+        }),
+      });
+
+      if (res.success && res.data) {
+        const newActivity = res.data;
+        setLead((prev) => {
+          if (!prev) return prev;
+          const updated = [...(prev.activities || []), newActivity].sort(
+            (a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
+          );
+          return { ...prev, activities: updated };
+        });
+        setIsActivityModalOpen(false);
+        setActivityForm({
+          type: "NOTE",
+          title: "",
+          description: "",
+          occurredAt: new Date().toISOString().slice(0, 16),
+        });
+      }
+    } catch (err) {
+      console.error("Failed to create activity:", err);
+    } finally {
+      setIsSubmittingActivity(false);
+    }
+  };
+
+  const openActivityModal = (type: string) => {
+    setActivityForm((prev) => ({
+      ...prev,
+      type,
+      occurredAt: new Date().toISOString().slice(0, 16),
+    }));
+    setIsActivityModalOpen(true);
+  };
+
+  // ─── Delete Activity ──────────────────────────────────────
+  const handleDeleteActivity = async (activityId: string) => {
+    if (!lead) return;
+    try {
+      const res = await apiClient(`/leads/${lead.id}/activities/${activityId}`, {
+        method: "DELETE",
+      });
+      if (res.success) {
+        setLead((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            activities: (prev.activities || []).filter((a) => a.id !== activityId),
+          };
+        });
+      }
+    } catch (err) {
+      console.error("Failed to delete activity:", err);
     }
   };
 
@@ -723,6 +803,142 @@ export default function LeadDetailPage() {
               </div>
             )}
           </div>
+
+          {/* ─── Timeline & Activity Section ─────────────────── */}
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-slate-500" />
+                <h3 className="text-sm font-bold text-slate-800">
+                  Timeline & Activity
+                </h3>
+              </div>
+              <span className="text-[10px] font-medium text-slate-400">
+                {(lead.activities?.length || 0)} entries
+              </span>
+            </div>
+
+            {/* Quick-add Activity Buttons */}
+            <div className="grid grid-cols-4 gap-2 mb-6">
+              <button
+                type="button"
+                onClick={() => openActivityModal("PHONE_CALL")}
+                className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-blue-50 hover:border-blue-200 transition-all cursor-pointer group"
+              >
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600 group-hover:bg-blue-200 transition-colors">
+                  <Phone className="h-4 w-4" />
+                </div>
+                <span className="text-[10px] font-bold text-slate-500 group-hover:text-blue-700">Call</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => openActivityModal("MESSAGE")}
+                className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-emerald-50 hover:border-emerald-200 transition-all cursor-pointer group"
+              >
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 group-hover:bg-emerald-200 transition-colors">
+                  <MessageCircle className="h-4 w-4" />
+                </div>
+                <span className="text-[10px] font-bold text-slate-500 group-hover:text-emerald-700">Message</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => openActivityModal("MEETING")}
+                className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-purple-50 hover:border-purple-200 transition-all cursor-pointer group"
+              >
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100 text-purple-600 group-hover:bg-purple-200 transition-colors">
+                  <Calendar className="h-4 w-4" />
+                </div>
+                <span className="text-[10px] font-bold text-slate-500 group-hover:text-purple-700">Meeting</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => openActivityModal("NOTE")}
+                className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-amber-50 hover:border-amber-200 transition-all cursor-pointer group"
+              >
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-600 group-hover:bg-amber-200 transition-colors">
+                  <FileText className="h-4 w-4" />
+                </div>
+                <span className="text-[10px] font-bold text-slate-500 group-hover:text-amber-700">Note</span>
+              </button>
+            </div>
+
+            {/* Vertical Timeline */}
+            <div className="relative pl-5 border-l-2 border-slate-200 space-y-5">
+              {/* Lead Creation Node (always first) */}
+              <div className="relative">
+                <div className="absolute -left-[23px] mt-1 flex h-4 w-4 items-center justify-center rounded-full bg-slate-400 ring-4 ring-white">
+                  <Sparkles className="h-2.5 w-2.5 text-white" />
+                </div>
+                <div className="ml-1">
+                  <p className="text-xs font-bold text-slate-700">Lead Created</p>
+                  <p className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
+                    <Clock className="h-2.5 w-2.5" />
+                    {new Date(lead.createdAt).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+
+              {/* Dynamic Activity Nodes */}
+              {lead.activities?.map((activity) => {
+                const typeConfig = {
+                  PHONE_CALL: { bg: "bg-blue-500", icon: <Phone className="h-2.5 w-2.5 text-white" />, label: "Phone Call", border: "border-blue-100", tagBg: "bg-blue-50 text-blue-700" },
+                  MESSAGE: { bg: "bg-emerald-500", icon: <MessageCircle className="h-2.5 w-2.5 text-white" />, label: "Message", border: "border-emerald-100", tagBg: "bg-emerald-50 text-emerald-700" },
+                  MEETING: { bg: "bg-purple-500", icon: <Calendar className="h-2.5 w-2.5 text-white" />, label: "Meeting", border: "border-purple-100", tagBg: "bg-purple-50 text-purple-700" },
+                  NOTE: { bg: "bg-amber-500", icon: <FileText className="h-2.5 w-2.5 text-white" />, label: "Note", border: "border-amber-100", tagBg: "bg-amber-50 text-amber-700" },
+                }[activity.type] || { bg: "bg-slate-400", icon: <FileText className="h-2.5 w-2.5 text-white" />, label: activity.type, border: "border-slate-100", tagBg: "bg-slate-50 text-slate-700" };
+
+                return (
+                  <div key={activity.id} className="relative">
+                    <div className={`absolute -left-[23px] mt-1 flex h-4 w-4 items-center justify-center rounded-full ${typeConfig.bg} ring-4 ring-white`}>
+                      {typeConfig.icon}
+                    </div>
+                    <div className={`ml-1 rounded-xl border ${typeConfig.border} bg-slate-50/70 p-3`}>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="text-xs font-bold text-slate-800 truncate">
+                              {activity.title || typeConfig.label}
+                            </h4>
+                            <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-bold ${typeConfig.tagBg}`}>
+                              {typeConfig.label}
+                            </span>
+                          </div>
+                          {activity.description && (
+                            <p className="text-[11px] text-slate-600 mt-1.5 whitespace-pre-wrap leading-relaxed">
+                              {activity.description}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-3 text-[10px] text-slate-400 mt-2">
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-2.5 w-2.5" />
+                              {new Date(activity.occurredAt).toLocaleString()}
+                            </span>
+                            {activity.createdBy && (
+                              <span>by {activity.createdBy.email}</span>
+                            )}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteActivity(activity.id)}
+                          className="shrink-0 p-1 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                          title="Delete activity"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {(!lead.activities || lead.activities.length === 0) && (
+                <div className="ml-1 py-3">
+                  <p className="text-[11px] text-slate-400">No activities logged yet. Use the buttons above to add one.</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* ─── Right Column (1 Col): Attribution & Lead Info ─────────── */}
@@ -1026,6 +1242,109 @@ export default function LeadDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* ─── Activity Modal Overlay ──────────────────────── */}
+      {isActivityModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="relative w-full max-w-md mx-4 rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-4">
+              <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <Layers className="h-4 w-4 text-[#128c7e]" />
+                Log Activity
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsActivityModalOpen(false)}
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition-colors cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleCreateActivity} className="p-6 space-y-4">
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1.5">
+                  Activity Type
+                </label>
+                <select
+                  value={activityForm.type}
+                  onChange={(e) => setActivityForm({ ...activityForm, type: e.target.value })}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/10 focus:outline-none transition-all"
+                >
+                  <option value="PHONE_CALL">📞 Phone Call</option>
+                  <option value="MESSAGE">💬 Message</option>
+                  <option value="MEETING">📅 Meeting</option>
+                  <option value="NOTE">📝 Note</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1.5">
+                  Date & Time
+                </label>
+                <input
+                  type="datetime-local"
+                  required
+                  value={activityForm.occurredAt}
+                  onChange={(e) => setActivityForm({ ...activityForm, occurredAt: e.target.value })}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/10 focus:outline-none transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1.5">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Discovery call with Katherine"
+                  value={activityForm.title}
+                  onChange={(e) => setActivityForm({ ...activityForm, title: e.target.value })}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/10 focus:outline-none transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1.5">
+                  Description / Notes
+                </label>
+                <textarea
+                  placeholder="Add notes about this activity..."
+                  rows={4}
+                  value={activityForm.description}
+                  onChange={(e) => setActivityForm({ ...activityForm, description: e.target.value })}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/10 focus:outline-none transition-all resize-none"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsActivityModalOpen(false)}
+                  className="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingActivity}
+                  className="flex-1 rounded-xl bg-[#128c7e] py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#075e54] disabled:opacity-50 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  {isSubmittingActivity ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                  )}
+                  {isSubmittingActivity ? "Saving..." : "Save Activity"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
