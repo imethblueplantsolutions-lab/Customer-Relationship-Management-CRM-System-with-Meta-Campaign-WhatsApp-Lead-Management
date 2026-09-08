@@ -108,6 +108,29 @@ router.post('/', authorize(['ADMIN', 'TEAM_LEAD', 'AGENT']), async (req, res) =>
 
     await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
 
+    // Automatically record SYSTEM_ASSIGNMENT activity if created with an assignee
+    if (finalAssignedToId) {
+      try {
+        const assigneeUser = newLead.assignedTo || await prisma.user.findUnique({
+          where: { id: finalAssignedToId },
+          select: { name: true, email: true }
+        });
+        const assigneeName = assigneeUser?.name || assigneeUser?.email?.split('@')[0] || 'Sales Agent';
+        await prisma.activity.create({
+          data: {
+            leadId: newLead.id,
+            createdById: currentUserId || null,
+            type: 'SYSTEM_ASSIGNMENT',
+            title: 'Lead Assigned',
+            description: `Lead assigned to ${assigneeName}`,
+            occurredAt: new Date()
+          }
+        });
+      } catch (actErr) {
+        console.warn('[Activity] Failed to create system assignment activity on create:', actErr.message);
+      }
+    }
+
     // Notify assigned agent if different from creator
     if (finalAssignedToId && finalAssignedToId !== currentUserId) {
       try {
@@ -293,29 +316,63 @@ router.put('/:id', async (req, res) => {
       updatedAt: new Date()
     };
 
+    const targetAssignedToId = assignedToId === '' ? null : assignedToId;
+    const isAssignmentChanged = assignedToId !== undefined && targetAssignedToId !== existingLead.assignedToId;
+
     if (assignedToId !== undefined) {
-      updateData.assignedToId = assignedToId === '' ? null : assignedToId;
+      updateData.assignedToId = targetAssignedToId;
     }
 
     const updatedLead = await prisma.lead.update({
       where: { id: req.params.id },
       data: updateData,
       include: {
-        assignedTo: { select: { id: true, email: true, role: true } }
+        assignedTo: { select: { id: true, name: true, email: true, role: true } }
       }
     });
 
     await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
 
+    // Automatically record SYSTEM_ASSIGNMENT activity if assignee was changed
+    if (isAssignmentChanged) {
+      try {
+        let title = 'Lead Unassigned';
+        let description = 'Lead unassigned from previous agent';
+
+        if (targetAssignedToId) {
+          const assigneeUser = updatedLead.assignedTo || await prisma.user.findUnique({
+            where: { id: targetAssignedToId },
+            select: { name: true, email: true }
+          });
+          const assigneeName = assigneeUser?.name || assigneeUser?.email?.split('@')[0] || 'Sales Agent';
+          title = existingLead.assignedToId ? 'Lead Reassigned' : 'Lead Assigned';
+          description = `Lead ${existingLead.assignedToId ? 'reassigned' : 'assigned'} to ${assigneeName}`;
+        }
+
+        await prisma.activity.create({
+          data: {
+            leadId: updatedLead.id,
+            createdById: currentUserId || null,
+            type: 'SYSTEM_ASSIGNMENT',
+            title,
+            description,
+            occurredAt: new Date()
+          }
+        });
+      } catch (actErr) {
+        console.warn('[Activity] Failed to create system assignment activity on update:', actErr.message);
+      }
+    }
+
     // Notify assigned sales agent if lead was newly assigned or reassigned by Admin/Team Lead
-    if (updateData.assignedToId && updateData.assignedToId !== existingLead.assignedToId && updateData.assignedToId !== currentUserId) {
+    if (targetAssignedToId && isAssignmentChanged && targetAssignedToId !== currentUserId) {
       try {
         const assignerName = req.user?.email 
           ? `${req.user.email.split('@')[0]} (${req.user.role === 'ADMIN' ? 'Admin' : req.user.role === 'TEAM_LEAD' ? 'Team Lead' : 'Manager'})` 
           : 'Team Lead/Admin';
         const notification = await prisma.notification.create({
           data: {
-            userId: updateData.assignedToId,
+            userId: targetAssignedToId,
             type: 'LEAD_ASSIGNED',
             title: 'Lead Assigned to You',
             body: `${assignerName} assigned you lead: ${updatedLead.name || updatedLead.phoneNumber}`,
@@ -323,7 +380,7 @@ router.put('/:id', async (req, res) => {
           }
         });
         const { io } = require('../index');
-        if (io) io.to(`user:${updateData.assignedToId}`).emit('new_notification', notification);
+        if (io) io.to(`user:${targetAssignedToId}`).emit('new_notification', notification);
       } catch (e) {
         console.warn('[Notification] Failed to notify agent on lead reassign:', e.message);
       }

@@ -30,6 +30,7 @@ import {
   MessageCircle,
   FileText,
   Trash2,
+  UserCheck,
 } from "lucide-react";
 
 const STATUS_OPTIONS = [
@@ -936,6 +937,15 @@ export default function LeadDetailPage() {
                     label: "Note",
                     border: "border-amber-100",
                     tagBg: "bg-amber-50 text-amber-700 border-amber-200",
+                  },
+                  SYSTEM_ASSIGNMENT: {
+                    bg: "bg-indigo-600",
+                    circleBg: "bg-indigo-50 text-indigo-700 border border-indigo-200",
+                    icon: <UserCheck className="h-3.5 w-3.5" />,
+                    smallIcon: <UserCheck className="h-3 w-3" />,
+                    label: "System Assignment",
+                    border: "border-indigo-100/90 bg-indigo-50/20",
+                    tagBg: "bg-indigo-50 text-indigo-700 border-indigo-200",
                   },
                 }[activity.type] || {
                   bg: "bg-slate-400",
