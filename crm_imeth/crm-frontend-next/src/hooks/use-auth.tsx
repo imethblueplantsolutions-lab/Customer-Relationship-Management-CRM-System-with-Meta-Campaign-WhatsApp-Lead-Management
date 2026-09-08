@@ -11,6 +11,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  updateUser: (updatedData: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -31,6 +32,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.clear();
       }
     }
+
+    // Refresh profile from server to guarantee freshest real-time account data
+    if (storedToken) {
+      apiClient<User>("/users/me")
+        .then((res) => {
+          if (res.success && res.data) {
+            setUser(res.data);
+            localStorage.setItem("user", JSON.stringify(res.data));
+          }
+        })
+        .catch(() => {});
+    }
+
     setIsLoading(false);
   }, []);
 
@@ -46,6 +60,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(res.data.token);
       setUser(res.data.user);
     }
+  }, []);
+
+  const updateUser = useCallback((updatedData: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return null;
+      const next = { ...prev, ...updatedData };
+      localStorage.setItem("user", JSON.stringify(next));
+      return next;
+    });
   }, []);
 
   const logout = useCallback(() => {
@@ -64,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         login,
         logout,
+        updateUser,
       }}
     >
       {children}

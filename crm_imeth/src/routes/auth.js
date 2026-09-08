@@ -33,7 +33,7 @@ router.post('/login', async (req, res) => {
       success: true,
       data: {
         token,
-        user: { id: user.id, email: user.email, role: user.role, tenantId: user.tenantId }
+        user: { id: user.id, name: user.name, email: user.email, role: user.role, tenantId: user.tenantId }
       }
     });
   } catch (error) {

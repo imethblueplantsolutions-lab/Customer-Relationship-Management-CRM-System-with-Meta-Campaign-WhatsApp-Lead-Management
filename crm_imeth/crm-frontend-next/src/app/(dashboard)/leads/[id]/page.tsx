@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/hooks/use-auth";
+import { useSocket } from "@/hooks/use-socket";
 import type { Lead, Message, Followup, Activity } from "@/types";
 import {
   ArrowLeft,
@@ -45,6 +46,7 @@ export default function LeadDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
+  const { socket } = useSocket();
 
   const isAgent = user?.role === "AGENT";
   const canManageAssignment = user?.role === "ADMIN" || user?.role === "TEAM_LEAD";
@@ -55,7 +57,7 @@ export default function LeadDetailPage() {
   const [error, setError] = useState("");
 
   // Agent list for assignment (Admin / Team Lead)
-  const [agents, setAgents] = useState<{ id: string; email: string; role: string }[]>([]);
+  const [agents, setAgents] = useState<{ id: string; name?: string; email: string; role: string }[]>([]);
   const [assigningLead, setAssigningLead] = useState(false);
   const [deletingLead, setDeletingLead] = useState(false);
 
@@ -115,7 +117,7 @@ export default function LeadDetailPage() {
   // Load active agents list if admin or team lead
   useEffect(() => {
     if (canManageAssignment) {
-      apiClient<{ id: string; email: string; role: string }[]>("/users")
+      apiClient<{ id: string; name?: string; email: string; role: string }[]>("/users")
         .then((res) => {
           if (res.success && res.data) {
             setAgents(res.data);
@@ -124,6 +126,105 @@ export default function LeadDetailPage() {
         .catch((err) => console.warn("Could not load users list:", err));
     }
   }, [canManageAssignment]);
+
+  // ─── Real-Time Socket.IO Synchronization ──────────────────────
+  useEffect(() => {
+    if (!socket || !params.id) return;
+
+    // 1. When an activity is created (manual or system assignment)
+    const handleActivityCreated = (data: { leadId: string; activity: Activity }) => {
+      if (data.leadId === params.id && data.activity) {
+        setLead((prev) => {
+          if (!prev) return prev;
+          if (prev.activities?.some((a) => a.id === data.activity.id)) return prev;
+          const updatedActivities = [...(prev.activities || []), data.activity].sort(
+            (a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
+          );
+          return { ...prev, activities: updatedActivities };
+        });
+      }
+    };
+
+    // 2. When an activity is deleted
+    const handleActivityDeleted = (data: { leadId: string; activityId: string }) => {
+      if (data.leadId === params.id) {
+        setLead((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            activities: (prev.activities || []).filter((a) => a.id !== data.activityId),
+          };
+        });
+      }
+    };
+
+    // 3. When lead details or assignee change
+    const handleLeadUpdated = (data: { leadId: string; lead: Partial<Lead> }) => {
+      if (data.leadId === params.id && data.lead) {
+        setLead((prev) => (prev ? { ...prev, ...data.lead } : null));
+      }
+    };
+
+    // 4. When a user profile is updated in real time (name change), update matching activities and agents
+    const handleUserUpdated = (updatedUser: { id: string; name?: string; email: string; role: string }) => {
+      setAgents((prev) =>
+        prev.map((a) => (a.id === updatedUser.id ? { ...a, ...updatedUser } : a))
+      );
+      setLead((prev) => {
+        if (!prev) return prev;
+        const updatedActivities = (prev.activities || []).map((act) => {
+          if (act.createdBy?.id === updatedUser.id || act.createdById === updatedUser.id) {
+            return {
+              ...act,
+              createdBy: {
+                ...act.createdBy,
+                id: updatedUser.id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                role: updatedUser.role,
+              },
+            };
+          }
+          return act;
+        });
+
+        const updatedAssignedTo =
+          prev.assignedTo?.id === updatedUser.id
+            ? { ...prev.assignedTo, name: updatedUser.name, email: updatedUser.email, role: updatedUser.role }
+            : prev.assignedTo;
+
+        return { ...prev, activities: updatedActivities, assignedTo: updatedAssignedTo };
+      });
+    };
+
+    // 5. When a new WhatsApp message is received or sent
+    const handleNewMessage = (data: { leadId: string; message: Message }) => {
+      if (data.leadId === params.id && data.message) {
+        setLead((prev) => {
+          if (!prev) return prev;
+          if (prev.messages?.some((m) => m.id === data.message.id)) return prev;
+          return {
+            ...prev,
+            messages: [...(prev.messages || []), data.message],
+          };
+        });
+      }
+    };
+
+    socket.on("lead_activity_created", handleActivityCreated);
+    socket.on("lead_activity_deleted", handleActivityDeleted);
+    socket.on("lead_updated", handleLeadUpdated);
+    socket.on("user_updated", handleUserUpdated);
+    socket.on("new_message", handleNewMessage);
+
+    return () => {
+      socket.off("lead_activity_created", handleActivityCreated);
+      socket.off("lead_activity_deleted", handleActivityDeleted);
+      socket.off("lead_updated", handleLeadUpdated);
+      socket.off("user_updated", handleUserUpdated);
+      socket.off("new_message", handleNewMessage);
+    };
+  }, [socket, params.id]);
 
   // ─── Fetch Lead Details ──────────────────────────────────────
   const fetchLead = useCallback(async () => {
@@ -1282,7 +1383,7 @@ export default function LeadDetailPage() {
                         <option value="">Unassigned</option>
                         {agents.map((ag) => (
                           <option key={ag.id} value={ag.id}>
-                            {ag.email} ({ag.role})
+                            {ag.name ? `${ag.name} (${ag.role === "ADMIN" ? "Admin" : ag.role === "TEAM_LEAD" ? "Team Lead" : "Sales Agent"})` : `${ag.email} (${ag.role})`}
                           </option>
                         ))}
                       </select>
@@ -1292,7 +1393,9 @@ export default function LeadDetailPage() {
                     </div>
                   ) : (
                     <p className="font-semibold text-slate-800">
-                      {lead.assignedTo?.email || "Unassigned"}
+                      {lead.assignedTo?.name
+                        ? `${lead.assignedTo.name} (${lead.assignedTo.role === "ADMIN" ? "Admin" : lead.assignedTo.role === "TEAM_LEAD" ? "Team Lead" : "Sales Agent"})`
+                        : lead.assignedTo?.email || "Unassigned"}
                     </p>
                   )}
                 </div>
@@ -1394,12 +1497,14 @@ export default function LeadDetailPage() {
                     onChange={(e) => setActivityForm({ ...activityForm, createdById: e.target.value })}
                     className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/10 focus:outline-none transition-all"
                   >
-                    <option value={user?.id || ""}>Me ({user?.email.split("@")[0]})</option>
+                    <option value={user?.id || ""}>
+                      Me ({user?.name || user?.email.split("@")[0]})
+                    </option>
                     {agents
                       .filter((a) => a.id !== user?.id)
                       .map((a) => (
                         <option key={a.id} value={a.id}>
-                          {a.email.split("@")[0].charAt(0).toUpperCase() + a.email.split("@")[0].slice(1)} ({a.role === "ADMIN" ? "Admin" : a.role === "TEAM_LEAD" ? "Team Lead" : "Sales Agent"})
+                          {a.name || a.email.split("@")[0].charAt(0).toUpperCase() + a.email.split("@")[0].slice(1)} ({a.role === "ADMIN" ? "Admin" : a.role === "TEAM_LEAD" ? "Team Lead" : "Sales Agent"})
                         </option>
                       ))}
                   </select>

@@ -116,7 +116,7 @@ router.post('/', authorize(['ADMIN', 'TEAM_LEAD', 'AGENT']), async (req, res) =>
           select: { name: true, email: true }
         });
         const assigneeName = assigneeUser?.name || assigneeUser?.email?.split('@')[0] || 'Sales Agent';
-        await prisma.activity.create({
+        const systemActivity = await prisma.activity.create({
           data: {
             leadId: newLead.id,
             createdById: currentUserId || null,
@@ -124,8 +124,20 @@ router.post('/', authorize(['ADMIN', 'TEAM_LEAD', 'AGENT']), async (req, res) =>
             title: 'Lead Assigned',
             description: `Lead assigned to ${assigneeName}`,
             occurredAt: new Date()
+          },
+          include: {
+            createdBy: { select: { id: true, name: true, email: true, role: true } }
           }
         });
+
+        try {
+          const { io } = require('../index');
+          if (io) {
+            io.to(`tenant:${tenantId}`).emit('lead_activity_created', { leadId: newLead.id, activity: systemActivity });
+          }
+        } catch (socketErr) {
+          console.warn('[Socket] Failed to emit lead_activity_created on create:', socketErr.message);
+        }
       } catch (actErr) {
         console.warn('[Activity] Failed to create system assignment activity on create:', actErr.message);
       }
@@ -179,14 +191,14 @@ router.get('/:id', async (req, res) => {
     const lead = await prisma.lead.findFirst({
       where,
       include: {
-        assignedTo: { select: { id: true, email: true, role: true } },
+        assignedTo: { select: { id: true, name: true, email: true, role: true } },
         attribution: true,
         messages: { orderBy: { createdAt: 'asc' } },
         followups: {
           orderBy: { dueAt: 'asc' },
           include: {
-            createdBy: { select: { id: true, email: true, role: true } },
-            assignedTo: { select: { id: true, email: true, role: true } }
+            createdBy: { select: { id: true, name: true, email: true, role: true } },
+            assignedTo: { select: { id: true, name: true, email: true, role: true } }
           }
         },
         activities: {
@@ -349,7 +361,7 @@ router.put('/:id', async (req, res) => {
           description = `Lead ${existingLead.assignedToId ? 'reassigned' : 'assigned'} to ${assigneeName}`;
         }
 
-        await prisma.activity.create({
+        const systemActivity = await prisma.activity.create({
           data: {
             leadId: updatedLead.id,
             createdById: currentUserId || null,
@@ -357,11 +369,33 @@ router.put('/:id', async (req, res) => {
             title,
             description,
             occurredAt: new Date()
+          },
+          include: {
+            createdBy: { select: { id: true, name: true, email: true, role: true } }
           }
         });
+
+        try {
+          const { io } = require('../index');
+          if (io) {
+            io.to(`tenant:${tenantId}`).emit('lead_activity_created', { leadId: updatedLead.id, activity: systemActivity });
+          }
+        } catch (socketErr) {
+          console.warn('[Socket] Failed to emit lead_activity_created on update:', socketErr.message);
+        }
       } catch (actErr) {
         console.warn('[Activity] Failed to create system assignment activity on update:', actErr.message);
       }
+    }
+
+    // Broadcast lead update to all clients in the tenant
+    try {
+      const { io } = require('../index');
+      if (io) {
+        io.to(`tenant:${tenantId}`).emit('lead_updated', { leadId: updatedLead.id, lead: updatedLead });
+      }
+    } catch (socketErr) {
+      console.warn('[Socket] Failed to broadcast lead_updated:', socketErr.message);
     }
 
     // Notify assigned sales agent if lead was newly assigned or reassigned by Admin/Team Lead
@@ -559,6 +593,16 @@ router.post('/:id/activities', async (req, res) => {
 
     await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
 
+    // Broadcast activity creation to all clients viewing this lead or tenant
+    try {
+      const { io } = require('../index');
+      if (io) {
+        io.to(`tenant:${tenantId}`).emit('lead_activity_created', { leadId: req.params.id, activity });
+      }
+    } catch (socketErr) {
+      console.warn('[Socket] Failed to broadcast lead_activity_created:', socketErr.message);
+    }
+
     res.status(201).json({ success: true, data: activity });
   } catch (error) {
     console.error('Error creating activity:', error);
@@ -591,6 +635,19 @@ router.delete('/:id/activities/:activityId', async (req, res) => {
     await prisma.activity.delete({ where: { id: req.params.activityId } });
 
     await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
+
+    // Broadcast activity deletion
+    try {
+      const { io } = require('../index');
+      if (io) {
+        io.to(`tenant:${tenantId}`).emit('lead_activity_deleted', {
+          leadId: req.params.id,
+          activityId: req.params.activityId
+        });
+      }
+    } catch (socketErr) {
+      console.warn('[Socket] Failed to broadcast lead_activity_deleted:', socketErr.message);
+    }
 
     res.status(200).json({ success: true, message: 'Activity deleted' });
   } catch (error) {

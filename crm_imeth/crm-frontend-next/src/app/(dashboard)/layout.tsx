@@ -35,7 +35,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated, isLoading, user, logout } = useAuth();
+  const { isAuthenticated, isLoading, user, logout, updateUser } = useAuth();
   const { socket } = useSocket();
   const router = useRouter();
   const pathname = usePathname();
@@ -77,12 +77,20 @@ export default function DashboardLayout({
         setToastNotif(null);
       }, 7000);
     };
+    const handleUserUpdate = (updated: { id: string; name?: string; email: string; role: string }) => {
+      if (user && updated.id === user.id) {
+        updateUser(updated);
+      }
+    };
+
     socket.on("new_notification", handleNew);
+    socket.on("user_updated", handleUserUpdate);
     return () => {
       socket.off("new_notification", handleNew);
+      socket.off("user_updated", handleUserUpdate);
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     };
-  }, [socket]);
+  }, [socket, user, updateUser]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -292,15 +300,16 @@ export default function DashboardLayout({
             }`}
           >
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#128c7e] to-[#25d366] text-xs font-bold text-white shadow-sm">
-              {user?.email?.charAt(0).toUpperCase() || "A"}
+              {user?.name ? user.name.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || "A"}
             </div>
             {!isCollapsed && (
               <div className="flex-1 min-w-0">
                 <p className="truncate text-fluid-title font-semibold text-white leading-tight">
-                  {user?.email || "admin@crm.com"}
+                  {user?.name || user?.email || "admin@crm.com"}
                 </p>
                 <p className="text-fluid-meta text-slate-400 truncate">
-                  {user?.role || "ADMIN"}
+                  {user?.role === "ADMIN" ? "Admin" : user?.role === "TEAM_LEAD" ? "Team Lead" : "Sales Agent"}
+                  {user?.name && <span className="text-[10px] text-slate-500 block truncate">{user.email}</span>}
                 </p>
               </div>
             )}
