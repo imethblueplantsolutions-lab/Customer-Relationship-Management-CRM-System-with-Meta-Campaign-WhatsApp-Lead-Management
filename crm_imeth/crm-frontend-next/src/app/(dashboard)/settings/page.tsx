@@ -4,7 +4,19 @@ import { useState, useEffect } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/hooks/use-auth";
 import type { User } from "@/types";
-import { Save, Shield, Smartphone, Key, User as UserIcon, CheckCircle2 } from "lucide-react";
+import {
+  Save,
+  Shield,
+  Smartphone,
+  Key,
+  User as UserIcon,
+  CheckCircle2,
+  Lock,
+  Mail,
+  RefreshCw,
+  AlertCircle,
+  KeyRound,
+} from "lucide-react";
 
 interface TenantSettings {
   id: string;
@@ -15,7 +27,7 @@ interface TenantSettings {
 }
 
 export default function SettingsPage() {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, setSession } = useAuth();
   const [settings, setSettings] = useState<TenantSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [savingSettings, setSavingSettings] = useState(false);
@@ -25,6 +37,16 @@ export default function SettingsPage() {
   const [profileName, setProfileName] = useState(user?.name || "");
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMessage, setProfileMessage] = useState("");
+
+  // Security OTP Form State
+  const [securityTargetEmail, setSecurityTargetEmail] = useState("");
+  const [securityNewPassword, setSecurityNewPassword] = useState("");
+  const [securityOtpCode, setSecurityOtpCode] = useState("");
+  const [otpStep, setOtpStep] = useState<"IDLE" | "OTP_SENT">("IDLE");
+  const [requestingOtp, setRequestingOtp] = useState(false);
+  const [verifyingSecurity, setVerifyingSecurity] = useState(false);
+  const [securityError, setSecurityError] = useState("");
+  const [securitySuccess, setSecuritySuccess] = useState("");
 
   // Meta Credentials State
   const [wabaId, setWabaId] = useState("");
@@ -87,6 +109,85 @@ export default function SettingsPage() {
     }
   };
 
+  // Step 1: Request Security OTP code
+  const handleRequestSecurityOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSecurityError("");
+    setSecuritySuccess("");
+
+    if (!securityTargetEmail.trim() && !securityNewPassword.trim()) {
+      setSecurityError("Please enter a new email address or a new password to request OTP verification");
+      return;
+    }
+
+    setRequestingOtp(true);
+
+    try {
+      const res = await apiClient<{ message?: string; targetEmail?: string }>(
+        "/users/profile/request-otp",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            newEmail: securityTargetEmail.trim() || undefined,
+          }),
+        }
+      );
+
+      if (res.success) {
+        setOtpStep("OTP_SENT");
+        setSecuritySuccess(
+          res.data?.message || `Verification OTP code dispatched! Check inbox.`
+        );
+      } else {
+        setSecurityError(res.error || "Failed to request security OTP");
+      }
+    } catch (err: unknown) {
+      setSecurityError(err instanceof Error ? err.message : "OTP request failed");
+    } finally {
+      setRequestingOtp(false);
+    }
+  };
+
+  // Step 2: Verify OTP and commit security updates
+  const handleVerifySecurityOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSecurityError("");
+    setSecuritySuccess("");
+
+    if (!securityOtpCode.trim()) {
+      setSecurityError("Please enter the 6-digit OTP code");
+      return;
+    }
+
+    setVerifyingSecurity(true);
+
+    try {
+      const res = await apiClient<{ token: string; user: User }>("/users/profile/security", {
+        method: "PUT",
+        body: JSON.stringify({
+          otpCode: securityOtpCode.trim(),
+          newPassword: securityNewPassword.trim() || undefined,
+        }),
+      });
+
+      if (res.success && res.data) {
+        setSession(res.data.token, res.data.user);
+        setOtpStep("IDLE");
+        setSecurityOtpCode("");
+        setSecurityNewPassword("");
+        setSecurityTargetEmail("");
+        setSecuritySuccess("Profile credentials and security updated successfully!");
+        setTimeout(() => setSecuritySuccess(""), 5000);
+      } else {
+        setSecurityError(res.error || "Failed to verify security OTP");
+      }
+    } catch (err: unknown) {
+      setSecurityError(err instanceof Error ? err.message : "Verification failed");
+    } finally {
+      setVerifyingSecurity(false);
+    }
+  };
+
   // Handle Meta WhatsApp API Settings Save
   const handleSaveSettings = async () => {
     setSavingSettings(true);
@@ -122,7 +223,7 @@ export default function SettingsPage() {
       <div>
         <h2 className="text-2xl font-bold text-slate-800">Account & Settings</h2>
         <p className="text-sm text-slate-500 mt-1">
-          Manage your account profile and Meta WhatsApp CRM configurations
+          Manage your account profile, OTP security credentials, and Meta WhatsApp CRM configurations
         </p>
       </div>
 
@@ -164,9 +265,6 @@ export default function SettingsPage() {
               placeholder="e.g. Imeth Dewmina Rathnayaka"
               className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-800 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
             />
-            <p className="text-[11px] text-slate-400 mt-1.5">
-              This replaces generic placeholders like &quot;Jennifer&quot; with your actual account name across the timeline and CRM.
-            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
@@ -202,7 +300,142 @@ export default function SettingsPage() {
         </form>
       </div>
 
-      {/* ─── 2. Meta WhatsApp API Credentials (Admin & Team Lead) ─── */}
+      {/* ─── 2. Profile Security & OTP Email/Password Verification ─── */}
+      <div className="rounded-2xl bg-white border border-slate-200/80 shadow-sm overflow-hidden">
+        <div className="border-b border-slate-100 bg-slate-50/70 px-7 py-4.5">
+          <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+            <Shield className="h-4 w-4 text-[#128c7e]" />
+            Profile Security & OTP Verification
+          </h3>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Change your account password or email address protected by nodemailer-otp verification
+          </p>
+        </div>
+
+        <div className="p-7 space-y-4">
+          {securityError && (
+            <div className="rounded-xl bg-red-50 border border-red-200 p-3.5 text-xs text-red-700 font-medium flex items-center gap-2.5">
+              <AlertCircle className="h-4 w-4 text-red-500 shrink-0" />
+              <span>{securityError}</span>
+            </div>
+          )}
+
+          {securitySuccess && (
+            <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs text-emerald-800 font-medium flex items-center gap-2.5">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+              <span>{securitySuccess}</span>
+            </div>
+          )}
+
+          {otpStep === "IDLE" ? (
+            <form onSubmit={handleRequestSecurityOtp} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                  <Mail className="h-3.5 w-3.5 text-[#128c7e]" />
+                  Change Email Address (Optional)
+                </label>
+                <input
+                  type="email"
+                  value={securityTargetEmail}
+                  onChange={(e) => setSecurityTargetEmail(e.target.value)}
+                  placeholder={`Current: ${user?.email}`}
+                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-800 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
+                />
+                <p className="text-[11px] text-slate-400 mt-1">
+                  OTP code will be sent to the new address to prove inbox ownership.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                  <Lock className="h-3.5 w-3.5 text-[#128c7e]" />
+                  Change Password (Optional)
+                </label>
+                <input
+                  type="password"
+                  value={securityNewPassword}
+                  onChange={(e) => setSecurityNewPassword(e.target.value)}
+                  placeholder="Enter new password (min 6 characters)"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-800 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
+                />
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={requestingOtp || (!securityTargetEmail.trim() && !securityNewPassword.trim())}
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#075e54] px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#128c7e] transition-all disabled:opacity-50 cursor-pointer"
+                >
+                  {requestingOtp ? (
+                    <>
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                      Sending OTP...
+                    </>
+                  ) : (
+                    <>
+                      <KeyRound className="h-3.5 w-3.5" />
+                      Request Security OTP
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleVerifySecurityOtp} className="space-y-4">
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700">
+                <p className="font-bold text-slate-800">Enter Verification OTP Code</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  A 6-digit OTP code has been dispatched to your email address. Enter it below to commit your security changes.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  6-Digit Verification Code
+                </label>
+                <input
+                  type="text"
+                  maxLength={6}
+                  required
+                  value={securityOtpCode}
+                  onChange={(e) => setSecurityOtpCode(e.target.value.replace(/[^0-9]/g, ""))}
+                  placeholder="e.g. 123456"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-center font-mono text-lg font-bold text-slate-900 tracking-widest focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
+                />
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  type="submit"
+                  disabled={verifyingSecurity || securityOtpCode.length !== 6}
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#075e54] px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#128c7e] transition-all disabled:opacity-50 cursor-pointer"
+                >
+                  {verifyingSecurity ? (
+                    <>
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                      Verifying...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      Verify & Commit Changes
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOtpStep("IDLE")}
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      </div>
+
+      {/* ─── 3. Meta WhatsApp API Credentials (Admin & Team Lead) ─── */}
       {isPrivileged ? (
         <div className="rounded-2xl bg-white border border-slate-200/80 shadow-sm overflow-hidden divide-y divide-slate-100">
           <div className="bg-slate-50/70 px-7 py-4.5">

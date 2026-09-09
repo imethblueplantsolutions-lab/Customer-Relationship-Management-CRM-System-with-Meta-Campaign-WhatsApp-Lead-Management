@@ -29,6 +29,12 @@ model User {
   password          String
   role              String         @default("AGENT")
   isActive          Boolean        @default(true)
+  isFirstLogin      Boolean        @default(true)
+  otpHash           String?
+  otpExpiresAt      DateTime?
+  otpAttempts       Int            @default(0)
+  pendingEmail      String?
+  tokenVersion      Int            @default(0)
   tenantId          String
   tenant            Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   assignedLeads     Lead[]

@@ -5,6 +5,9 @@ export interface User {
   email: string;
   role: string;
   tenantId: string;
+  isActive?: boolean;
+  isFirstLogin?: boolean;
+  createdAt?: string;
 }
 
 // ─── Lead ──────────────────────────────────────────────────

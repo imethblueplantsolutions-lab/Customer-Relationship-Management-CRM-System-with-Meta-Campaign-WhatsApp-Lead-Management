@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { apiClient } from "@/lib/api-client";
+import OtpLoginModal from "@/components/auth/OtpLoginModal";
+import type { User } from "@/types";
 import {
   Lock,
   Mail,
@@ -28,7 +30,11 @@ export default function LoginPage() {
   const [seeding, setSeeding] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
 
-  const { login } = useAuth();
+  // OTP Modal state
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [isFirstLogin, setIsFirstLogin] = useState(false);
+
+  const { login, setSession } = useAuth();
   const router = useRouter();
 
   const slides = [
@@ -58,8 +64,14 @@ export default function LoginPage() {
     setSuccessMsg("");
     setLoading(true);
     try {
-      await login(email, password);
-      router.push("/dashboard");
+      const res = await login(email, password);
+      if (res?.requireOtp) {
+        setIsFirstLogin(!!res.isFirstLogin);
+        setShowOtpModal(true);
+        setSuccessMsg(res.message || "OTP code dispatched to your email. Please verify to proceed.");
+      } else {
+        router.push("/dashboard");
+      }
     } catch (err: unknown) {
       setError(
         err instanceof Error
@@ -69,6 +81,12 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOtpSuccess = (data: { token: string; user: User }) => {
+    setShowOtpModal(false);
+    setSession(data.token, data.user);
+    router.push("/dashboard");
   };
 
   const handleQuickFill = (role: "ADMIN" | "TEAM_LEAD" | "AGENT" = "ADMIN") => {
@@ -374,6 +392,15 @@ export default function LoginPage() {
         </div>
 
       </div>
+
+      {/* OTP Login Modal */}
+      <OtpLoginModal
+        isOpen={showOtpModal}
+        email={email}
+        isFirstLogin={isFirstLogin}
+        onSuccess={handleOtpSuccess}
+        onCancel={() => setShowOtpModal(false)}
+      />
     </div>
   );
 }

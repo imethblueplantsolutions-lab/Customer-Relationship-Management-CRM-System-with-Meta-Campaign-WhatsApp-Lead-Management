@@ -9,9 +9,10 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ requireOtp?: boolean; isFirstLogin?: boolean; message?: string }>;
   logout: () => void;
   updateUser: (updatedData: Partial<User>) => void;
+  setSession: (token: string, user: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -33,8 +34,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    // Refresh profile from server to guarantee freshest real-time account data.
-    // Keep isLoading=true until this resolves to avoid a flash redirect to /login.
     if (storedToken) {
       apiClient<User>("/users/me")
         .then((res) => {
@@ -50,20 +49,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const setSession = useCallback((newToken: string, newUser: User) => {
+    localStorage.setItem("token", newToken);
+    localStorage.setItem("user", JSON.stringify(newUser));
+    if (newUser.tenantId) {
+      localStorage.setItem("tenantId", newUser.tenantId);
+    }
+    setToken(newToken);
+    setUser(newUser);
+  }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const res = await apiClient<{ token: string; user: User }>("/auth/login", {
+    const res = await apiClient<{ token?: string; user?: User; requireOtp?: boolean; isFirstLogin?: boolean; message?: string }>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
-    if (res.success && res.data) {
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-      localStorage.setItem("tenantId", res.data.user.tenantId);
-      setToken(res.data.token);
-      setUser(res.data.user);
+
+    if (res.success) {
+      if (res.data?.requireOtp) {
+        return {
+          requireOtp: true,
+          isFirstLogin: res.data.isFirstLogin,
+          message: res.data.message,
+        };
+      }
+      if (res.data?.token && res.data?.user) {
+        setSession(res.data.token, res.data.user);
+        return { requireOtp: false };
+      }
+    } else {
+      throw new Error(res.error || "Authentication failed");
     }
-  }, []);
+    return { requireOtp: false };
+  }, [setSession]);
 
   const updateUser = useCallback((updatedData: Partial<User>) => {
     setUser((prev) => {
@@ -91,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         updateUser,
+        setSession,
       }}
     >
       {children}
