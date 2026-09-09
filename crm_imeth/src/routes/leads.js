@@ -428,6 +428,43 @@ router.put('/:id', async (req, res) => {
     res.status(500).json({ success: false, error: 'Failed to update lead' });
   }
 });
+// GET: Fetch all follow-up reminders in tenant (for dedicated Follow-ups page)
+router.get('/followups/all', async (req, res) => {
+  try {
+    const store = tenantStorage.getStore();
+    const tenantId = req.user?.tenantId || store?.tenantId;
+    const isAgent = req.user?.role === 'AGENT';
+    const currentUserId = req.user?.userId || req.user?.id;
+
+    const followups = await prisma.followup.findMany({
+      where: {
+        lead: { tenantId },
+        ...(isAgent && {
+          OR: [
+            { assignedToId: currentUserId },
+            { createdById: currentUserId },
+          ],
+        }),
+      },
+      orderBy: { dueAt: 'asc' },
+      include: {
+        lead: {
+          select: { id: true, name: true, phoneNumber: true, status: true, category: true }
+        },
+        createdBy: { select: { id: true, name: true, email: true } },
+        assignedTo: { select: { id: true, name: true, email: true } },
+        attachments: {
+          select: { id: true, fileName: true, fileUrl: true, fileType: true, fileSize: true, createdAt: true }
+        },
+      },
+    });
+
+    res.status(200).json({ success: true, data: followups });
+  } catch (error) {
+    console.error('Error fetching all followups:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch follow-ups' });
+  }
+});
 
 // POST: Add follow-up activity / reminder to a lead
 // Admins & Team Leads can assign to any agent; Agents can only assign to themselves

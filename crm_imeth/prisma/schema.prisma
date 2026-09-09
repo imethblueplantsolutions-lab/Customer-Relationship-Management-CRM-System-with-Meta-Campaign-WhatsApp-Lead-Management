@@ -43,6 +43,7 @@ model User {
   assignedFollowups Followup[]     @relation("FollowupAssignment")
   activities        Activity[]     @relation("ActivityCreator")
   notifications     Notification[]
+  createdAttachments Attachment[]   @relation("AttachmentCreator")
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
 }
@@ -70,6 +71,7 @@ model Lead {
   followups      Followup[]
   activities     Activity[]
   deals          Deal[]
+  attachments    Attachment[]
 
   @@unique([tenantId, phoneNumber])
   @@index([tenantId, status])
@@ -102,22 +104,43 @@ model Message {
 }
 
 model Followup {
-  id           String    @id @default(uuid())
+  id           String       @id @default(uuid())
   leadId       String
-  lead         Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  lead         Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
   createdById  String?
-  createdBy    User?     @relation("FollowupCreator", fields: [createdById], references: [id])
+  createdBy    User?        @relation("FollowupCreator", fields: [createdById], references: [id])
   assignedToId String?
-  assignedTo   User?     @relation("FollowupAssignment", fields: [assignedToId], references: [id])
-  type         String    @default("CALL")
+  assignedTo   User?        @relation("FollowupAssignment", fields: [assignedToId], references: [id])
+  type         String       @default("CALL")
   dueAt        DateTime?
   note         String?
-  completed    Boolean   @default(false)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  completed    Boolean      @default(false)
+  attachments  Attachment[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
   @@index([leadId])
   @@index([dueAt])
+}
+
+model Attachment {
+  id          String    @id @default(uuid())
+  fileName    String
+  fileUrl     String
+  fileType    String
+  fileSize    Int
+  createdById String
+  createdBy   User      @relation("AttachmentCreator", fields: [createdById], references: [id])
+  leadId      String?
+  lead        Lead?     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  followupId  String?
+  followup    Followup? @relation(fields: [followupId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([leadId])
+  @@index([followupId])
+  @@index([createdById])
 }
 
 model Pipeline {

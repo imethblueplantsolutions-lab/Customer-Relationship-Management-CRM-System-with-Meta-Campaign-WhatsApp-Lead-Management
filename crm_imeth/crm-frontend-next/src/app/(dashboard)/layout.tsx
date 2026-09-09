@@ -22,14 +22,13 @@ import {
   CheckCheck,
 } from "lucide-react";
 
-import { UserCheck } from "lucide-react";
+import { UserCheck, Clock } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/leads", label: "Leads", icon: Users },
+  { href: "/followups", label: "Follow-ups", icon: Clock },
   { href: "/users", label: "Users", icon: UserCheck },
-  { href: "/pipelines", label: "Pipelines", icon: GitBranch },
-  { href: "/flows", label: "Flows", icon: Workflow },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -206,7 +205,7 @@ export default function DashboardLayout({
         >
           {NAV_ITEMS.filter((item) => {
             if (user?.role === "AGENT") {
-              return item.href !== "/flows" && item.href !== "/settings" && item.href !== "/users";
+              return item.href !== "/settings" && item.href !== "/users";
             }
             return true;
           }).map((item) => {

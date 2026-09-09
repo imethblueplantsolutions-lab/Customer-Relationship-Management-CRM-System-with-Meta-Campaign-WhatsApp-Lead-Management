@@ -56,6 +56,19 @@ export interface Message {
   createdAt: string;
 }
 
+export interface Attachment {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  fileType: string;
+  fileSize: number;
+  createdById?: string;
+  createdBy?: { id: string; name?: string; email: string };
+  leadId?: string | null;
+  followupId?: string | null;
+  createdAt: string;
+}
+
 export interface Followup {
   id: string;
   leadId: string;
@@ -67,6 +80,8 @@ export interface Followup {
   dueAt?: string;
   note?: string;
   completed: boolean;
+  attachments?: Attachment[];
+  lead?: { id: string; name?: string; phoneNumber: string; status?: string; category?: string };
   createdAt: string;
   updatedAt: string;
 }

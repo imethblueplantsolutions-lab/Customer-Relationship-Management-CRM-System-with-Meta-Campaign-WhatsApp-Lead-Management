@@ -1,4 +1,5 @@
 require('dotenv').config();
+const path = require('path');
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
@@ -12,6 +13,9 @@ const { extractTenantMiddleware } = require('./middleware/tenant');
 const app = express();
 const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
+
+// Serve static uploads directory for local file attachments
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Initialize Socket.IO (Redis adapter attached only when Redis is available)
 const io = new Server(server, {
@@ -115,6 +119,7 @@ app.use('/api/flows', require('./routes/flows'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/attachments', require('./routes/attachments'));
 
 // Global Error Handler
 app.use((err, req, res, next) => {
