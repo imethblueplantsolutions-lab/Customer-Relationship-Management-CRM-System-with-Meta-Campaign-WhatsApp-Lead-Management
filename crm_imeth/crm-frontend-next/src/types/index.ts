@@ -29,6 +29,7 @@ export interface Lead {
   messages?: Message[];
   followups?: Followup[];
   activities?: Activity[];
+  attachments?: Attachment[];
   _count?: { followups: number; messages: number };
   createdAt: string;
   updatedAt: string;

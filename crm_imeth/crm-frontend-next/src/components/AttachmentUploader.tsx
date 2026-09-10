@@ -12,6 +12,7 @@ import {
   Loader2,
   AlertCircle,
   ExternalLink,
+  Trash2,
 } from "lucide-react";
 
 interface AttachmentUploaderProps {

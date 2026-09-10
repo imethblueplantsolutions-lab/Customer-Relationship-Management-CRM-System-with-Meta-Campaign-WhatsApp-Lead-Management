@@ -20,15 +20,24 @@ import {
   Sparkles,
   Bell,
   CheckCheck,
+  AlertOctagon,
 } from "lucide-react";
 
 import { UserCheck, Clock } from "lucide-react";
 
-const NAV_ITEMS = [
+interface NavItem {
+  href: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  adminOnly?: boolean;
+}
+
+const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/leads", label: "Leads", icon: Users },
   { href: "/followups", label: "Follow-ups", icon: Clock },
   { href: "/users", label: "Users", icon: UserCheck },
+  { href: "/admin/dead-letters", label: "Dead Letters", icon: AlertOctagon, adminOnly: true },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -204,6 +213,9 @@ export default function DashboardLayout({
           style={{ gap: "32px" }}
         >
           {NAV_ITEMS.filter((item) => {
+            if (item.adminOnly && user?.role !== "ADMIN") {
+              return false;
+            }
             if (user?.role === "AGENT") {
               return item.href !== "/settings" && item.href !== "/users";
             }

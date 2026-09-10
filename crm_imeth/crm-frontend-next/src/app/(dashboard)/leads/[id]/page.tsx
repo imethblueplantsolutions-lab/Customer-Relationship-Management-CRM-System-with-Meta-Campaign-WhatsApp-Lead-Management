@@ -1605,7 +1605,7 @@ export default function LeadDetailPage() {
                   if (!prev) return prev;
                   return {
                     ...prev,
-                    attachments: (prev.attachments || []).filter((a) => a.id !== deletedId),
+                    attachments: (prev.attachments || []).filter((a: Attachment) => a.id !== deletedId),
                   };
                 });
               }}

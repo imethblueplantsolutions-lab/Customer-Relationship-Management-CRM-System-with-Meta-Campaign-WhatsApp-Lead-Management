@@ -5,7 +5,7 @@ const webhookQueue = new Queue('webhook-ingestion', {
   connection: redisClient,
   defaultJobOptions: {
     attempts: 3,
-    backoff: { type: 'exponential', delay: 1000 },
+    backoff: { type: 'exponential', delay: 5000 },
     removeOnComplete: true,
     removeOnFail: 100,
   }

@@ -2,6 +2,7 @@ const { Worker } = require('bullmq');
 const redisClient = require('../config/redis');
 const prisma = require('../config/db');
 const CacheService = require('../services/cacheService');
+const { getRoundRobinAgent } = require('../utils/assignment');
 
 const webhookWorker = new Worker('webhook-ingestion', async (job) => {
   // Lazy require io to avoid circular dependencies
@@ -179,13 +180,20 @@ const webhookWorker = new Worker('webhook-ingestion', async (job) => {
     }
   });
 
-  // 3. Persist / Upsert Lead in PostgreSQL
+  // 3. Persist / Upsert Lead in PostgreSQL with Automatic Round-Robin Assignment
   // Only update name if it's still the raw phone number (never manually edited by an agent)
   const existingLead = await prisma.lead.findUnique({
     where: { tenantId_phoneNumber: { tenantId, phoneNumber } },
-    select: { name: true }
+    select: { id: true, name: true, assignedToId: true }
   });
+  const isNewLead = !existingLead;
   const shouldUpdateName = !existingLead || existingLead.name === phoneNumber;
+
+  // Determine round-robin agent assignment for newly captured leads
+  let assignedAgentId = null;
+  if (isNewLead) {
+    assignedAgentId = await getRoundRobinAgent(tenantId);
+  }
 
   const lead = await prisma.lead.upsert({
     where: { 
@@ -201,8 +209,38 @@ const webhookWorker = new Worker('webhook-ingestion', async (job) => {
       name: customerName,
       status: 'NEW',
       category: referral ? 'Meta Ad' : 'Organic',
+      ...(assignedAgentId && { assignedToId: assignedAgentId }),
     }
   });
+
+  // 3.1 If newly created and assigned to an agent, create Notification and emit real-time event
+  if (isNewLead && assignedAgentId) {
+    try {
+      const notification = await prisma.notification.create({
+        data: {
+          userId: assignedAgentId,
+          type: 'LEAD_ASSIGNED',
+          title: 'New Lead Assigned to You',
+          body: `A new Meta WhatsApp lead (${customerName || phoneNumber}) was automatically assigned to you.`,
+          linkUrl: `/leads/${lead.id}`,
+        },
+      });
+
+      if (io) {
+        io.to(`user:${assignedAgentId}`).emit('lead_assigned', {
+          leadId: lead.id,
+          leadName: customerName || phoneNumber,
+          phoneNumber,
+          assignedToId: assignedAgentId,
+          notification,
+        });
+        io.to(`user:${assignedAgentId}`).emit('new_notification', notification);
+        console.log(`📡 [Worker] Notified agent ${assignedAgentId} of auto-assigned lead ${lead.id}`);
+      }
+    } catch (notifErr) {
+      console.warn('[Worker] Failed to create or emit notification for auto-assigned lead:', notifErr.message);
+    }
+  }
 
   // 4. If CTWA Referral attribution exists and not yet saved, save it
   if (referral) {
@@ -264,8 +302,27 @@ webhookWorker.on('completed', (job) => {
   console.log(`[Worker] Job ${job.id} completed successfully`);
 });
 
-webhookWorker.on('failed', (job, err) => {
-  console.error(`[Worker] Job ${job?.id} failed:`, err);
+webhookWorker.on('failed', async (job, err) => {
+  console.error(`[Worker] Job ${job?.id} failed (attempt ${job?.attemptsMade}/${job?.opts?.attempts}):`, err);
+
+  if (job && job.attemptsMade >= job.opts.attempts) {
+    console.warn(`[Worker] Job ${job.id} exceeded all ${job.opts.attempts} attempts. Moving to Dead Letter Queue (FailedJob)...`);
+    try {
+      await prisma.failedJob.create({
+        data: {
+          jobId: String(job.id),
+          queueName: job.queueName || 'webhook-ingestion',
+          jobName: job.name,
+          payload: job.data,
+          error: err?.message || String(err) || 'Unknown worker execution failure',
+          status: 'FAILED',
+        },
+      });
+      console.log(`[Worker] Persisted failed job ${job.id} to FailedJob table.`);
+    } catch (dbError) {
+      console.error(`[Worker] Failed to persist Dead Letter Job ${job.id} to database:`, dbError);
+    }
+  }
 });
 
 module.exports = webhookWorker;

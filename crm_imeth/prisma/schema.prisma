@@ -256,3 +256,19 @@ model Activity {
   @@index([leadId])
   @@index([occurredAt])
 }
+
+model FailedJob {
+  id        String   @id @default(uuid())
+  jobId     String
+  queueName String
+  jobName   String
+  payload   Json
+  error     String
+  status    String   @default("FAILED")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([queueName])
+  @@index([createdAt])
+}

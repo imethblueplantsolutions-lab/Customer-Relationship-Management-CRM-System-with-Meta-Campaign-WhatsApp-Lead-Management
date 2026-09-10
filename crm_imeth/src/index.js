@@ -120,6 +120,7 @@ app.use('/api/settings', require('./routes/settings'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/attachments', require('./routes/attachments'));
+app.use('/api/admin-jobs', require('./routes/adminJobs'));
 
 // Global Error Handler
 app.use((err, req, res, next) => {
