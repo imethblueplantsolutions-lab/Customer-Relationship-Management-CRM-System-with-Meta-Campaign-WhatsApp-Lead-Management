@@ -276,6 +276,29 @@ const webhookWorker = new Worker('webhook-ingestion', async (job) => {
     }
   });
 
+  // 5.1 Targeted Notification: Alert assigned Sales Agent of incoming message
+  if (lead.assignedToId) {
+    try {
+      const notification = await prisma.notification.create({
+        data: {
+          userId: lead.assignedToId,
+          type: 'NEW_MESSAGE',
+          title: 'New WhatsApp Message',
+          message: 'New reply from ' + (lead.name || lead.phoneNumber),
+          body: 'New reply from ' + (lead.name || lead.phoneNumber),
+          linkUrl: `/leads/${lead.id}`,
+        },
+      });
+
+      if (io) {
+        io.to('user:' + lead.assignedToId).emit('new_notification', notification);
+        console.log(`📡 [Worker] Dispatched 'new_notification' to user:${lead.assignedToId} for lead ${lead.id}`);
+      }
+    } catch (notifErr) {
+      console.warn('[Worker] Failed to create or emit new message notification for assigned agent:', notifErr.message);
+    }
+  }
+
   console.log(`[Worker] Processed message & lead: ${lead.name} (${lead.phoneNumber}) for Tenant: ${tenantId}`);
 
   // 6. Invalidate Dashboard Cache for this tenant

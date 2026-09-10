@@ -233,7 +233,8 @@ model Notification {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   type      String   @default("FOLLOWUP_ASSIGNED")
   title     String
-  body      String
+  body      String   @default("")
+  message   String?
   linkUrl   String?
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())

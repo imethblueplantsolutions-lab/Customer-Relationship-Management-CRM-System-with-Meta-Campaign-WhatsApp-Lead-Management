@@ -1,63 +1,100 @@
 const express = require('express');
 const router = express.Router();
 const prisma = require('../config/db');
+const { authenticate } = require('../middleware/auth');
 
-// GET: Fetch current user's notifications (unread first, up to 30)
+// Enforce JWT authentication on all notification routes
+router.use(authenticate);
+
+// GET /: Fetch all notifications for req.user.userId, ordered by createdAt descending
 router.get('/', async (req, res) => {
   try {
     const userId = req.user?.userId || req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'User ID not found in token' });
+    }
+
     const notifications = await prisma.notification.findMany({
       where: { userId },
-      orderBy: [{ isRead: 'asc' }, { createdAt: 'desc' }],
-      take: 30
+      orderBy: { createdAt: 'desc' },
+      take: 50,
     });
-    res.status(200).json({ success: true, data: notifications });
+
+    // Normalize to ensure both message and body are populated
+    const normalized = notifications.map((n) => ({
+      ...n,
+      message: n.message || n.body,
+      body: n.body || n.message,
+    }));
+
+    res.status(200).json({ success: true, data: normalized });
   } catch (error) {
-    console.error('Error fetching notifications:', error);
+    console.error('[Notifications] Error fetching notifications:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch notifications' });
   }
 });
 
-// GET: Return unread notification count (for badge)
+// GET /unread-count: Return count of unread notifications for badge
 router.get('/unread-count', async (req, res) => {
   try {
     const userId = req.user?.userId || req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'User ID not found in token' });
+    }
+
     const count = await prisma.notification.count({
-      where: { userId, isRead: false }
+      where: { userId, isRead: false },
     });
+
     res.status(200).json({ success: true, data: { count } });
   } catch (error) {
-    console.error('Error fetching unread count:', error);
+    console.error('[Notifications] Error fetching unread count:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch unread count' });
   }
 });
 
-// PUT: Mark all notifications as read (MUST be before /:id/read to avoid Express matching 'read-all' as an id)
+// PUT /read-all: Mark all notifications for the user as isRead: true
 router.put('/read-all', async (req, res) => {
   try {
     const userId = req.user?.userId || req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'User ID not found in token' });
+    }
+
     await prisma.notification.updateMany({
       where: { userId, isRead: false },
-      data: { isRead: true }
+      data: { isRead: true },
     });
-    res.status(200).json({ success: true });
+
+    res.status(200).json({ success: true, message: 'All notifications marked as read' });
   } catch (error) {
-    console.error('Error marking all notifications as read:', error);
+    console.error('[Notifications] Error marking all as read:', error);
     res.status(500).json({ success: false, error: 'Failed to mark all as read' });
   }
 });
 
-// PUT: Mark a single notification as read
+// PUT /:id/read: Mark a specific notification as isRead: true
 router.put('/:id/read', async (req, res) => {
   try {
     const userId = req.user?.userId || req.user?.id;
-    await prisma.notification.updateMany({
-      where: { id: req.params.id, userId },
-      data: { isRead: true }
+    const { id } = req.params;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'User ID not found in token' });
+    }
+
+    const updated = await prisma.notification.updateMany({
+      where: { id, userId },
+      data: { isRead: true },
     });
-    res.status(200).json({ success: true });
+
+    if (updated.count === 0) {
+      return res.status(404).json({ success: false, error: 'Notification not found' });
+    }
+
+    res.status(200).json({ success: true, message: 'Notification marked as read' });
   } catch (error) {
-    console.error('Error marking notification as read:', error);
+    console.error('[Notifications] Error marking notification as read:', error);
     res.status(500).json({ success: false, error: 'Failed to mark notification as read' });
   }
 });

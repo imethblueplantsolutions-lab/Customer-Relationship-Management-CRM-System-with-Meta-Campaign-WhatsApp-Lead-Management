@@ -188,7 +188,8 @@ export interface Notification {
   userId: string;
   type: string;
   title: string;
-  body: string;
+  body?: string;
+  message?: string;
   linkUrl: string | null;
   isRead: boolean;
   createdAt: string;
