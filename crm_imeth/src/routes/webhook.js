@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const prisma = require('../config/db');
 const webhookQueue = require('../queues/webhookQueue');
 
 // GET: Meta Webhook Verification Handshake
@@ -26,7 +27,30 @@ router.post('/', async (req, res) => {
   try {
     const entries = body.entry || [];
     for (const entry of entries) {
-      const tenantId = entry.id; // Resolving WABA_ID as Tenant
+      // Resolve Tenant by WABA ID (entry.id) or fallback to active workspace tenant
+      let tenantId = entry.id;
+      try {
+        const matchedTenant = await prisma.tenant.findFirst({
+          where: {
+            OR: [
+              { wabaId: entry.id },
+              { id: entry.id }
+            ]
+          },
+          select: { id: true }
+        });
+        if (matchedTenant) {
+          tenantId = matchedTenant.id;
+        } else {
+          const defaultTenant = await prisma.tenant.findFirst({ select: { id: true } });
+          if (defaultTenant) {
+            tenantId = defaultTenant.id;
+          }
+        }
+      } catch (err) {
+        console.warn('[Webhook] Tenant resolution warning:', err.message);
+      }
+
       const changes = entry.changes || [];
 
       for (const change of changes) {
