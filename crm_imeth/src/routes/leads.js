@@ -3,7 +3,7 @@ const router = express.Router();
 const prisma = require('../config/db');
 const CacheService = require('../services/cacheService');
 const { tenantStorage } = require('../middleware/tenant');
-const { authorize } = require('../middleware/auth');
+const { authenticate, authorize } = require('../middleware/auth');
 
 // GET: Fetch leads for current tenant (Agents see only assigned leads; Admins & Team Leads see all)
 router.get('/', async (req, res) => {
@@ -174,6 +174,130 @@ router.post('/', authorize(['ADMIN', 'TEAM_LEAD', 'AGENT']), async (req, res) =>
     }
     console.error('Add lead error:', error);
     res.status(500).json({ success: false, error: 'Failed to add customer lead' });
+  }
+});
+
+// POST /merge: Merge two leads (Primary & Secondary), re-pointing all data to Primary
+router.post('/merge', authenticate, authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
+  try {
+    const { primaryLeadId, secondaryLeadId } = req.body;
+    const store = tenantStorage.getStore();
+    const tenantId = req.user?.tenantId || store?.tenantId;
+    const currentUserId = req.user?.userId || req.user?.id;
+
+    if (!primaryLeadId || !secondaryLeadId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Both primaryLeadId and secondaryLeadId are required for merging',
+      });
+    }
+
+    if (primaryLeadId === secondaryLeadId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Cannot merge a lead into itself. Please select two distinct leads.',
+      });
+    }
+
+    // Verify both leads exist in the current tenant
+    const [primaryLead, secondaryLead] = await Promise.all([
+      prisma.lead.findFirst({ where: { id: primaryLeadId, tenantId } }),
+      prisma.lead.findFirst({ where: { id: secondaryLeadId, tenantId } }),
+    ]);
+
+    if (!primaryLead) {
+      return res.status(404).json({ success: false, error: 'Primary lead record not found in this organization' });
+    }
+
+    if (!secondaryLead) {
+      return res.status(404).json({ success: false, error: 'Secondary lead record not found in this organization' });
+    }
+
+    // Atomically transfer messages, activities, follow-ups, and attachments, then delete secondary lead
+    const mergedLead = await prisma.$transaction(async (tx) => {
+      // a) Update all Message records where leadId === secondaryLeadId to primaryLeadId
+      await tx.message.updateMany({
+        where: { leadId: secondaryLeadId },
+        data: { leadId: primaryLeadId },
+      });
+
+      // b) Update all Activity records where leadId === secondaryLeadId to primaryLeadId
+      await tx.activity.updateMany({
+        where: { leadId: secondaryLeadId },
+        data: { leadId: primaryLeadId },
+      });
+
+      // c) Update all Followup records where leadId === secondaryLeadId to primaryLeadId
+      await tx.followup.updateMany({
+        where: { leadId: secondaryLeadId },
+        data: { leadId: primaryLeadId },
+      });
+
+      // d) Update all Attachment records where leadId === secondaryLeadId to primaryLeadId
+      await tx.attachment.updateMany({
+        where: { leadId: secondaryLeadId },
+        data: { leadId: primaryLeadId },
+      });
+
+      // Transfer any deals linked to the secondary lead
+      await tx.deal.updateMany({
+        where: { leadId: secondaryLeadId },
+        data: { leadId: primaryLeadId },
+      });
+
+      // e) Create a new Activity on the primary lead stating: "Merged with duplicate lead record."
+      await tx.activity.create({
+        data: {
+          leadId: primaryLeadId,
+          createdById: currentUserId || null,
+          type: 'NOTE',
+          title: 'Lead Merged',
+          description: 'Merged with duplicate lead record.',
+        },
+      });
+
+      // f) Delete the Lead record for secondaryLeadId
+      await tx.lead.delete({
+        where: { id: secondaryLeadId },
+      });
+
+      return tx.lead.findUnique({
+        where: { id: primaryLeadId },
+        include: {
+          assignedTo: { select: { id: true, name: true, email: true, role: true } },
+          _count: { select: { messages: true, activities: true, followups: true, attachments: true } },
+        },
+      });
+    });
+
+    // Invalidate dashboard cache
+    await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
+
+    // Broadcast Socket.IO event if available
+    try {
+      const { io } = require('../index');
+      if (io) {
+        io.to(`tenant:${tenantId}`).emit('lead_merged', {
+          primaryLeadId,
+          secondaryLeadId,
+          mergedLead,
+        });
+      }
+    } catch (socketErr) {
+      console.warn('[Socket] Failed to broadcast lead_merged:', socketErr.message);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Leads merged successfully. All records transferred to primary lead.',
+      data: mergedLead,
+    });
+  } catch (error) {
+    console.error('[Leads] Error merging leads:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to merge leads: ' + (error.message || 'Internal error'),
+    });
   }
 });
 
