@@ -10,6 +10,15 @@ export interface User {
   createdAt?: string;
 }
 
+export interface Tag {
+  id: string;
+  name: string;
+  color: string;
+  tenantId: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 // ─── Lead ──────────────────────────────────────────────────
 export interface Lead {
   id: string;
@@ -21,7 +30,7 @@ export interface Lead {
   notes?: string;
   status: string;
   category?: string;
-  tags: string[];
+  tags?: (Tag | string)[];
   tenantId: string;
   assignedToId?: string;
   assignedTo?: { id: string; name?: string; email: string; role: string };

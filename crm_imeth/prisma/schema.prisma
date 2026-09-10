@@ -20,6 +20,7 @@ model Tenant {
   pipelines          Pipeline[]
   deals              Deal[]
   flows              Flow[]
+  tags               Tag[]
 }
 
 model User {
@@ -58,7 +59,7 @@ model Lead {
   notes          String?
   status         String               @default("NEW")
   category       String?
-  tags           String[]             @default([])
+  tags           Tag[]                @relation("LeadTags")
   tenantId       String
   tenant         Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   assignedToId   String?
@@ -272,4 +273,18 @@ model FailedJob {
   @@index([status])
   @@index([queueName])
   @@index([createdAt])
+}
+
+model Tag {
+  id        String   @id @default(uuid())
+  name      String
+  color     String   @default("#E2E8F0")
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  leads     Lead[]   @relation("LeadTags")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
 }

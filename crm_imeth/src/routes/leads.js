@@ -5,63 +5,82 @@ const CacheService = require('../services/cacheService');
 const { tenantStorage } = require('../middleware/tenant');
 const { authenticate, authorize } = require('../middleware/auth');
 
-// GET: Fetch leads for current tenant (Agents see only assigned leads; Admins & Team Leads see all)
-router.get('/', async (req, res) => {
+// GET /: Fetch leads for current tenant with Role-Based Access Control (RBAC) Data Isolation
+router.get('/', authenticate, async (req, res) => {
   try {
     const { status, category, search, page = 1, limit = 50 } = req.query;
     const store = tenantStorage.getStore();
+
+    // Extract userId, role, and tenantId from the authenticated req.user object
+    const userId = req.user?.userId || req.user?.id;
+    const role = req.user?.role || 'AGENT';
     const tenantId = req.user?.tenantId || store?.tenantId;
-    const isAgent = req.user?.role === 'AGENT';
-    const currentUserId = req.user?.userId || req.user?.id;
 
-    const where = { tenantId };
-
-    // Agent role restriction: can only view assigned leads
-    if (isAgent && currentUserId) {
-      where.assignedToId = currentUserId;
+    if (!tenantId) {
+      return res.status(400).json({ success: false, error: 'Tenant context could not be resolved' });
     }
 
-    if (status) where.status = status;
-    if (category) where.category = category;
+    // Initialize a Prisma whereClause object with { tenantId }
+    const whereClause = { tenantId };
+
+    // Inject the RBAC logic: standard AGENT users only see leads explicitly assigned to them
+    if (role === 'AGENT') {
+      whereClause.assignedToId = userId;
+    }
+
+    // Optional query filters: status, category, search
+    if (status) {
+      whereClause.status = status;
+    }
+    if (category) {
+      whereClause.category = category;
+    }
     if (search) {
-      where.OR = [
+      whereClause.OR = [
         { name: { contains: search, mode: 'insensitive' } },
         { displayName: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
-        { phoneNumber: { contains: search } }
+        { phoneNumber: { contains: search } },
       ];
     }
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    const take = parseInt(limit);
+    // Pagination calculations
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, parseInt(limit, 10) || 50);
+    const skip = (pageNum - 1) * limitNum;
+    const take = limitNum;
 
-    const [leads, total] = await Promise.all([
+    // Execute prisma.$transaction to run findMany and count in parallel using the constructed whereClause
+    const [leads, total] = await prisma.$transaction([
       prisma.lead.findMany({
-        where,
+        where: whereClause,
         orderBy: { updatedAt: 'desc' },
         include: {
-          assignedTo: { select: { id: true, email: true, role: true } },
+          assignedTo: { select: { id: true, name: true, email: true, role: true } },
           attribution: true,
-          _count: { select: { followups: true, messages: true } }
+          _count: { select: { followups: true, messages: true, attachments: true } },
         },
         skip,
-        take
+        take,
       }),
-      prisma.lead.count({ where })
+      prisma.lead.count({
+        where: whereClause,
+      }),
     ]);
 
+    // Return the data array alongside pagination metadata
     res.status(200).json({
       success: true,
       data: leads,
       pagination: {
         total,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        totalPages: Math.ceil(total / take)
-      }
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum) || 1,
+      },
     });
   } catch (error) {
-    console.error('Error fetching leads:', error);
+    console.error('[Leads Router] Error fetching leads with RBAC:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch leads' });
   }
 });
