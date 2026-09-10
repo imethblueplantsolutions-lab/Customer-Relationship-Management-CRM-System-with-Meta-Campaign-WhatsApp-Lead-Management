@@ -86,8 +86,9 @@ module.exports = { app, server, io };
 if (redisClient) {
   try {
     require('./workers/webhookWorker');
+    require('./workers/broadcastWorker');
   } catch (err) {
-    console.warn('⚠️  BullMQ worker failed to initialize:', err.message, '— webhook processing disabled');
+    console.warn('⚠️  BullMQ worker failed to initialize:', err.message, '— background processing disabled');
   }
 }
 
@@ -121,6 +122,7 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/attachments', require('./routes/attachments'));
 app.use('/api/admin-jobs', require('./routes/adminJobs'));
+app.use('/api/broadcast', require('./routes/broadcast'));
 
 // Global Error Handler
 app.use((err, req, res, next) => {

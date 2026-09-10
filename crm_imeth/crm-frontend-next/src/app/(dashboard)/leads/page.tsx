@@ -18,8 +18,10 @@ import {
   Mail,
   FileText,
   MessageCircle,
+  GitMerge,
 } from "lucide-react";
 import Link from "next/link";
+import MergeLeadsModal from "@/components/leads/MergeLeadsModal";
 
 const STATUS_COLORS: Record<string, string> = {
   NEW: "#3b82f6",
@@ -48,6 +50,7 @@ export default function LeadsPage() {
 
   // Add Lead form state
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showMergeModal, setShowMergeModal] = useState(false);
   const [formName, setFormName] = useState("");
   const [formDisplayName, setFormDisplayName] = useState("");
   const [formPhone, setFormPhone] = useState("");
@@ -146,27 +149,39 @@ export default function LeadsPage() {
             {leads.length} leads total
           </p>
         </div>
-        <button
-          onClick={() => {
-            setShowAddForm(!showAddForm);
-            setFormError("");
-            setFormSuccess("");
-          }}
-          className={`inline-flex items-center gap-3 rounded-xl px-7 py-4 text-sm font-bold shadow-md transition-all cursor-pointer ${showAddForm
-            ? "bg-slate-200 text-slate-700 hover:bg-slate-300"
-            : "bg-[#128c7e] text-white hover:bg-[#075e54]"
-            }`}
-        >
-          {showAddForm ? (
-            <>
-              <X className="h-4 w-4" /> Close
-            </>
-          ) : (
-            <>
-              <Plus className="h-4 w-4" /> Add Lead
-            </>
+        <div className="flex items-center gap-3">
+          {canAssign && (
+            <button
+              type="button"
+              onClick={() => setShowMergeModal(true)}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-5 py-3.5 text-sm font-bold shadow-xs transition-all cursor-pointer"
+            >
+              <GitMerge className="h-4 w-4 text-[#128c7e]" />
+              Merge Duplicates
+            </button>
           )}
-        </button>
+          <button
+            onClick={() => {
+              setShowAddForm(!showAddForm);
+              setFormError("");
+              setFormSuccess("");
+            }}
+            className={`inline-flex items-center gap-3 rounded-xl px-7 py-3.5 text-sm font-bold shadow-md transition-all cursor-pointer ${showAddForm
+              ? "bg-slate-200 text-slate-700 hover:bg-slate-300"
+              : "bg-[#128c7e] text-white hover:bg-[#075e54]"
+              }`}
+          >
+            {showAddForm ? (
+              <>
+                <X className="h-4 w-4" /> Close
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4" /> Add Lead
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* ─── Add Lead Inline Form ─────────────────────────────── */}
@@ -500,6 +515,14 @@ export default function LeadsPage() {
           ))}
         </div>
       )}
+
+      {/* ─── Merge Leads Modal ───────────────────────────────── */}
+      <MergeLeadsModal
+        isOpen={showMergeModal}
+        onClose={() => setShowMergeModal(false)}
+        leads={leads}
+        onSuccess={fetchLeads}
+      />
     </div>
   );
 }
