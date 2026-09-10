@@ -187,6 +187,7 @@ export default function LoginPage() {
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <button
+                  suppressHydrationWarning
                   type="button"
                   onClick={() => handleQuickFill("ADMIN")}
                   className={`py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer text-center border ${
@@ -198,6 +199,7 @@ export default function LoginPage() {
                   Admin
                 </button>
                 <button
+                  suppressHydrationWarning
                   type="button"
                   onClick={() => handleQuickFill("TEAM_LEAD")}
                   className={`py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer text-center border ${
@@ -209,6 +211,7 @@ export default function LoginPage() {
                   Team Lead
                 </button>
                 <button
+                  suppressHydrationWarning
                   type="button"
                   onClick={() => handleQuickFill("AGENT")}
                   className={`py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer text-center border ${
@@ -244,6 +247,7 @@ export default function LoginPage() {
               <div className="relative flex items-center w-full">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none z-10" />
                 <input
+                  suppressHydrationWarning
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -258,6 +262,7 @@ export default function LoginPage() {
               <div className="relative flex items-center w-full">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none z-10" />
                 <input
+                  suppressHydrationWarning
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -267,6 +272,7 @@ export default function LoginPage() {
                   className="w-full h-12 rounded-xl bg-[#f4f7f6] border border-transparent text-sm text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-[#128c7e] focus:ring-4 focus:ring-[#128c7e]/10 focus:outline-none"
                 />
                 <button
+                  suppressHydrationWarning
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer z-10"
@@ -279,6 +285,7 @@ export default function LoginPage() {
               <div className="flex items-center justify-between text-xs px-1">
                 <span className="text-slate-400">Protected by Role Auth</span>
                 <button
+                  suppressHydrationWarning
                   type="button"
                   onClick={() => handleQuickFill("ADMIN")}
                   className="text-[#128c7e] hover:text-[#075e54] font-semibold hover:underline cursor-pointer"
@@ -289,6 +296,7 @@ export default function LoginPage() {
 
               {/* Submit Button */}
               <button
+                suppressHydrationWarning
                 type="submit"
                 disabled={loading}
                 className="w-full h-13 rounded-xl bg-slate-950 hover:bg-[#075e54] text-white font-semibold text-sm sm:text-base transition-all duration-200 shadow-md hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 mt-1 group"
@@ -313,6 +321,7 @@ export default function LoginPage() {
             {/* Seed Database Option */}
             <div className="text-center pt-1">
               <button
+                suppressHydrationWarning
                 type="button"
                 onClick={handleSeedDatabase}
                 disabled={seeding}
@@ -378,6 +387,7 @@ export default function LoginPage() {
             <div className="flex items-center gap-2.5 pt-5 border-t border-white/20">
               {slides.map((_, idx) => (
                 <button
+                  suppressHydrationWarning
                   key={idx}
                   type="button"
                   onClick={() => setActiveSlide(idx)}
