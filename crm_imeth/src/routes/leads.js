@@ -208,6 +208,12 @@ router.get('/:id', async (req, res) => {
           include: {
             createdBy: { select: { id: true, name: true, email: true, role: true } }
           }
+        },
+        attachments: {
+          orderBy: { createdAt: 'desc' },
+          include: {
+            createdBy: { select: { id: true, name: true, email: true } }
+          }
         }
       }
     });
@@ -271,7 +277,8 @@ router.post('/:id/messages', async (req, res) => {
         leadId: lead.id,
         body,
         timestamp: Math.floor(Date.now() / 1000).toString(),
-        direction: 'OUTBOUND'
+        direction: 'OUTBOUND',
+        source: 'CRM'
       }
     });
 

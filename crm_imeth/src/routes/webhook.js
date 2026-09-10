@@ -30,22 +30,39 @@ router.post('/', async (req, res) => {
       const changes = entry.changes || [];
 
       for (const change of changes) {
+        const field = change.field;
         const value = change.value;
-        if (!value || !value.messages) continue;
+        if (!value) continue;
 
+        // 1. Standard Inbound Customer Messages
         const messages = value.messages || [];
         const contacts = value.contacts || [];
 
-        for (let i = 0; i < messages.length; i++) {
-          const message = messages[i];
-          const contact = contacts.find(c => c.wa_id === message.from) || contacts[i] || { wa_id: message.from, profile: { name: message.from } };
+        if (messages.length > 0) {
+          for (let i = 0; i < messages.length; i++) {
+            const message = messages[i];
+            const contact = contacts.find(c => c.wa_id === message.from) || contacts[i] || { wa_id: message.from, profile: { name: message.from } };
 
-          await webhookQueue.add('process-message', {
-            tenantId,
-            message,
-            contact,
-            referral: message.referral || null
-          });
+            await webhookQueue.add('process-message', {
+              tenantId,
+              message,
+              contact,
+              referral: message.referral || null
+            });
+          }
+        }
+
+        // 2. WhatsApp Coexistence Outbound Echoes (sent from WhatsApp Business Mobile App)
+        // Echoes arrive under field === 'smb_message_echoes', value.message_echoes, or value.smb_message_echoes
+        const echoes = value.message_echoes || value.smb_message_echoes || (field === 'smb_message_echoes' ? value.messages : null) || [];
+        if (Array.isArray(echoes) && echoes.length > 0) {
+          for (const echo of echoes) {
+            await webhookQueue.add('process-echo', {
+              tenantId,
+              echo,
+              metadata: value.metadata || null
+            });
+          }
         }
       }
     }

@@ -135,4 +135,54 @@ router.get('/followup/:followupId', authenticate, async (req, res) => {
   }
 });
 
+// DELETE: Delete an attachment and remove the physical file from disk
+router.delete('/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const currentUserId = req.user?.userId || req.user?.id;
+    const userRole = req.user?.role;
+
+    const attachment = await prisma.attachment.findUnique({
+      where: { id },
+    });
+
+    if (!attachment) {
+      return res.status(404).json({ success: false, error: 'Attachment not found' });
+    }
+
+    // Allow deletion by creator, ADMIN, or TEAM_LEAD
+    if (userRole !== 'ADMIN' && userRole !== 'TEAM_LEAD' && attachment.createdById !== currentUserId) {
+      return res.status(403).json({ success: false, error: 'Permission denied: Cannot delete this attachment' });
+    }
+
+    // Safely remove physical file from disk if present in uploads directory
+    if (attachment.fileUrl && attachment.fileUrl.startsWith('/uploads/')) {
+      const fileName = path.basename(attachment.fileUrl);
+      const filePath = path.join(uploadDir, fileName);
+      if (fs.existsSync(filePath)) {
+        try {
+          fs.unlinkSync(filePath);
+        } catch (unlinkErr) {
+          console.warn('[Attachments] Failed to unlink physical file:', unlinkErr.message);
+        }
+      }
+    }
+
+    // Delete record from Prisma database
+    await prisma.attachment.delete({
+      where: { id },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Attachment deleted successfully',
+      data: { id, leadId: attachment.leadId, followupId: attachment.followupId },
+    });
+  } catch (error) {
+    console.error('[Attachments] Delete error:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete attachment' });
+  }
+});
+
 module.exports = router;
+

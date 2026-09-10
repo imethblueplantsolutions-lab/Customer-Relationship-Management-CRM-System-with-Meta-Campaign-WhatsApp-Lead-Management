@@ -6,7 +6,8 @@ import Link from "next/link";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/hooks/use-auth";
 import { useSocket } from "@/hooks/use-socket";
-import type { Lead, Message, Followup, Activity } from "@/types";
+import type { Lead, Message, Followup, Activity, Attachment } from "@/types";
+import AttachmentUploader from "@/components/AttachmentUploader";
 import {
   ArrowLeft,
   Phone,
@@ -32,6 +33,7 @@ import {
   FileText,
   Trash2,
   UserCheck,
+  Smartphone,
 } from "lucide-react";
 
 const STATUS_OPTIONS = [
@@ -814,10 +816,15 @@ export default function LeadDetailPage() {
                       >
                         <p className="whitespace-pre-wrap break-words">{msg.body}</p>
                         <div
-                          className={`flex items-center gap-1 text-[9px] mt-1 text-slate-400 ${
+                          className={`flex items-center gap-1.5 text-[9px] mt-1 text-slate-400 ${
                             isOutbound ? "justify-end text-emerald-700/60" : "justify-start"
                           }`}
                         >
+                          {isOutbound && msg.source === "WHATSAPP_MOBILE" && (
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-emerald-600/15 text-emerald-800 font-semibold text-[8px] uppercase tracking-wide">
+                              <Smartphone className="h-2.5 w-2.5" /> Mobile App
+                            </span>
+                          )}
                           <Clock className="h-2.5 w-2.5" />
                           <span>
                             {new Date(msg.createdAt).toLocaleTimeString([], {
@@ -1121,6 +1128,15 @@ export default function LeadDetailPage() {
                     label: "WhatsApp Message",
                     border: "border-emerald-100",
                     tagBg: "bg-emerald-50 text-emerald-700 border-emerald-200",
+                  },
+                  WHATSAPP_MOBILE_REPLY: {
+                    bg: "bg-emerald-600",
+                    circleBg: "bg-emerald-100 text-emerald-700",
+                    icon: <Smartphone className="h-3.5 w-3.5" />,
+                    smallIcon: <Smartphone className="h-3 w-3" />,
+                    label: "WhatsApp Mobile Reply",
+                    border: "border-emerald-200 bg-emerald-50/20",
+                    tagBg: "bg-emerald-50 text-emerald-800 border-emerald-200",
                   },
                   MEETING: {
                     bg: "bg-purple-500",
@@ -1567,6 +1583,33 @@ export default function LeadDetailPage() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* ─── Lead Documents & Attachments Card ────────────── */}
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+            <AttachmentUploader
+              leadId={lead.id}
+              attachments={lead.attachments || []}
+              title="Lead Documents & Attachments"
+              onUploadSuccess={(newAttachment) => {
+                setLead((prev) => {
+                  if (!prev) return prev;
+                  return {
+                    ...prev,
+                    attachments: [newAttachment, ...(prev.attachments || [])],
+                  };
+                });
+              }}
+              onDeleteAttachment={(deletedId) => {
+                setLead((prev) => {
+                  if (!prev) return prev;
+                  return {
+                    ...prev,
+                    attachments: (prev.attachments || []).filter((a) => a.id !== deletedId),
+                  };
+                });
+              }}
+            />
           </div>
         </div>
       </div>

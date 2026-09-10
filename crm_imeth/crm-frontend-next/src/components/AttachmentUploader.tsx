@@ -19,6 +19,8 @@ interface AttachmentUploaderProps {
   followupId?: string;
   attachments: Attachment[];
   onUploadSuccess: (attachment: Attachment) => void;
+  onDeleteAttachment?: (attachmentId: string) => void;
+  title?: string;
 }
 
 export default function AttachmentUploader({
@@ -26,50 +28,99 @@ export default function AttachmentUploader({
   followupId,
   attachments = [],
   onUploadSuccess,
+  onDeleteAttachment,
+  title,
 }: AttachmentUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-  const BACKEND_ORIGIN =
-    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
+  const BACKEND_ORIGIN = process.env.NEXT_PUBLIC_BACKEND_URL || "";
 
-  // Upload file logic
-  const handleUploadFile = async (file: File) => {
-    if (!file) return;
+  // Upload single file logic
+  const uploadSingleFile = async (file: File) => {
+    // 25MB file size limit validation
+    if (file.size > 25 * 1024 * 1024) {
+      throw new Error(`File "${file.name}" exceeds the 25MB size limit.`);
+    }
+
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const formData = new FormData();
+    formData.append("file", file);
+    if (leadId) formData.append("leadId", leadId);
+    if (followupId) formData.append("followupId", followupId);
+
+    const response = await fetch(`${API_BASE_URL}/attachments`, {
+      method: "POST",
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.success && data.data) {
+      onUploadSuccess(data.data);
+    } else {
+      throw new Error(data.error || `Failed to upload ${file.name}`);
+    }
+  };
+
+  // Upload multiple files sequentially
+  const handleUploadFiles = async (files: FileList | File[]) => {
+    if (!files || files.length === 0) return;
 
     setUploading(true);
     setError("");
 
     try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-      const formData = new FormData();
-      formData.append("file", file);
-      if (leadId) formData.append("leadId", leadId);
-      if (followupId) formData.append("followupId", followupId);
+      for (let i = 0; i < files.length; i++) {
+        await uploadSingleFile(files[i]);
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Error uploading attachment");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
 
-      const response = await fetch(`${API_BASE_URL}/attachments`, {
-        method: "POST",
+  // Delete attachment handler
+  const handleDeleteAttachment = async (attachmentId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Are you sure you want to delete this attachment?")) return;
+
+    setDeletingId(attachmentId);
+    setError("");
+
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const response = await fetch(`${API_BASE_URL}/attachments/${attachmentId}`, {
+        method: "DELETE",
         headers: {
           ...(token && { Authorization: `Bearer ${token}` }),
         },
-        body: formData,
       });
 
       const data = await response.json();
 
-      if (response.ok && data.success && data.data) {
-        onUploadSuccess(data.data);
+      if (response.ok && data.success) {
+        if (onDeleteAttachment) {
+          onDeleteAttachment(attachmentId);
+        }
       } else {
-        setError(data.error || "File upload failed");
+        setError(data.error || "Failed to delete attachment");
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Error uploading file");
+      setError(err instanceof Error ? err.message : "Error deleting attachment");
     } finally {
-      setUploading(false);
+      setDeletingId(null);
     }
   };
 
@@ -92,15 +143,13 @@ export default function AttachmentUploader({
     setIsDragging(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const droppedFile = e.dataTransfer.files[0];
-      handleUploadFile(droppedFile);
+      handleUploadFiles(e.dataTransfer.files);
     }
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const selectedFile = e.target.files[0];
-      handleUploadFile(selectedFile);
+      handleUploadFiles(e.target.files);
     }
   };
 
@@ -123,9 +172,10 @@ export default function AttachmentUploader({
 
   return (
     <div className="space-y-4">
-      {/* Hidden File Input */}
+      {/* Hidden File Input (supports multiple files) */}
       <input
         type="file"
+        multiple
         ref={fileInputRef}
         onChange={handleFileInputChange}
         className="hidden"
@@ -137,7 +187,7 @@ export default function AttachmentUploader({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className={`relative flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-dashed transition-all cursor-pointer select-none ${
+        className={`relative flex flex-col items-center justify-center p-5 sm:p-6 rounded-2xl border-2 border-dashed transition-all cursor-pointer select-none ${
           isDragging
             ? "border-[#128c7e] bg-emerald-50/80 scale-[1.01]"
             : "border-slate-300 hover:border-[#128c7e] bg-slate-50/50 hover:bg-slate-50"
@@ -145,7 +195,7 @@ export default function AttachmentUploader({
       >
         {uploading ? (
           <div className="flex flex-col items-center py-2 gap-2 text-[#128c7e]">
-            <Loader2 className="h-8 w-8 animate-spin" />
+            <Loader2 className="h-7 w-7 animate-spin" />
             <p className="text-xs font-bold">Uploading file attachment...</p>
           </div>
         ) : (
@@ -178,7 +228,7 @@ export default function AttachmentUploader({
         <div className="space-y-2 pt-1">
           <p className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
             <Paperclip className="h-3.5 w-3.5 text-[#128c7e]" />
-            Attachments ({attachments.length})
+            {title || "Attachments"} ({attachments.length})
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -187,35 +237,61 @@ export default function AttachmentUploader({
                 ? att.fileUrl
                 : `${BACKEND_ORIGIN}${att.fileUrl}`;
 
+              const isDeleting = deletingId === att.id;
+
               return (
                 <div
                   key={att.id}
-                  className="flex items-center justify-between gap-3 p-3 rounded-xl bg-white border border-slate-200 shadow-xs hover:shadow-sm transition-all"
+                  className="flex items-center justify-between gap-3 p-3 rounded-xl bg-white border border-slate-200 shadow-xs hover:shadow-sm transition-all group"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                    <div className="p-2 rounded-lg bg-slate-50 border border-slate-100 shrink-0">
                       {getFileIcon(att.fileType)}
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-slate-800 truncate" title={att.fileName}>
                         {att.fileName}
                       </p>
-                      <p className="text-[10px] text-slate-400 font-mono">
-                        {formatFileSize(att.fileSize)}
-                      </p>
+                      <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono mt-0.5">
+                        <span>{formatFileSize(att.fileSize)}</span>
+                        {att.createdBy?.name && (
+                          <>
+                            <span>•</span>
+                            <span className="truncate">{att.createdBy.name}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  <a
-                    href={fullUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-[#128c7e] hover:bg-slate-100 transition-colors shrink-0"
-                    title="View / Download File"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <a
+                      href={fullUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-[#128c7e] hover:bg-slate-100 transition-colors"
+                      title="View / Download File"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+
+                    {onDeleteAttachment && (
+                      <button
+                        type="button"
+                        disabled={isDeleting}
+                        onClick={(e) => handleDeleteAttachment(att.id, e)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-50"
+                        title="Delete Attachment"
+                      >
+                        {isDeleting ? (
+                          <Loader2 className="h-4 w-4 animate-spin text-red-500" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
               );
             })}

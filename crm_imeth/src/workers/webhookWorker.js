@@ -7,6 +7,153 @@ const webhookWorker = new Worker('webhook-ingestion', async (job) => {
   // Lazy require io to avoid circular dependencies
   const { io } = require('../index');
 
+  // =========================================================================
+  // CASE 1: WHATSAPP COEXISTENCE ECHO (Outbound reply from Mobile App)
+  // =========================================================================
+  if (job.name === 'process-echo') {
+    const { tenantId, echo, metadata } = job.data;
+    const messageId = echo.id;
+    // In Coexistence echoes, echo.to is the recipient (the lead / customer)
+    const customerPhone = echo.to;
+    const timestamp = echo.timestamp || Math.floor(Date.now() / 1000).toString();
+
+    if (!customerPhone) {
+      console.warn('[Worker] Coexistence echo missing recipient (to):', echo);
+      return;
+    }
+
+    // 1. Redis De-duplication Lock
+    const isNewEcho = await CacheService.checkAndSetLock(`msg_lock:${messageId}`, 3600);
+    if (!isNewEcho) {
+      console.log(`[Worker] Duplicate echo discarded: ${messageId}`);
+      return;
+    }
+
+    // Defensive body extraction across text, media, reactions, stickers, revoked
+    let messageBody = '[Unsupported Message]';
+    if (echo.text?.body) {
+      messageBody = echo.text.body;
+    } else if (echo.type) {
+      if (echo.image) {
+        messageBody = echo.image.caption ? `📷 [Image] ${echo.image.caption}` : '📷 [Image]';
+      } else if (echo.document) {
+        messageBody = echo.document.filename ? `📄 [Document] ${echo.document.filename}` : '📄 [Document]';
+      } else if (echo.audio) {
+        messageBody = '🎵 [Audio message]';
+      } else if (echo.video) {
+        messageBody = echo.video.caption ? `🎥 [Video] ${echo.video.caption}` : '🎥 [Video]';
+      } else if (echo.sticker) {
+        messageBody = '🏷️ [Sticker]';
+      } else if (echo.reaction) {
+        messageBody = `Reacted ${echo.reaction.emoji || ''}`;
+      } else if (echo.type === 'revoke') {
+        messageBody = '🚫 [Message revoked on WhatsApp Business App]';
+      } else {
+        messageBody = `[${echo.type}]`;
+      }
+    }
+
+    // 2. Atomic Database Transaction with Prisma $transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Ensure Tenant exists
+      await tx.tenant.upsert({
+        where: { id: tenantId },
+        update: {},
+        create: {
+          id: tenantId,
+          name: `Tenant ${tenantId}`,
+          wabaId: tenantId
+        }
+      });
+
+      // Find or upsert Lead by customer phone number
+      const lead = await tx.lead.upsert({
+        where: {
+          tenantId_phoneNumber: { tenantId, phoneNumber: customerPhone }
+        },
+        update: {
+          updatedAt: new Date()
+        },
+        create: {
+          tenantId,
+          phoneNumber: customerPhone,
+          name: customerPhone,
+          status: 'IN_PROGRESS',
+          category: 'Organic'
+        }
+      });
+
+      // Save Outbound Message with source: 'WHATSAPP_MOBILE'
+      const savedMessage = await tx.message.upsert({
+        where: { messageId },
+        update: {
+          body: messageBody,
+          direction: 'OUTBOUND',
+          source: 'WHATSAPP_MOBILE'
+        },
+        create: {
+          messageId,
+          leadId: lead.id,
+          direction: 'OUTBOUND',
+          source: 'WHATSAPP_MOBILE',
+          body: messageBody,
+          timestamp: timestamp.toString()
+        }
+      });
+
+      // Create Activity record on Lead timeline
+      const numericTimestamp = parseInt(timestamp, 10);
+      const occurredDate = !isNaN(numericTimestamp) ? new Date(numericTimestamp * 1000) : new Date();
+
+      const activity = await tx.activity.create({
+        data: {
+          leadId: lead.id,
+          type: 'WHATSAPP_MOBILE_REPLY',
+          title: 'Replied via WhatsApp Mobile App',
+          description: messageBody,
+          occurredAt: occurredDate
+        }
+      });
+
+      return { lead, savedMessage, activity };
+    });
+
+    console.log(`[Worker] Processed mobile echo for Lead: ${result.lead.phoneNumber} (${result.lead.id})`);
+
+    // 3. Invalidate Dashboard Cache
+    await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
+
+    // 4. Socket.IO Real-time Broadcast to tenant room
+    if (io) {
+      io.to(`tenant:${tenantId}`).emit('new_message', {
+        leadId: result.lead.id,
+        message: result.savedMessage,
+        lead: {
+          id: result.lead.id,
+          name: result.lead.name,
+          phoneNumber: result.lead.phoneNumber,
+          status: result.lead.status
+        }
+      });
+
+      io.to(`tenant:${tenantId}`).emit('lead_activity_created', {
+        leadId: result.lead.id,
+        activity: result.activity
+      });
+      io.to(`tenant:${tenantId}`).emit('new_activity', {
+        leadId: result.lead.id,
+        activity: result.activity
+      });
+
+      console.log(`📡 [Worker] Broadcasted mobile echo 'new_message' & 'new_activity' to room tenant:${tenantId}`);
+    }
+
+    return;
+  }
+
+  // =========================================================================
+  // CASE 2: INBOUND CUSTOMER MESSAGE
+  // =========================================================================
   const { tenantId, message, contact, referral } = job.data;
   const messageId = message.id;
   const phoneNumber = contact?.wa_id || message.from;
@@ -85,6 +232,7 @@ const webhookWorker = new Worker('webhook-ingestion', async (job) => {
       messageId,
       leadId: lead.id,
       direction: 'INBOUND',
+      source: 'CUSTOMER',
       body: messageBody,
       timestamp: timestamp.toString()
     }

@@ -51,6 +51,7 @@ export interface Message {
   messageId: string;
   leadId: string;
   direction: string;
+  source?: string;
   body: string;
   timestamp?: string;
   createdAt: string;

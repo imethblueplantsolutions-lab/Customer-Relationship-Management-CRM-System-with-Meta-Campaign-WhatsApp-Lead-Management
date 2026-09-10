@@ -115,6 +115,28 @@ export default function FollowupsPage() {
     setTimeout(() => setSuccessMsg(""), 3000);
   };
 
+  // Handle attachment delete
+  const handleAttachmentDelete = (deletedId: string) => {
+    setFollowups((prev) =>
+      prev.map((f) => ({
+        ...f,
+        attachments: (f.attachments || []).filter((a) => a.id !== deletedId),
+      }))
+    );
+    if (selectedFollowupForUpload) {
+      setSelectedFollowupForUpload((prev) =>
+        prev
+          ? {
+              ...prev,
+              attachments: (prev.attachments || []).filter((a) => a.id !== deletedId),
+            }
+          : null
+      );
+    }
+    setSuccessMsg("Attachment deleted successfully");
+    setTimeout(() => setSuccessMsg(""), 3000);
+  };
+
   const getFollowupIcon = (type: string) => {
     switch (type.toUpperCase()) {
       case "CALL":
@@ -341,6 +363,7 @@ export default function FollowupsPage() {
                       followupId={f.id}
                       attachments={f.attachments}
                       onUploadSuccess={handleAttachmentSuccess}
+                      onDeleteAttachment={handleAttachmentDelete}
                     />
                   </div>
                 )}
@@ -371,6 +394,7 @@ export default function FollowupsPage() {
               followupId={selectedFollowupForUpload.id}
               attachments={selectedFollowupForUpload.attachments || []}
               onUploadSuccess={handleAttachmentSuccess}
+              onDeleteAttachment={handleAttachmentDelete}
             />
           </div>
         </div>
