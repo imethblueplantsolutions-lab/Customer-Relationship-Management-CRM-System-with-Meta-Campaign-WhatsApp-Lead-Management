@@ -3,6 +3,50 @@ const redisClient = require('../config/redis');
 const prisma = require('../config/db');
 const CacheService = require('../services/cacheService');
 const { getRoundRobinAgent } = require('../utils/assignment');
+const { downloadMetaMedia } = require('../utils/metaMedia');
+
+/**
+ * Resolves a valid User ID to associate as the creator of an incoming media Attachment.
+ * Checks for assigned agent first, falls back to any user in tenant, or upserts a system user.
+ *
+ * @param {object} tx - Prisma transaction client
+ * @param {string} tenantId - Tenant ID
+ * @param {string|null} preferredUserId - Preferred User ID (e.g. assignedToId)
+ * @returns {Promise<string>}
+ */
+async function resolveUploaderUserId(tx, tenantId, preferredUserId) {
+  if (preferredUserId) {
+    const userExists = await tx.user.findFirst({
+      where: { id: preferredUserId, tenantId },
+      select: { id: true },
+    });
+    if (userExists) return userExists.id;
+  }
+
+  // Fallback 1: Any existing user in this tenant
+  const tenantUser = await tx.user.findFirst({
+    where: { tenantId },
+    orderBy: { createdAt: 'asc' },
+    select: { id: true },
+  });
+  if (tenantUser) return tenantUser.id;
+
+  // Fallback 2: Upsert a system user for automated media uploads
+  const systemEmail = `system_${tenantId}@crm.internal`;
+  const systemUser = await tx.user.upsert({
+    where: { email: systemEmail },
+    update: {},
+    create: {
+      email: systemEmail,
+      password: 'SYSTEM_AUTOMATED_ACCOUNT_HASH',
+      role: 'ADMIN',
+      tenantId,
+      name: 'System User',
+    },
+    select: { id: true },
+  });
+  return systemUser.id;
+}
 
 const webhookWorker = new Worker('webhook-ingestion', async (job) => {
   // Lazy require io to avoid circular dependencies
@@ -30,16 +74,49 @@ const webhookWorker = new Worker('webhook-ingestion', async (job) => {
       return;
     }
 
-    // Defensive body extraction across text, media, reactions, stickers, revoked
+    // 2. Media Extraction & Binary Download (defensive try/catch)
+    const mediaPayload = echo.image || echo.audio || echo.document || echo.video || echo.voice || echo.sticker;
+    let downloadedAttachment = null;
+
+    if (mediaPayload?.id) {
+      try {
+        const metaToken = process.env.META_ACCESS_TOKEN;
+        downloadedAttachment = await downloadMetaMedia(mediaPayload.id, metaToken);
+        console.log(`[Worker] Downloaded echo media ${mediaPayload.id} -> ${downloadedAttachment.fileUrl}`);
+      } catch (mediaError) {
+        console.error(`[Worker] Transient error downloading echo media ${mediaPayload.id}:`, mediaError.message || mediaError);
+      }
+    }
+
+    // 3. Defensive message body extraction across media, text, reactions, revoked
     let messageBody = '[Unsupported Message]';
-    if (echo.text?.body) {
+    if (downloadedAttachment) {
+      if (echo.image) {
+        messageBody = echo.image.caption
+          ? `📷 [Image] ${echo.image.caption} (${downloadedAttachment.fileUrl})`
+          : `📷 [Image] ${downloadedAttachment.fileName} (${downloadedAttachment.fileUrl})`;
+      } else if (echo.document) {
+        const docName = echo.document.filename || downloadedAttachment.fileName;
+        messageBody = echo.document.caption
+          ? `📄 [Document] ${docName} - ${echo.document.caption} (${downloadedAttachment.fileUrl})`
+          : `📄 [Document] ${docName} (${downloadedAttachment.fileUrl})`;
+      } else if (echo.audio || echo.voice) {
+        messageBody = `🎵 [Audio message] ${downloadedAttachment.fileName} (${downloadedAttachment.fileUrl})`;
+      } else if (echo.video) {
+        messageBody = echo.video.caption
+          ? `🎥 [Video] ${echo.video.caption} (${downloadedAttachment.fileUrl})`
+          : `🎥 [Video] ${downloadedAttachment.fileName} (${downloadedAttachment.fileUrl})`;
+      } else if (echo.sticker) {
+        messageBody = `🏷️ [Sticker] ${downloadedAttachment.fileName} (${downloadedAttachment.fileUrl})`;
+      }
+    } else if (echo.text?.body) {
       messageBody = echo.text.body;
     } else if (echo.type) {
       if (echo.image) {
         messageBody = echo.image.caption ? `📷 [Image] ${echo.image.caption}` : '📷 [Image]';
       } else if (echo.document) {
         messageBody = echo.document.filename ? `📄 [Document] ${echo.document.filename}` : '📄 [Document]';
-      } else if (echo.audio) {
+      } else if (echo.audio || echo.voice) {
         messageBody = '🎵 [Audio message]';
       } else if (echo.video) {
         messageBody = echo.video.caption ? `🎥 [Video] ${echo.video.caption}` : '🎥 [Video]';
@@ -54,7 +131,7 @@ const webhookWorker = new Worker('webhook-ingestion', async (job) => {
       }
     }
 
-    // 2. Atomic Database Transaction with Prisma $transaction
+    // 4. Atomic Database Transaction with Prisma $transaction
     const result = await prisma.$transaction(async (tx) => {
       // Ensure Tenant exists
       await tx.tenant.upsert({
@@ -83,6 +160,22 @@ const webhookWorker = new Worker('webhook-ingestion', async (job) => {
           category: 'Organic'
         }
       });
+
+      // Link Attachment record if media was downloaded
+      let savedAttachment = null;
+      if (downloadedAttachment) {
+        const uploaderId = await resolveUploaderUserId(tx, tenantId, lead.assignedToId);
+        savedAttachment = await tx.attachment.create({
+          data: {
+            fileName: mediaPayload.filename || downloadedAttachment.fileName,
+            fileUrl: downloadedAttachment.fileUrl,
+            fileType: downloadedAttachment.fileType,
+            fileSize: downloadedAttachment.fileSize || 0,
+            createdById: uploaderId,
+            leadId: lead.id,
+          },
+        });
+      }
 
       // Save Outbound Message with source: 'WHATSAPP_MOBILE'
       const savedMessage = await tx.message.upsert({
@@ -116,15 +209,15 @@ const webhookWorker = new Worker('webhook-ingestion', async (job) => {
         }
       });
 
-      return { lead, savedMessage, activity };
+      return { lead, savedMessage, activity, savedAttachment };
     });
 
     console.log(`[Worker] Processed mobile echo for Lead: ${result.lead.phoneNumber} (${result.lead.id})`);
 
-    // 3. Invalidate Dashboard Cache
+    // 5. Invalidate Dashboard Cache
     await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
 
-    // 4. Socket.IO Real-time Broadcast to tenant room
+    // 6. Socket.IO Real-time Broadcast to tenant room
     if (io) {
       io.to(`tenant:${tenantId}`).emit('new_message', {
         leadId: result.lead.id,
@@ -159,7 +252,6 @@ const webhookWorker = new Worker('webhook-ingestion', async (job) => {
   const messageId = message.id;
   const phoneNumber = contact?.wa_id || message.from;
   const customerName = contact?.profile?.name || phoneNumber;
-  const messageBody = message.text?.body || (message.type ? `[${message.type}]` : '[Message]');
   const timestamp = message.timestamp || Math.floor(Date.now() / 1000).toString();
 
   // 1. Redis De-duplication Lock
@@ -169,51 +261,158 @@ const webhookWorker = new Worker('webhook-ingestion', async (job) => {
     return;
   }
 
-  // 2. Ensure Tenant exists in Postgres
-  await prisma.tenant.upsert({
-    where: { id: tenantId },
-    update: {},
-    create: {
-      id: tenantId,
-      name: `Tenant ${tenantId}`,
-      wabaId: tenantId
+  // 2. Media Extraction & Binary Download (defensive try/catch)
+  const mediaPayload = message.image || message.audio || message.document || message.video || message.voice || message.sticker;
+  let downloadedAttachment = null;
+
+  if (mediaPayload?.id) {
+    try {
+      const metaToken = process.env.META_ACCESS_TOKEN;
+      downloadedAttachment = await downloadMetaMedia(mediaPayload.id, metaToken);
+      console.log(`[Worker] Downloaded inbound media ${mediaPayload.id} -> ${downloadedAttachment.fileUrl}`);
+    } catch (mediaError) {
+      console.error(`[Worker] Transient error downloading inbound media ${mediaPayload.id}:`, mediaError.message || mediaError);
     }
-  });
-
-  // 3. Persist / Upsert Lead in PostgreSQL with Automatic Round-Robin Assignment
-  // Only update name if it's still the raw phone number (never manually edited by an agent)
-  const existingLead = await prisma.lead.findUnique({
-    where: { tenantId_phoneNumber: { tenantId, phoneNumber } },
-    select: { id: true, name: true, assignedToId: true }
-  });
-  const isNewLead = !existingLead;
-  const shouldUpdateName = !existingLead || existingLead.name === phoneNumber;
-
-  // Determine round-robin agent assignment for newly captured leads
-  let assignedAgentId = null;
-  if (isNewLead) {
-    assignedAgentId = await getRoundRobinAgent(tenantId);
   }
 
-  const lead = await prisma.lead.upsert({
-    where: { 
-      tenantId_phoneNumber: { tenantId, phoneNumber } 
-    },
-    update: { 
-      ...(shouldUpdateName && { name: customerName }),
-      updatedAt: new Date() 
-    },
-    create: {
-      tenantId,
-      phoneNumber,
-      name: customerName,
-      status: 'NEW',
-      category: referral ? 'Meta Ad' : 'Organic',
-      ...(assignedAgentId && { assignedToId: assignedAgentId }),
+  // 3. Determine message body text / reference
+  let messageBody = message.text?.body || (message.type ? `[${message.type}]` : '[Message]');
+  if (downloadedAttachment) {
+    if (message.image) {
+      messageBody = message.image.caption
+        ? `📷 [Image] ${message.image.caption} (${downloadedAttachment.fileUrl})`
+        : `📷 [Image] ${downloadedAttachment.fileName} (${downloadedAttachment.fileUrl})`;
+    } else if (message.document) {
+      const docName = message.document.filename || downloadedAttachment.fileName;
+      messageBody = message.document.caption
+        ? `📄 [Document] ${docName} - ${message.document.caption} (${downloadedAttachment.fileUrl})`
+        : `📄 [Document] ${docName} (${downloadedAttachment.fileUrl})`;
+    } else if (message.audio || message.voice) {
+      messageBody = `🎵 [Audio message] ${downloadedAttachment.fileName} (${downloadedAttachment.fileUrl})`;
+    } else if (message.video) {
+      messageBody = message.video.caption
+        ? `🎥 [Video] ${message.video.caption} (${downloadedAttachment.fileUrl})`
+        : `🎥 [Video] ${downloadedAttachment.fileName} (${downloadedAttachment.fileUrl})`;
+    } else if (message.sticker) {
+      messageBody = `🏷️ [Sticker] ${downloadedAttachment.fileName} (${downloadedAttachment.fileUrl})`;
     }
+  } else if (!message.text?.body && message.type) {
+    if (message.image) {
+      messageBody = message.image.caption ? `📷 [Image] ${message.image.caption}` : '📷 [Image]';
+    } else if (message.document) {
+      messageBody = message.document.filename ? `📄 [Document] ${message.document.filename}` : '📄 [Document]';
+    } else if (message.audio || message.voice) {
+      messageBody = '🎵 [Audio message]';
+    } else if (message.video) {
+      messageBody = message.video.caption ? `🎥 [Video] ${message.video.caption}` : '🎥 [Video]';
+    } else if (message.sticker) {
+      messageBody = '🏷️ [Sticker]';
+    }
+  }
+
+  // 4. Atomic Database Transaction with Prisma $transaction
+  const transactionResult = await prisma.$transaction(async (tx) => {
+    // Ensure Tenant exists in Postgres
+    await tx.tenant.upsert({
+      where: { id: tenantId },
+      update: {},
+      create: {
+        id: tenantId,
+        name: `Tenant ${tenantId}`,
+        wabaId: tenantId
+      }
+    });
+
+    // Check if lead already exists
+    const existingLead = await tx.lead.findUnique({
+      where: { tenantId_phoneNumber: { tenantId, phoneNumber } },
+      select: { id: true, name: true, assignedToId: true }
+    });
+    const isNewLead = !existingLead;
+    const shouldUpdateName = !existingLead || existingLead.name === phoneNumber;
+
+    // Determine round-robin agent assignment for newly captured leads
+    let assignedAgentId = null;
+    if (isNewLead) {
+      assignedAgentId = await getRoundRobinAgent(tenantId);
+    }
+
+    const lead = await tx.lead.upsert({
+      where: { 
+        tenantId_phoneNumber: { tenantId, phoneNumber } 
+      },
+      update: { 
+        ...(shouldUpdateName && { name: customerName }),
+        updatedAt: new Date() 
+      },
+      create: {
+        tenantId,
+        phoneNumber,
+        name: customerName,
+        status: 'NEW',
+        category: referral ? 'Meta Ad' : 'Organic',
+        ...(assignedAgentId && { assignedToId: assignedAgentId }),
+      }
+    });
+
+    // If CTWA Referral attribution exists and not yet saved, save it
+    if (referral) {
+      const existingAttr = await tx.campaignAttribution.findUnique({
+        where: { leadId: lead.id }
+      });
+      if (!existingAttr) {
+        await tx.campaignAttribution.create({
+          data: {
+            leadId: lead.id,
+            sourceUrl: referral.source_url || null,
+            adId: referral.source_id || referral.ad_id || null,
+            sourceType: referral.source_type || 'ad',
+            headline: referral.headline || null,
+            body: referral.body || null,
+            ctwaClid: referral.ctwa_clid || null
+          }
+        });
+      }
+    }
+
+    // Link Attachment record if media was downloaded
+    let savedAttachment = null;
+    if (downloadedAttachment) {
+      const uploaderId = await resolveUploaderUserId(tx, tenantId, lead.assignedToId);
+      savedAttachment = await tx.attachment.create({
+        data: {
+          fileName: mediaPayload.filename || downloadedAttachment.fileName,
+          fileUrl: downloadedAttachment.fileUrl,
+          fileType: downloadedAttachment.fileType,
+          fileSize: downloadedAttachment.fileSize || 0,
+          createdById: uploaderId,
+          leadId: lead.id,
+        },
+      });
+    }
+
+    // Store message in message history
+    const savedMessage = await tx.message.upsert({
+      where: { messageId },
+      update: {
+        body: messageBody,
+      },
+      create: {
+        messageId,
+        leadId: lead.id,
+        direction: 'INBOUND',
+        source: 'CUSTOMER',
+        body: messageBody,
+        timestamp: timestamp.toString()
+      }
+    });
+
+    return { lead, savedMessage, isNewLead, assignedAgentId, savedAttachment };
   });
 
-  // 3.1 If newly created and assigned to an agent, create Notification and emit real-time event
+  const { lead, savedMessage, isNewLead, assignedAgentId } = transactionResult;
+
+  // 5. If newly created and assigned to an agent, create Notification and emit real-time event
   if (isNewLead && assignedAgentId) {
     try {
       const notification = await prisma.notification.create({
@@ -242,41 +441,7 @@ const webhookWorker = new Worker('webhook-ingestion', async (job) => {
     }
   }
 
-  // 4. If CTWA Referral attribution exists and not yet saved, save it
-  if (referral) {
-    const existingAttr = await prisma.campaignAttribution.findUnique({
-      where: { leadId: lead.id }
-    });
-    if (!existingAttr) {
-      await prisma.campaignAttribution.create({
-        data: {
-          leadId: lead.id,
-          sourceUrl: referral.source_url || null,
-          adId: referral.source_id || referral.ad_id || null,
-          sourceType: referral.source_type || 'ad',
-          headline: referral.headline || null,
-          body: referral.body || null,
-          ctwaClid: referral.ctwa_clid || null
-        }
-      });
-    }
-  }
-
-  // 5. Store message in message history
-  const savedMessage = await prisma.message.upsert({
-    where: { messageId },
-    update: {},
-    create: {
-      messageId,
-      leadId: lead.id,
-      direction: 'INBOUND',
-      source: 'CUSTOMER',
-      body: messageBody,
-      timestamp: timestamp.toString()
-    }
-  });
-
-  // 5.1 Targeted Notification: Alert assigned Sales Agent of incoming message
+  // 6. Targeted Notification: Alert assigned Sales Agent of incoming message
   if (lead.assignedToId) {
     try {
       const notification = await prisma.notification.create({
@@ -301,10 +466,10 @@ const webhookWorker = new Worker('webhook-ingestion', async (job) => {
 
   console.log(`[Worker] Processed message & lead: ${lead.name} (${lead.phoneNumber}) for Tenant: ${tenantId}`);
 
-  // 6. Invalidate Dashboard Cache for this tenant
+  // 7. Invalidate Dashboard Cache for this tenant
   await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
 
-  // 7. Broadcast real-time event to the tenant's WebSocket room
+  // 8. Broadcast real-time event to the tenant's WebSocket room
   if (io) {
     io.to(`tenant:${tenantId}`).emit('new_message', {
       leadId: lead.id,

@@ -1545,14 +1545,20 @@ export default function LeadDetailPage() {
                     <p className="text-slate-400">No tags assigned</p>
                   ) : (
                     <div className="flex flex-wrap gap-1.5 mt-1">
-                      {lead.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="inline-flex items-center rounded-lg bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[11px] font-semibold text-emerald-700"
-                        >
-                          #{tag}
-                        </span>
-                      ))}
+                      {lead.tags.map((tag) => {
+                        const tagKey = typeof tag === "string" ? tag : tag.id;
+                        const tagName = typeof tag === "string" ? tag : tag.name;
+                        const tagColor = typeof tag === "string" ? undefined : tag.color;
+                        return (
+                          <span
+                            key={tagKey}
+                            style={tagColor ? { borderColor: `${tagColor}60`, color: tagColor } : undefined}
+                            className="inline-flex items-center rounded-lg bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[11px] font-semibold text-emerald-700"
+                          >
+                            #{tagName}
+                          </span>
+                        );
+                      })}
                     </div>
                   )}
                 </div>

@@ -5,13 +5,13 @@ const CacheService = require('../services/cacheService');
 const { tenantStorage } = require('../middleware/tenant');
 const { authenticate, authorize } = require('../middleware/auth');
 
-// GET /: Fetch leads for current tenant with Role-Based Access Control (RBAC) Data Isolation
+// GET /: Fetch leads for current tenant with RBAC, advanced filters & tags
 router.get('/', authenticate, async (req, res) => {
   try {
-    const { status, category, search, page = 1, limit = 50 } = req.query;
+    const { page = '1', limit = '50', status, search, tagId, category } = req.query;
     const store = tenantStorage.getStore();
 
-    // Extract userId, role, and tenantId from the authenticated req.user object
+    // 1. Extract userId, role, and tenantId from the authenticated req.user object
     const userId = req.user?.userId || req.user?.id;
     const role = req.user?.role || 'AGENT';
     const tenantId = req.user?.tenantId || store?.tenantId;
@@ -20,43 +20,57 @@ router.get('/', authenticate, async (req, res) => {
       return res.status(400).json({ success: false, error: 'Tenant context could not be resolved' });
     }
 
-    // Initialize a Prisma whereClause object with { tenantId }
+    // 2. Initialize a Prisma whereClause object with { tenantId }
     const whereClause = { tenantId };
 
-    // Inject the RBAC logic: standard AGENT users only see leads explicitly assigned to them
+    // 3. Inject the RBAC logic: standard AGENT users only see leads explicitly assigned to them
     if (role === 'AGENT') {
       whereClause.assignedToId = userId;
     }
 
-    // Optional query filters: status, category, search
-    if (status) {
+    // 4. Append filtering logic:
+    // status: Exact match
+    if (status && status !== 'ALL') {
       whereClause.status = status;
     }
-    if (category) {
+
+    // category: Exact match if provided
+    if (category && category !== 'ALL') {
       whereClause.category = category;
     }
-    if (search) {
+
+    // search: Use OR to match name (contains, mode: 'insensitive') or phoneNumber (contains)
+    if (search && search.trim()) {
+      const trimmedSearch = search.trim();
       whereClause.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { displayName: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-        { phoneNumber: { contains: search } },
+        { name: { contains: trimmedSearch, mode: 'insensitive' } },
+        { phoneNumber: { contains: trimmedSearch } },
       ];
     }
 
-    // Pagination calculations
+    // tagId: Use relation filtering tags: { some: { id: tagId } }
+    if (tagId && tagId !== 'ALL') {
+      whereClause.tags = {
+        some: {
+          id: tagId,
+        },
+      };
+    }
+
+    // 5. Pagination calculations
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limitNum = Math.max(1, parseInt(limit, 10) || 50);
     const skip = (pageNum - 1) * limitNum;
     const take = limitNum;
 
-    // Execute prisma.$transaction to run findMany and count in parallel using the constructed whereClause
+    // 6. Execute prisma.$transaction with findMany and count in parallel
     const [leads, total] = await prisma.$transaction([
       prisma.lead.findMany({
         where: whereClause,
         orderBy: { updatedAt: 'desc' },
         include: {
           assignedTo: { select: { id: true, name: true, email: true, role: true } },
+          tags: true,
           attribution: true,
           _count: { select: { followups: true, messages: true, attachments: true } },
         },
@@ -68,7 +82,9 @@ router.get('/', authenticate, async (req, res) => {
       }),
     ]);
 
-    // Return the data array alongside pagination metadata
+    const totalPages = Math.ceil(total / take) || 1;
+
+    // 7. Return paginated response
     res.status(200).json({
       success: true,
       data: leads,
@@ -76,11 +92,11 @@ router.get('/', authenticate, async (req, res) => {
         total,
         page: pageNum,
         limit: limitNum,
-        totalPages: Math.ceil(total / limitNum) || 1,
+        totalPages,
       },
     });
   } catch (error) {
-    console.error('[Leads Router] Error fetching leads with RBAC:', error);
+    console.error('[Leads Router] Error fetching leads with filters & RBAC:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch leads' });
   }
 });
@@ -117,13 +133,28 @@ router.post('/', authorize(['ADMIN', 'TEAM_LEAD', 'AGENT']), async (req, res) =>
         email: email || null,
         notes: notes || null,
         category: category || 'Manual Entry',
-        tags: tags || [],
         status: 'NEW',
         tenantId,
-        assignedToId: finalAssignedToId
+        assignedToId: finalAssignedToId,
+        ...(Array.isArray(tags) && tags.length > 0
+          ? {
+              tags: {
+                connectOrCreate: tags
+                  .map((t) => {
+                    const tagName = typeof t === 'string' ? t.trim() : (t.name || '').trim();
+                    return {
+                      where: { tenantId_name: { tenantId, name: tagName } },
+                      create: { name: tagName, tenantId },
+                    };
+                  })
+                  .filter((t) => t.create.name),
+              },
+            }
+          : {}),
       },
       include: {
-        assignedTo: { select: { id: true, email: true, role: true } }
+        assignedTo: { select: { id: true, email: true, role: true } },
+        tags: true,
       }
     });
 
@@ -320,6 +351,24 @@ router.post('/merge', authenticate, authorize(['ADMIN', 'TEAM_LEAD']), async (re
   }
 });
 
+// GET /tags: Fetch all tags for the current tenant
+router.get('/tags', authenticate, async (req, res) => {
+  try {
+    const store = tenantStorage.getStore();
+    const tenantId = req.user?.tenantId || store?.tenantId;
+
+    const tags = await prisma.tag.findMany({
+      where: { tenantId },
+      orderBy: { name: 'asc' },
+    });
+
+    res.status(200).json({ success: true, data: tags });
+  } catch (error) {
+    console.error('[Leads Router] Error fetching tags:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch tags' });
+  }
+});
+
 // GET: Fetch single lead by ID with full attribution, messages, and follow-ups
 router.get('/:id', async (req, res) => {
   try {
@@ -337,6 +386,7 @@ router.get('/:id', async (req, res) => {
       where,
       include: {
         assignedTo: { select: { id: true, name: true, email: true, role: true } },
+        tags: true,
         attribution: true,
         messages: { orderBy: { createdAt: 'asc' } },
         followups: {
@@ -471,7 +521,6 @@ router.put('/:id', async (req, res) => {
     const updateData = {
       ...(status && { status }),
       ...(category !== undefined && { category }),
-      ...(tags !== undefined && { tags }),
       ...(name !== undefined && { name }),
       ...(displayName !== undefined && { displayName: displayName || null }),
       ...(whatsappNumber !== undefined && { whatsappNumber: whatsappNumber || null }),
@@ -479,6 +528,21 @@ router.put('/:id', async (req, res) => {
       ...(notes !== undefined && { notes: notes || null }),
       updatedAt: new Date()
     };
+
+    if (tags !== undefined && Array.isArray(tags)) {
+      updateData.tags = {
+        set: [],
+        connectOrCreate: tags
+          .map((t) => {
+            const tagName = typeof t === 'string' ? t.trim() : (t.name || '').trim();
+            return {
+              where: { tenantId_name: { tenantId, name: tagName } },
+              create: { name: tagName, tenantId },
+            };
+          })
+          .filter((t) => t.create.name),
+      };
+    }
 
     const targetAssignedToId = assignedToId === '' ? null : assignedToId;
     const isAssignmentChanged = assignedToId !== undefined && targetAssignedToId !== existingLead.assignedToId;
@@ -491,7 +555,8 @@ router.put('/:id', async (req, res) => {
       where: { id: req.params.id },
       data: updateData,
       include: {
-        assignedTo: { select: { id: true, name: true, email: true, role: true } }
+        assignedTo: { select: { id: true, name: true, email: true, role: true } },
+        tags: true,
       }
     });
 
