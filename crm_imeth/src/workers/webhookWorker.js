@@ -315,53 +315,43 @@ const webhookWorker = new Worker('webhook-ingestion', async (job) => {
     return;
   }
 
-  // 2. Media Extraction & Binary Download (defensive try/catch)
-  const mediaPayload = message.image || message.audio || message.document || message.video || message.voice || message.sticker;
+  // 2. Media Extraction & Binary Download
+  const mediaTypes = ['image', 'audio', 'document', 'video', 'voice'];
+  const isMediaMessage = mediaTypes.includes(message.type);
   let downloadedAttachment = null;
+  let mediaDownloadFailed = false;
 
-  if (mediaPayload?.id) {
+  const mediaObj = isMediaMessage
+    ? (message[message.type] || message.image || message.audio || message.document || message.video || message.voice)
+    : null;
+  const mediaId = mediaObj?.id;
+
+  if (isMediaMessage && mediaId) {
     try {
-      const metaToken = process.env.META_ACCESS_TOKEN;
-      downloadedAttachment = await downloadMetaMedia(mediaPayload.id, metaToken);
-      console.log(`[Worker] Downloaded inbound media ${mediaPayload.id} -> ${downloadedAttachment.fileUrl}`);
+      downloadedAttachment = await downloadMetaMedia(mediaId, process.env.META_ACCESS_TOKEN);
+      console.log(`[Worker] Successfully downloaded inbound ${message.type} (${mediaId}) -> ${downloadedAttachment.fileUrl}`);
     } catch (mediaError) {
-      console.error(`[Worker] Transient error downloading inbound media ${mediaPayload.id}:`, mediaError.message || mediaError);
+      mediaDownloadFailed = true;
+      console.error(`[Worker] Failed to download inbound ${message.type} (${mediaId}):`, mediaError.message || mediaError);
     }
   }
 
-  // 3. Determine message body text / reference
-  let messageBody = message.text?.body || (message.type ? `[${message.type}]` : '[Message]');
-  if (downloadedAttachment) {
-    if (message.image) {
-      messageBody = message.image.caption
-        ? `📷 [Image] ${message.image.caption} (${downloadedAttachment.fileUrl})`
-        : `📷 [Image] ${downloadedAttachment.fileName} (${downloadedAttachment.fileUrl})`;
-    } else if (message.document) {
-      const docName = message.document.filename || downloadedAttachment.fileName;
-      messageBody = message.document.caption
-        ? `📄 [Document] ${docName} - ${message.document.caption} (${downloadedAttachment.fileUrl})`
-        : `📄 [Document] ${docName} (${downloadedAttachment.fileUrl})`;
-    } else if (message.audio || message.voice) {
-      messageBody = `🎵 [Audio message] ${downloadedAttachment.fileName} (${downloadedAttachment.fileUrl})`;
-    } else if (message.video) {
-      messageBody = message.video.caption
-        ? `🎥 [Video] ${message.video.caption} (${downloadedAttachment.fileUrl})`
-        : `🎥 [Video] ${downloadedAttachment.fileName} (${downloadedAttachment.fileUrl})`;
-    } else if (message.sticker) {
-      messageBody = `🏷️ [Sticker] ${downloadedAttachment.fileName} (${downloadedAttachment.fileUrl})`;
+  // 3. Determine Message Body
+  let messageBody = message.text?.body || '';
+  if (isMediaMessage) {
+    if (downloadedAttachment) {
+      const caption = mediaObj?.caption;
+      const typeLabel = message.type.charAt(0).toUpperCase() + message.type.slice(1);
+      messageBody = caption
+        ? `${caption} [${typeLabel} Attached]`
+        : `[${typeLabel} Attached]`;
+    } else if (mediaDownloadFailed) {
+      messageBody = '[Media Download Failed]';
+    } else {
+      messageBody = `[${message.type.toUpperCase()}]`;
     }
-  } else if (!message.text?.body && message.type) {
-    if (message.image) {
-      messageBody = message.image.caption ? `📷 [Image] ${message.image.caption}` : '📷 [Image]';
-    } else if (message.document) {
-      messageBody = message.document.filename ? `📄 [Document] ${message.document.filename}` : '📄 [Document]';
-    } else if (message.audio || message.voice) {
-      messageBody = '🎵 [Audio message]';
-    } else if (message.video) {
-      messageBody = message.video.caption ? `🎥 [Video] ${message.video.caption}` : '🎥 [Video]';
-    } else if (message.sticker) {
-      messageBody = '🏷️ [Sticker]';
-    }
+  } else if (!messageBody) {
+    messageBody = message.type ? `[${message.type}]` : '[Message]';
   }
 
   // 4. Atomic Database Transaction with Prisma $transaction
