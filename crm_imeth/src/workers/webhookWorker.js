@@ -246,6 +246,60 @@ const webhookWorker = new Worker('webhook-ingestion', async (job) => {
   }
 
   // =========================================================================
+  // CASE 3: WHATSAPP DELIVERY & READ RECEIPTS (statuses)
+  // =========================================================================
+  if (job.name === 'process-status') {
+    const { statusObj, metadata, tenantId: jobTenantId } = job.data;
+    const messageId = statusObj?.id;
+    const deliveryStatus = statusObj?.status; // "sent" | "delivered" | "read" | "failed"
+
+    if (!messageId || !deliveryStatus) {
+      console.warn('[Worker] Missing messageId or deliveryStatus in process-status job:', statusObj);
+      return;
+    }
+
+    try {
+      // Find and update the message status
+      const updatedMessage = await prisma.message.update({
+        where: { messageId },
+        data: { status: deliveryStatus },
+        include: {
+          lead: {
+            select: {
+              id: true,
+              tenantId: true,
+            },
+          },
+        },
+      });
+
+      const leadId = updatedMessage.leadId || updatedMessage.lead?.id;
+      const tenantId = updatedMessage.lead?.tenantId || jobTenantId;
+
+      console.log(`[Worker] Updated message ${messageId} delivery status to '${deliveryStatus}' (Lead: ${leadId}, Tenant: ${tenantId})`);
+
+      // Emit Socket.IO event to the tenant room
+      if (io && tenantId) {
+        io.to(`tenant:${tenantId}`).emit('message_status_update', {
+          messageId,
+          status: deliveryStatus,
+          leadId,
+        });
+        console.log(`📡 [Worker] Broadcasted 'message_status_update' (${deliveryStatus}) to room tenant:${tenantId}`);
+      }
+    } catch (err) {
+      if (err.code === 'P2025') {
+        console.warn(`[Worker] Message ${messageId} not found in database for status update: ${deliveryStatus}`);
+        return;
+      }
+      console.error(`[Worker] Failed to update delivery status for message ${messageId}:`, err);
+      throw err;
+    }
+
+    return;
+  }
+
+  // =========================================================================
   // CASE 2: INBOUND CUSTOMER MESSAGE
   // =========================================================================
   const { tenantId, message, contact, referral } = job.data;

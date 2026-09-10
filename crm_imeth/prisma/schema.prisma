@@ -99,6 +99,7 @@ model Message {
   direction  String   @default("INBOUND")
   source     String   @default("CRM")
   body       String
+  status     String?  @default("sent")
   timestamp  String?
   createdAt  DateTime @default(now())
 

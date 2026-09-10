@@ -63,6 +63,7 @@ export interface Message {
   direction: string;
   source?: string;
   body: string;
+  status?: string;
   timestamp?: string;
   createdAt: string;
 }

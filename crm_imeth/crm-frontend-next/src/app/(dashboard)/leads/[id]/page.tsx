@@ -44,6 +44,53 @@ const STATUS_OPTIONS = [
   { value: "LOST", label: "Lost", color: "bg-red-500", text: "text-red-700", bg: "bg-red-50 border-red-200" },
 ];
 
+function renderMessageStatusTick(status?: string) {
+  const normStatus = (status || "sent").toLowerCase();
+
+  if (normStatus === "failed") {
+    return (
+      <span title="Failed to deliver" className="inline-flex items-center text-red-500">
+        <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <circle cx="12" cy="12" r="10" strokeWidth="2" />
+          <line x1="12" y1="8" x2="12" y2="12" strokeWidth="2" strokeLinecap="round" />
+          <line x1="12" y1="16" x2="12.01" y2="16" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      </span>
+    );
+  }
+
+  if (normStatus === "read") {
+    return (
+      <span title="Read" className="inline-flex items-center text-blue-500">
+        <svg className="h-3.5 w-3.5" viewBox="0 0 16 15" fill="none" stroke="currentColor">
+          <path d="M10.5 3.5L4.5 10.5L1.5 7.5" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M14.5 3.5L8.5 10.5L7 8.8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </span>
+    );
+  }
+
+  if (normStatus === "delivered") {
+    return (
+      <span title="Delivered" className="inline-flex items-center text-slate-400">
+        <svg className="h-3.5 w-3.5" viewBox="0 0 16 15" fill="none" stroke="currentColor">
+          <path d="M10.5 3.5L4.5 10.5L1.5 7.5" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M14.5 3.5L8.5 10.5L7 8.8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </span>
+    );
+  }
+
+  // 'sent' default: Single gray check
+  return (
+    <span title="Sent" className="inline-flex items-center text-slate-400">
+      <svg className="h-3.5 w-3.5" viewBox="0 0 16 15" fill="none" stroke="currentColor">
+        <path d="M12.5 3.5L5.5 11.5L1.5 7.5" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </span>
+  );
+}
+
 export default function LeadDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -226,11 +273,29 @@ export default function LeadDetailPage() {
       }
     };
 
+    // 6. When an outbound message delivery/read status updates (sent, delivered, read, failed)
+    const handleMessageStatusUpdate = (data: { messageId: string; status: string; leadId: string }) => {
+      if (data.leadId === params.id) {
+        setLead((prev) => {
+          if (!prev || !prev.messages) return prev;
+          return {
+            ...prev,
+            messages: prev.messages.map((m) =>
+              m.messageId === data.messageId || m.id === data.messageId
+                ? { ...m, status: data.status }
+                : m
+            ),
+          };
+        });
+      }
+    };
+
     socket.on("lead_activity_created", handleActivityCreated);
     socket.on("lead_activity_deleted", handleActivityDeleted);
     socket.on("lead_updated", handleLeadUpdated);
     socket.on("user_updated", handleUserUpdated);
     socket.on("new_message", handleNewMessage);
+    socket.on("message_status_update", handleMessageStatusUpdate);
 
     return () => {
       socket.off("lead_activity_created", handleActivityCreated);
@@ -238,6 +303,7 @@ export default function LeadDetailPage() {
       socket.off("lead_updated", handleLeadUpdated);
       socket.off("user_updated", handleUserUpdated);
       socket.off("new_message", handleNewMessage);
+      socket.off("message_status_update", handleMessageStatusUpdate);
     };
   }, [socket, params.id]);
 
@@ -832,6 +898,7 @@ export default function LeadDetailPage() {
                               minute: "2-digit",
                             })}
                           </span>
+                          {isOutbound && renderMessageStatusTick(msg.status)}
                         </div>
                       </div>
                     </div>

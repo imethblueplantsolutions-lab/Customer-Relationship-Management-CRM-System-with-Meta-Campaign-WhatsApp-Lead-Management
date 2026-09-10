@@ -64,6 +64,18 @@ router.post('/', async (req, res) => {
             });
           }
         }
+
+        // 3. WhatsApp Message Delivery & Read Receipts (sent, delivered, read, failed)
+        // Meta sends delivery receipts under field === 'messages' in value.statuses
+        if (field === 'messages' && Array.isArray(value.statuses) && value.statuses.length > 0) {
+          for (const statusItem of value.statuses) {
+            await webhookQueue.add('process-status', {
+              tenantId,
+              statusObj: statusItem,
+              metadata: value.metadata || null
+            });
+          }
+        }
       }
     }
   } catch (error) {
