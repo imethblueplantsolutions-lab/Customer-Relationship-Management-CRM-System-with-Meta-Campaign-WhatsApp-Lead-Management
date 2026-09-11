@@ -152,8 +152,7 @@ export default function LoginPage() {
                 <MessageSquare className="w-5 h-5 text-white" />
               </div>
               <div className="flex items-baseline gap-0.5">
-                <span className="text-2xl font-bold text-slate-900 tracking-tight">Meta</span>
-                <span className="text-2xl font-bold text-[#3282B8] tracking-tight">CRM</span>
+                <span className="text-2xl font-bold text-[#3282B8] tracking-tight">MyCRM</span>
               </div>
             </div>
 
@@ -342,7 +341,7 @@ export default function LoginPage() {
               </a>
             </p>
             <p className="text-[11px] text-slate-300 mt-1">
-              All rights reserved Meta CRM Platform 2026
+              All rights reserved MyCRM Platform 2026
             </p>
           </div>
         </div>

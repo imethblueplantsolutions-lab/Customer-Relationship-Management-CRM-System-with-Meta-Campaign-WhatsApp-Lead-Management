@@ -223,7 +223,7 @@ export default function SettingsPage() {
       <div>
         <h2 className="text-2xl font-bold text-slate-800">Account & Settings</h2>
         <p className="text-sm text-slate-500 mt-1">
-          Manage your account profile, OTP security credentials, and Meta WhatsApp CRM configurations
+          Manage your account profile, OTP security credentials, and MyCRM configurations
         </p>
       </div>
 

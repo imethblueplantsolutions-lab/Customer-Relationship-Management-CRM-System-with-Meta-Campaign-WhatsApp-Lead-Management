@@ -178,7 +178,7 @@ export default function DashboardLayout({
             {!isCollapsed && (
               <div className="min-w-0 transition-opacity duration-200">
                 <h1 className="text-fluid-title font-bold tracking-tight text-white truncate">
-                  WhatsApp CRM
+                  MyCRM
                 </h1>
               </div>
             )}
@@ -369,7 +369,7 @@ export default function DashboardLayout({
                 💬
               </span>
               <span className="text-sm font-bold text-slate-900 tracking-tight">
-                WhatsApp CRM
+                MyCRM
               </span>
             </div>
           </div>

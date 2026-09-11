@@ -3,8 +3,8 @@ import "./globals.css";
 import { AuthProvider } from "@/hooks/use-auth";
 
 export const metadata: Metadata = {
-  title: "WhatsApp Meta CRM",
-  description: "CRM System with Meta Campaign & WhatsApp Lead Management",
+  title: "MyCRM",
+  description: "Customer Relationship Management System with WhatsApp Integration",
 };
 
 export default function RootLayout({
