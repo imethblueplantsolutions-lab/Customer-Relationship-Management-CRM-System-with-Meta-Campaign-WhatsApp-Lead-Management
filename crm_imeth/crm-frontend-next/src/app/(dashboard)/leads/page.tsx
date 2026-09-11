@@ -39,6 +39,9 @@ const CATEGORY_OPTIONS = [
   "Website Form",
 ];
 
+// Phase 1 toggle: Set to false when WhatsApp messaging feature is enabled
+const HIDE_WHATSAPP_MESSAGING = true;
+
 export default function LeadsPage() {
   const { user } = useAuth();
   const canAssign = user?.role === "ADMIN" || user?.role === "TEAM_LEAD";
@@ -294,21 +297,23 @@ export default function LeadsPage() {
               </div>
 
               {/* WhatsApp Number */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                  WhatsApp Number
-                </label>
-                <div className="relative">
-                  <MessageCircle className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <input
-                    type="tel"
-                    value={formWhatsappNumber}
-                    onChange={(e) => setFormWhatsappNumber(e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 font-mono placeholder-slate-400 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
-                    placeholder="e.g. +94 1234 5678"
-                  />
+              {!HIDE_WHATSAPP_MESSAGING && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    WhatsApp Number
+                  </label>
+                  <div className="relative">
+                    <MessageCircle className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <input
+                      type="tel"
+                      value={formWhatsappNumber}
+                      onChange={(e) => setFormWhatsappNumber(e.target.value)}
+                      className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 font-mono placeholder-slate-400 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
+                      placeholder="e.g. +94 1234 5678"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Row 3: Email & Category */}
@@ -460,7 +465,7 @@ export default function LeadsPage() {
           <Users className="mx-auto h-12 w-12 text-slate-300" />
           <h3 className="mt-4 text-lg font-semibold text-slate-600">No leads found</h3>
           <p className="mt-1 text-sm text-slate-400">
-            {search || statusFilter ? "Try adjusting your filters" : "Leads will appear here from WhatsApp campaigns"}
+            {search || statusFilter ? "Try adjusting your filters" : HIDE_WHATSAPP_MESSAGING ? "Leads will appear here once added or assigned" : "Leads will appear here from WhatsApp campaigns"}
           </p>
         </div>
       ) : (
