@@ -181,7 +181,7 @@ export default function UserManagementPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
-            <Users className="h-6 w-6 text-[#128c7e]" />
+            <Users className="h-6 w-6 text-[#3282B8]" />
             Team & User Management
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
@@ -193,7 +193,7 @@ export default function UserManagementPage() {
           <button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#075e54] hover:bg-[#128c7e] text-white px-5 py-2.5 text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer shrink-0"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0F4C75] hover:bg-[#3282B8] text-white px-5 py-2.5 text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer shrink-0"
           >
             <UserPlus className="h-4 w-4" />
             Provision New User
@@ -204,7 +204,7 @@ export default function UserManagementPage() {
       {/* Overview Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="rounded-2xl bg-white border border-slate-200/80 p-5 shadow-xs flex items-center gap-4">
-          <div className="h-12 w-12 rounded-xl bg-emerald-50 text-[#128c7e] flex items-center justify-center shrink-0">
+          <div className="h-12 w-12 rounded-xl bg-sky-50 text-[#3282B8] flex items-center justify-center shrink-0">
             <Users className="h-6 w-6" />
           </div>
           <div>
@@ -279,7 +279,7 @@ export default function UserManagementPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by name or email..."
-            className="w-full h-10 pl-10 pr-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
+            className="w-full h-10 pl-10 pr-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
           />
         </div>
 
@@ -288,7 +288,7 @@ export default function UserManagementPage() {
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:border-[#128c7e] focus:outline-none cursor-pointer"
+            className="h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:border-[#3282B8] focus:outline-none cursor-pointer"
           >
             <option value="ALL">All Roles ({usersList.length})</option>
             <option value="ADMIN">Admins</option>
@@ -302,7 +302,7 @@ export default function UserManagementPage() {
       <div className="rounded-2xl bg-white border border-slate-200/80 shadow-xs overflow-hidden">
         {loading ? (
           <div className="py-16 text-center">
-            <RefreshCw className="mx-auto h-7 w-7 text-[#128c7e] animate-spin mb-2" />
+            <RefreshCw className="mx-auto h-7 w-7 text-[#3282B8] animate-spin mb-2" />
             <p className="text-xs text-slate-500 font-medium">Loading user accounts...</p>
           </div>
         ) : filteredUsers.length === 0 ? (
@@ -335,7 +335,7 @@ export default function UserManagementPage() {
                       {/* Name & Email */}
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
-                          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-[#128c7e] to-[#25d366] text-white text-xs font-bold flex items-center justify-center shadow-xs shrink-0">
+                          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-[#0F4C75] to-[#3282B8] text-white text-xs font-bold flex items-center justify-center shadow-xs shrink-0">
                             {initial}
                           </div>
                           <div>
@@ -433,10 +433,10 @@ export default function UserManagementPage() {
           <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
             
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-[#075e54] to-[#128c7e] p-6 text-white flex items-center justify-between">
+            <div className="bg-gradient-to-r from-[#1B262C] via-[#0F4C75] to-[#3282B8] p-6 text-white flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-bold flex items-center gap-2">
-                  <UserPlus className="h-5 w-5 text-[#25d366]" />
+                  <UserPlus className="h-5 w-5 text-[#BBE1FA]" />
                   Provision Team Account
                 </h3>
                 <p className="text-xs text-white/80 mt-0.5">
@@ -464,7 +464,7 @@ export default function UserManagementPage() {
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="e.g. Sarah Jenkins"
-                  className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
+                  className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
                 />
               </div>
 
@@ -479,7 +479,7 @@ export default function UserManagementPage() {
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                   placeholder="user@organization.com"
-                  className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
+                  className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
                 />
               </div>
 
@@ -494,7 +494,7 @@ export default function UserManagementPage() {
                     onClick={() => setNewRole("AGENT")}
                     className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all text-center cursor-pointer ${
                       newRole === "AGENT"
-                        ? "bg-[#128c7e] text-white border-[#128c7e] shadow-sm"
+                        ? "bg-[#3282B8] text-white border-[#3282B8] shadow-sm"
                         : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
                     }`}
                   >
@@ -505,7 +505,7 @@ export default function UserManagementPage() {
                     onClick={() => setNewRole("TEAM_LEAD")}
                     className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all text-center cursor-pointer ${
                       newRole === "TEAM_LEAD"
-                        ? "bg-[#128c7e] text-white border-[#128c7e] shadow-sm"
+                        ? "bg-[#3282B8] text-white border-[#3282B8] shadow-sm"
                         : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
                     }`}
                   >
@@ -518,7 +518,7 @@ export default function UserManagementPage() {
               <div className="pt-2 border-t border-slate-100 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                    <Key className="h-3.5 w-3.5 text-[#128c7e]" />
+                    <Key className="h-3.5 w-3.5 text-[#3282B8]" />
                     Initial Temporary Password
                   </span>
                 </div>
@@ -529,7 +529,7 @@ export default function UserManagementPage() {
                     id="autoGenPass"
                     checked={autoGenPassword}
                     onChange={(e) => setAutoGenPassword(e.target.checked)}
-                    className="h-4 w-4 rounded text-[#128c7e] focus:ring-[#128c7e]"
+                    className="h-4 w-4 rounded text-[#3282B8] focus:ring-[#3282B8]"
                   />
                   <label htmlFor="autoGenPass" className="text-xs text-slate-600 font-medium cursor-pointer">
                     Auto-generate secure temporary password (recommended)
@@ -543,14 +543,14 @@ export default function UserManagementPage() {
                     value={customPassword}
                     onChange={(e) => setCustomPassword(e.target.value)}
                     placeholder="Enter initial temporary password"
-                    className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:border-[#128c7e] focus:outline-none"
+                    className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:border-[#3282B8] focus:outline-none"
                   />
                 )}
               </div>
 
               {/* Security Banner Note */}
-              <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900 leading-relaxed flex items-start gap-2">
-                <Sparkles className="h-4 w-4 text-[#25d366] shrink-0 mt-0.5" />
+              <div className="p-3.5 rounded-xl bg-sky-50 border border-[#BBE1FA] text-[11px] text-[#0F4C75] leading-relaxed flex items-start gap-2">
+                <Sparkles className="h-4 w-4 text-[#3282B8] shrink-0 mt-0.5" />
                 <span>
                   Welcome email will be sent automatically. The user must verify a 6-digit OTP code and set a new password on their first login.
                 </span>
@@ -560,7 +560,7 @@ export default function UserManagementPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full h-12 rounded-xl bg-[#075e54] hover:bg-[#128c7e] text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md hover:shadow-lg disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                className="w-full h-12 rounded-xl bg-[#0F4C75] hover:bg-[#3282B8] text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md hover:shadow-lg disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
               >
                 {submitting ? (
                   <>
@@ -583,8 +583,8 @@ export default function UserManagementPage() {
       {createdTempModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden p-6 sm:p-7 text-center space-y-5">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-emerald-100 text-[#075e54] flex items-center justify-center shadow-inner">
-              <CheckCircle2 className="h-8 w-8 text-[#25d366]" />
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-sky-100 text-[#0F4C75] flex items-center justify-center shadow-inner">
+              <CheckCircle2 className="h-8 w-8 text-[#3282B8]" />
             </div>
 
             <div>
@@ -598,12 +598,12 @@ export default function UserManagementPage() {
               <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                 Initial Temporary Password
               </p>
-              <div className="flex items-center justify-between bg-white px-4 py-2.5 rounded-xl border border-slate-200 font-mono text-sm font-bold text-[#075e54]">
+              <div className="flex items-center justify-between bg-white px-4 py-2.5 rounded-xl border border-slate-200 font-mono text-sm font-bold text-[#0F4C75]">
                 <span>{createdTempModal.tempPasswordPreview}</span>
                 <button
                   type="button"
                   onClick={() => copyToClipboard(createdTempModal.tempPasswordPreview)}
-                  className="p-1 text-slate-400 hover:text-[#128c7e] transition-colors cursor-pointer"
+                  className="p-1 text-slate-400 hover:text-[#3282B8] transition-colors cursor-pointer"
                   title="Copy password"
                 >
                   {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}

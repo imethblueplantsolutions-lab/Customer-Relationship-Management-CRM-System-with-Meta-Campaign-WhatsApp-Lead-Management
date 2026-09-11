@@ -128,19 +128,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-[#edf8f2] flex items-center justify-center p-5 sm:p-6 lg:p-8 font-sans overflow-x-hidden">
+    <div className="relative min-h-screen w-full bg-[#f4f9fd] flex items-center justify-center p-5 sm:p-6 lg:p-8 font-sans overflow-x-hidden">
       {/* Decorative Ambient Background Glows */}
-      <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-[#25d366]/20 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-[#128c7e]/20 blur-3xl pointer-events-none" />
+      <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-[#BBE1FA]/50 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-[#3282B8]/20 blur-3xl pointer-events-none" />
 
       {/* Subtle Floating Shapes */}
       <div className="absolute top-12 left-1/4 w-10 h-10 bg-white/70 backdrop-blur-md rounded-2xl rotate-12 shadow-sm pointer-events-none" />
-      <div className="absolute bottom-16 left-12 w-8 h-8 bg-[#25d366]/20 backdrop-blur-md rounded-xl -rotate-12 shadow-sm pointer-events-none" />
+      <div className="absolute bottom-16 left-12 w-8 h-8 bg-[#BBE1FA]/40 backdrop-blur-md rounded-xl -rotate-12 shadow-sm pointer-events-none" />
       <div className="absolute top-20 right-16 w-12 h-12 bg-white/80 backdrop-blur-md rounded-2xl rotate-45 shadow-sm pointer-events-none" />
-      <div className="absolute bottom-24 right-1/4 w-9 h-9 bg-[#128c7e]/20 backdrop-blur-md rounded-xl rotate-6 shadow-sm pointer-events-none" />
+      <div className="absolute bottom-24 right-1/4 w-9 h-9 bg-[#3282B8]/20 backdrop-blur-md rounded-xl rotate-6 shadow-sm pointer-events-none" />
 
       {/* Main Split Container (50/50 Grid) - Enlarged & Spacious */}
-      <div className="relative z-10 w-full max-w-6xl min-h-[720px] bg-white rounded-xl shadow-[0_25px_70px_rgba(7,94,84,0.12)] border border-slate-100 overflow-hidden grid grid-cols-1 md:grid-cols-2">
+      <div className="relative z-10 w-full max-w-6xl min-h-[720px] bg-white rounded-xl shadow-[0_25px_70px_rgba(27,38,44,0.12)] border border-slate-100 overflow-hidden grid grid-cols-1 md:grid-cols-2">
 
         {/* ================= LEFT HALF: Form & Clean Inputs ================= */}
         <div className="min-w-0 p-6 sm:p-10 lg:p-12 flex flex-col justify-between bg-white">
@@ -148,17 +148,17 @@ export default function LoginPage() {
           {/* Top Bar: Brand & Status Pill */}
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#128c7e] to-[#25d366] flex items-center justify-center shadow-md shadow-[#25d366]/20 shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0F4C75] to-[#3282B8] flex items-center justify-center shadow-md shadow-[#3282B8]/20 shrink-0">
                 <MessageSquare className="w-5 h-5 text-white" />
               </div>
               <div className="flex items-baseline gap-0.5">
                 <span className="text-2xl font-bold text-slate-900 tracking-tight">Meta</span>
-                <span className="text-2xl font-bold text-[#128c7e] tracking-tight">CRM</span>
+                <span className="text-2xl font-bold text-[#3282B8] tracking-tight">CRM</span>
               </div>
             </div>
 
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#f4fbf7] border border-[#d1fae5] text-xs font-semibold text-[#075e54] shrink-0">
-              <span className="w-2 h-2 rounded-full bg-[#25d366] animate-pulse" />
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#BBE1FA]/30 border border-[#BBE1FA] text-xs font-semibold text-[#0F4C75] shrink-0">
+              <span className="w-2 h-2 rounded-full bg-[#3282B8] animate-pulse" />
               <span>v1.0 Live</span>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400 ml-0.5" />
             </div>
@@ -178,10 +178,10 @@ export default function LoginPage() {
             </div>
 
             {/* Quick Demo Credentials Autofill Pills */}
-            <div className="w-full p-3.5 rounded-xl bg-[#f0faf5] border border-[#d2f4e3] space-y-2.5">
+            <div className="w-full p-3.5 rounded-xl bg-[#BBE1FA]/20 border border-[#BBE1FA]/60 space-y-2.5">
               <div className="flex items-center justify-between">
-                <p className="text-[#075e54] font-bold text-xs flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-[#25d366] shrink-0" /> Quick Test Accounts
+                <p className="text-[#0F4C75] font-bold text-xs flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-[#3282B8] shrink-0" /> Quick Test Accounts
                 </p>
                 <span className="text-[10px] text-slate-400 font-medium">Click role to auto-fill</span>
               </div>
@@ -192,8 +192,8 @@ export default function LoginPage() {
                   onClick={() => handleQuickFill("ADMIN")}
                   className={`py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer text-center border ${
                     email === "admin@crm.com"
-                      ? "bg-[#128c7e] text-white border-[#128c7e] shadow-xs"
-                      : "bg-white hover:bg-emerald-50 text-slate-700 border-slate-200"
+                      ? "bg-[#3282B8] text-white border-[#3282B8] shadow-xs"
+                      : "bg-white hover:bg-sky-50 text-slate-700 border-slate-200"
                   }`}
                 >
                   Admin
@@ -204,8 +204,8 @@ export default function LoginPage() {
                   onClick={() => handleQuickFill("TEAM_LEAD")}
                   className={`py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer text-center border ${
                     email === "teamlead@crm.com"
-                      ? "bg-[#128c7e] text-white border-[#128c7e] shadow-xs"
-                      : "bg-white hover:bg-emerald-50 text-slate-700 border-slate-200"
+                      ? "bg-[#3282B8] text-white border-[#3282B8] shadow-xs"
+                      : "bg-white hover:bg-sky-50 text-slate-700 border-slate-200"
                   }`}
                 >
                   Team Lead
@@ -216,8 +216,8 @@ export default function LoginPage() {
                   onClick={() => handleQuickFill("AGENT")}
                   className={`py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer text-center border ${
                     email === "agent@crm.com"
-                      ? "bg-[#128c7e] text-white border-[#128c7e] shadow-xs"
-                      : "bg-white hover:bg-emerald-50 text-slate-700 border-slate-200"
+                      ? "bg-[#3282B8] text-white border-[#3282B8] shadow-xs"
+                      : "bg-white hover:bg-sky-50 text-slate-700 border-slate-200"
                   }`}
                 >
                   Sales Agent
@@ -234,8 +234,8 @@ export default function LoginPage() {
             )}
 
             {successMsg && (
-              <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-xs sm:text-sm text-emerald-800 font-medium flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#25d366] shrink-0 mt-0.5" />
+              <div className="rounded-xl bg-sky-50 border border-[#BBE1FA] p-4 text-xs sm:text-sm text-[#0F4C75] font-medium flex items-start gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-[#3282B8] shrink-0 mt-0.5" />
                 <span>{successMsg}</span>
               </div>
             )}
@@ -254,7 +254,7 @@ export default function LoginPage() {
                   required
                   placeholder="Your email address"
                   style={{ paddingLeft: "48px", paddingRight: "16px" }}
-                  className="w-full h-12 rounded-xl bg-[#f4f7f6] border border-transparent text-sm text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-[#128c7e] focus:ring-4 focus:ring-[#128c7e]/10 focus:outline-none"
+                  className="w-full h-12 rounded-xl bg-[#f4f7f6] border border-transparent text-sm text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-[#3282B8] focus:ring-4 focus:ring-[#3282B8]/10 focus:outline-none"
                 />
               </div>
 
@@ -269,7 +269,7 @@ export default function LoginPage() {
                   required
                   placeholder="Your password"
                   style={{ paddingLeft: "48px", paddingRight: "48px" }}
-                  className="w-full h-12 rounded-xl bg-[#f4f7f6] border border-transparent text-sm text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-[#128c7e] focus:ring-4 focus:ring-[#128c7e]/10 focus:outline-none"
+                  className="w-full h-12 rounded-xl bg-[#f4f7f6] border border-transparent text-sm text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-[#3282B8] focus:ring-4 focus:ring-[#3282B8]/10 focus:outline-none"
                 />
                 <button
                   suppressHydrationWarning
@@ -288,7 +288,7 @@ export default function LoginPage() {
                   suppressHydrationWarning
                   type="button"
                   onClick={() => handleQuickFill("ADMIN")}
-                  className="text-[#128c7e] hover:text-[#075e54] font-semibold hover:underline cursor-pointer"
+                  className="text-[#3282B8] hover:text-[#0F4C75] font-semibold hover:underline cursor-pointer"
                 >
                   Need password reset?
                 </button>
@@ -299,7 +299,7 @@ export default function LoginPage() {
                 suppressHydrationWarning
                 type="submit"
                 disabled={loading}
-                className="w-full h-13 rounded-xl bg-slate-950 hover:bg-[#075e54] text-white font-semibold text-sm sm:text-base transition-all duration-200 shadow-md hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 mt-1 group"
+                className="w-full h-13 rounded-xl bg-[#1B262C] hover:bg-[#0F4C75] text-white font-semibold text-sm sm:text-base transition-all duration-200 shadow-md hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 mt-1 group"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
@@ -325,9 +325,9 @@ export default function LoginPage() {
                 type="button"
                 onClick={handleSeedDatabase}
                 disabled={seeding}
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-[#128c7e] transition-colors cursor-pointer disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-[#3282B8] transition-colors cursor-pointer disabled:opacity-50"
               >
-                <Database className="w-4 h-4 text-[#25d366]" />
+                <Database className="w-4 h-4 text-[#3282B8]" />
                 {seeding ? "Initializing database..." : "First time setup? Seed default database"}
               </button>
             </div>
@@ -337,7 +337,7 @@ export default function LoginPage() {
           <div className="mt-6 pt-4 text-center border-t border-slate-100">
             <p className="text-xs text-slate-400">
               Need assistance?{" "}
-              <a href="mailto:support@metacrm.io" className="text-[#128c7e] font-semibold hover:underline">
+              <a href="mailto:support@metacrm.io" className="text-[#3282B8] font-semibold hover:underline">
                 support@metacrm.io
               </a>
             </p>
@@ -348,16 +348,16 @@ export default function LoginPage() {
         </div>
 
         {/* ================= RIGHT HALF: Immersive Visual with Centered Frosted Glass Card ================= */}
-        <div className="hidden md:flex relative min-w-0 p-10 lg:p-14 flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-[#075e54] via-[#0d7467] to-[#128c7e]">
+        <div className="hidden md:flex relative min-w-0 p-10 lg:p-14 flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-[#1B262C] via-[#0F4C75] to-[#3282B8]">
 
           {/* Background Lighting & Grid Effects */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_30%,rgba(37,211,102,0.35),transparent_65%)] pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_30%,rgba(187,225,250,0.35),transparent_65%)] pointer-events-none" />
           <div className="absolute inset-0 opacity-15 bg-[linear-gradient(to_right,#ffffff15_1px,transparent_1px),linear-gradient(to_bottom,#ffffff15_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
 
           {/* Top Right Floating Badge */}
           <div className="absolute top-8 right-8 z-10">
             <div className="px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold text-white/90 flex items-center gap-2 shadow-lg">
-              <Layers className="w-4 h-4 text-[#25d366]" />
+              <Layers className="w-4 h-4 text-[#BBE1FA]" />
               Enterprise Edition
             </div>
           </div>
@@ -367,12 +367,12 @@ export default function LoginPage() {
 
             {/* Header Icon Ring */}
             <div className="w-14 h-14 rounded-xl border-2 border-white/40 border-t-white flex items-center justify-center bg-white/10 backdrop-blur-md">
-              <Sparkles className="w-6 h-6 text-[#25d366]" />
+              <Sparkles className="w-6 h-6 text-[#BBE1FA]" />
             </div>
 
             {/* Content Text (spacious & bold) */}
             <div className="flex flex-col gap-4">
-              <span className="self-start px-3.5 py-1 rounded-full bg-[#25d366]/20 border border-[#25d366]/40 text-xs font-bold tracking-wider text-emerald-200 uppercase">
+              <span className="self-start px-3.5 py-1 rounded-full bg-[#BBE1FA]/20 border border-[#BBE1FA]/40 text-xs font-bold tracking-wider text-[#BBE1FA] uppercase">
                 {slides[activeSlide].tag}
               </span>
               <h2 className="text-2xl sm:text-3xl font-bold leading-snug tracking-tight text-white drop-shadow-sm">
@@ -391,7 +391,7 @@ export default function LoginPage() {
                   key={idx}
                   type="button"
                   onClick={() => setActiveSlide(idx)}
-                  className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${activeSlide === idx ? "w-10 bg-[#25d366]" : "w-2.5 bg-white/40 hover:bg-white/70"
+                  className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${activeSlide === idx ? "w-10 bg-[#BBE1FA]" : "w-2.5 bg-white/40 hover:bg-white/70"
                     }`}
                   aria-label={`Go to slide ${idx + 1}`}
                 />

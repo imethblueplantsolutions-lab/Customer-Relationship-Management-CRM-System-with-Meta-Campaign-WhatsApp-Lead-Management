@@ -190,18 +190,18 @@ export default function AttachmentUploader({
         onClick={() => fileInputRef.current?.click()}
         className={`relative flex flex-col items-center justify-center p-5 sm:p-6 rounded-2xl border-2 border-dashed transition-all cursor-pointer select-none ${
           isDragging
-            ? "border-[#128c7e] bg-emerald-50/80 scale-[1.01]"
-            : "border-slate-300 hover:border-[#128c7e] bg-slate-50/50 hover:bg-slate-50"
+            ? "border-[#3282B8] bg-[#BBE1FA]/30 scale-[1.01]"
+            : "border-slate-300 hover:border-[#3282B8] bg-slate-50/50 hover:bg-slate-50"
         }`}
       >
         {uploading ? (
-          <div className="flex flex-col items-center py-2 gap-2 text-[#128c7e]">
+          <div className="flex flex-col items-center py-2 gap-2 text-[#3282B8]">
             <Loader2 className="h-7 w-7 animate-spin" />
             <p className="text-xs font-bold">Uploading file attachment...</p>
           </div>
         ) : (
           <div className="flex flex-col items-center text-center gap-2">
-            <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 shadow-xs flex items-center justify-center text-[#128c7e]">
+            <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 shadow-xs flex items-center justify-center text-[#3282B8]">
               <UploadCloud className="h-5 w-5" />
             </div>
             <div>
@@ -228,7 +228,7 @@ export default function AttachmentUploader({
       {attachments.length > 0 && (
         <div className="space-y-2 pt-1">
           <p className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-            <Paperclip className="h-3.5 w-3.5 text-[#128c7e]" />
+            <Paperclip className="h-3.5 w-3.5 text-[#3282B8]" />
             {title || "Attachments"} ({attachments.length})
           </p>
 
@@ -271,7 +271,7 @@ export default function AttachmentUploader({
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-[#128c7e] hover:bg-slate-100 transition-colors"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-[#3282B8] hover:bg-slate-100 transition-colors"
                       title="View / Download File"
                     >
                       <ExternalLink className="h-4 w-4" />

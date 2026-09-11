@@ -124,7 +124,7 @@ export default function MergeLeadsModal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#128c7e]/10 text-[#128c7e] shadow-xs">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#3282B8]/10 text-[#3282B8] shadow-xs">
               <GitMerge className="h-5 w-5" />
             </div>
             <div>
@@ -159,8 +159,8 @@ export default function MergeLeadsModal({
           )}
 
           {successMessage && (
-            <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-xs font-medium text-emerald-800 flex items-start gap-3">
-              <CheckCircle2 className="h-4 w-4 text-[#25d366] shrink-0 mt-0.5" />
+            <div className="rounded-2xl bg-sky-50 border border-[#BBE1FA] p-4 text-xs font-medium text-[#0F4C75] flex items-start gap-3">
+              <CheckCircle2 className="h-4 w-4 text-[#3282B8] shrink-0 mt-0.5" />
               <span className="flex-1">{successMessage}</span>
             </div>
           )}
@@ -193,7 +193,7 @@ export default function MergeLeadsModal({
                   value={primaryLeadId}
                   onChange={(e) => setPrimaryLeadId(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/60 p-2.5 text-xs text-slate-900 font-medium focus:border-[#128c7e] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#128c7e]/20 transition-all cursor-pointer disabled:opacity-50"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/60 p-2.5 text-xs text-slate-900 font-medium focus:border-[#3282B8] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#3282B8]/20 transition-all cursor-pointer disabled:opacity-50"
                   required
                 >
                   <option value="">-- Choose Primary Lead --</option>
@@ -313,7 +313,7 @@ export default function MergeLeadsModal({
             type="submit"
             form="merge-leads-form"
             disabled={isSubmitting || !primaryLeadId || !secondaryLeadId || primaryLeadId === secondaryLeadId}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#128c7e] hover:bg-[#075e54] px-5 py-2.5 text-xs font-bold text-white shadow-xs transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#3282B8] hover:bg-[#0F4C75] px-5 py-2.5 text-xs font-bold text-white shadow-xs transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <>

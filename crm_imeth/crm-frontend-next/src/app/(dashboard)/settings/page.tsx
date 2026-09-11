@@ -213,7 +213,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#128c7e] border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#3282B8] border-t-transparent" />
       </div>
     );
   }
@@ -231,7 +231,7 @@ export default function SettingsPage() {
       <div className="rounded-2xl bg-white border border-slate-200/80 shadow-sm overflow-hidden">
         <div className="border-b border-slate-100 bg-slate-50/70 px-7 py-4.5">
           <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-            <UserIcon className="h-4 w-4 text-[#128c7e]" />
+            <UserIcon className="h-4 w-4 text-[#3282B8]" />
             Account Profile
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -263,7 +263,7 @@ export default function SettingsPage() {
               value={profileName}
               onChange={(e) => setProfileName(e.target.value)}
               placeholder="e.g. Imeth Dewmina Rathnayaka"
-              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-800 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
+              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-800 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
             />
           </div>
 
@@ -291,7 +291,7 @@ export default function SettingsPage() {
             <button
               type="submit"
               disabled={savingProfile}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#128c7e] px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#075e54] transition-all disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#3282B8] px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#0F4C75] transition-all disabled:opacity-50 cursor-pointer"
             >
               <Save className="h-3.5 w-3.5" />
               {savingProfile ? "Updating Profile..." : "Update Account Name"}
@@ -304,7 +304,7 @@ export default function SettingsPage() {
       <div className="rounded-2xl bg-white border border-slate-200/80 shadow-sm overflow-hidden">
         <div className="border-b border-slate-100 bg-slate-50/70 px-7 py-4.5">
           <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-            <Shield className="h-4 w-4 text-[#128c7e]" />
+            <Shield className="h-4 w-4 text-[#3282B8]" />
             Profile Security & OTP Verification
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -331,7 +331,7 @@ export default function SettingsPage() {
             <form onSubmit={handleRequestSecurityOtp} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
-                  <Mail className="h-3.5 w-3.5 text-[#128c7e]" />
+                  <Mail className="h-3.5 w-3.5 text-[#3282B8]" />
                   Change Email Address (Optional)
                 </label>
                 <input
@@ -339,7 +339,7 @@ export default function SettingsPage() {
                   value={securityTargetEmail}
                   onChange={(e) => setSecurityTargetEmail(e.target.value)}
                   placeholder={`Current: ${user?.email}`}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-800 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-800 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
                 />
                 <p className="text-[11px] text-slate-400 mt-1">
                   OTP code will be sent to the new address to prove inbox ownership.
@@ -348,7 +348,7 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
-                  <Lock className="h-3.5 w-3.5 text-[#128c7e]" />
+                  <Lock className="h-3.5 w-3.5 text-[#3282B8]" />
                   Change Password (Optional)
                 </label>
                 <input
@@ -356,7 +356,7 @@ export default function SettingsPage() {
                   value={securityNewPassword}
                   onChange={(e) => setSecurityNewPassword(e.target.value)}
                   placeholder="Enter new password (min 6 characters)"
-                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-800 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-800 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
                 />
               </div>
 
@@ -364,7 +364,7 @@ export default function SettingsPage() {
                 <button
                   type="submit"
                   disabled={requestingOtp || (!securityTargetEmail.trim() && !securityNewPassword.trim())}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#075e54] px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#128c7e] transition-all disabled:opacity-50 cursor-pointer"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#0F4C75] px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#3282B8] transition-all disabled:opacity-50 cursor-pointer"
                 >
                   {requestingOtp ? (
                     <>
@@ -400,7 +400,7 @@ export default function SettingsPage() {
                   value={securityOtpCode}
                   onChange={(e) => setSecurityOtpCode(e.target.value.replace(/[^0-9]/g, ""))}
                   placeholder="e.g. 123456"
-                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-center font-mono text-lg font-bold text-slate-900 tracking-widest focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-center font-mono text-lg font-bold text-slate-900 tracking-widest focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
                 />
               </div>
 
@@ -408,7 +408,7 @@ export default function SettingsPage() {
                 <button
                   type="submit"
                   disabled={verifyingSecurity || securityOtpCode.length !== 6}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#075e54] px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#128c7e] transition-all disabled:opacity-50 cursor-pointer"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#0F4C75] px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#3282B8] transition-all disabled:opacity-50 cursor-pointer"
                 >
                   {verifyingSecurity ? (
                     <>
@@ -440,7 +440,7 @@ export default function SettingsPage() {
         <div className="rounded-2xl bg-white border border-slate-200/80 shadow-sm overflow-hidden divide-y divide-slate-100">
           <div className="bg-slate-50/70 px-7 py-4.5">
             <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-              <Smartphone className="h-4 w-4 text-[#128c7e]" />
+              <Smartphone className="h-4 w-4 text-[#3282B8]" />
               Meta WhatsApp Business API Settings
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -466,7 +466,7 @@ export default function SettingsPage() {
           {/* WABA ID */}
           <div className="p-7">
             <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-              <Smartphone className="h-4 w-4 text-[#128c7e]" />
+              <Smartphone className="h-4 w-4 text-[#3282B8]" />
               WhatsApp Business Account ID (WABA)
             </label>
             <input
@@ -474,7 +474,7 @@ export default function SettingsPage() {
               value={wabaId}
               onChange={(e) => setWabaId(e.target.value)}
               placeholder="e.g. 123456789012345"
-              className="mt-3 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none"
+              className="mt-3 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none"
             />
             <p className="mt-1.5 text-xs text-slate-400">
               Found in Meta Business Suite → WhatsApp Manager → Business Account Settings
@@ -484,7 +484,7 @@ export default function SettingsPage() {
           {/* Access Token */}
           <div className="p-7">
             <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-              <Key className="h-4 w-4 text-[#128c7e]" />
+              <Key className="h-4 w-4 text-[#3282B8]" />
               Meta Access Token
             </label>
             <input
@@ -492,7 +492,7 @@ export default function SettingsPage() {
               value={accessToken}
               onChange={(e) => setAccessToken(e.target.value)}
               placeholder="••••••••••••••••"
-              className="mt-3 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none"
+              className="mt-3 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none"
             />
             <p className="mt-1.5 text-xs text-slate-400">
               Permanent system user token with whatsapp_business_messaging permission
@@ -502,7 +502,7 @@ export default function SettingsPage() {
           {/* Phone Number ID */}
           <div className="p-7">
             <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-              <Smartphone className="h-4 w-4 text-[#128c7e]" />
+              <Smartphone className="h-4 w-4 text-[#3282B8]" />
               Phone Number ID
             </label>
             <input
@@ -510,7 +510,7 @@ export default function SettingsPage() {
               value={phoneNumberId}
               onChange={(e) => setPhoneNumberId(e.target.value)}
               placeholder="e.g. 109876543210123"
-              className="mt-3 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none"
+              className="mt-3 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none"
             />
           </div>
 
@@ -518,7 +518,7 @@ export default function SettingsPage() {
             <button
               onClick={handleSaveSettings}
               disabled={savingSettings}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#128c7e] px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#075e54] transition-all disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#3282B8] px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#0F4C75] transition-all disabled:opacity-50 cursor-pointer"
             >
               <Save className="h-3.5 w-3.5" />
               {savingSettings ? "Saving Settings..." : "Save Meta Settings"}

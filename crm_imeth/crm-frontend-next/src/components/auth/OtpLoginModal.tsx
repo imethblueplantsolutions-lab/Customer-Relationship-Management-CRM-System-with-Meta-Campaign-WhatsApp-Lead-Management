@@ -181,7 +181,7 @@ export default function OtpLoginModal({
       <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
         
         {/* Modal Top Header Gradient */}
-        <div className="bg-gradient-to-r from-[#075e54] via-[#0d7467] to-[#128c7e] p-6 text-white text-center relative">
+        <div className="bg-gradient-to-r from-[#1B262C] via-[#0F4C75] to-[#3282B8] p-6 text-white text-center relative">
           <button
             type="button"
             onClick={onCancel}
@@ -191,7 +191,7 @@ export default function OtpLoginModal({
           </button>
           
           <div className="w-12 h-12 mx-auto rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-lg mb-3">
-            <ShieldCheck className="w-6 h-6 text-[#25d366]" />
+            <ShieldCheck className="w-6 h-6 text-[#BBE1FA]" />
           </div>
 
           <h3 className="text-xl font-bold tracking-tight">Two-Factor OTP Security</h3>
@@ -206,13 +206,13 @@ export default function OtpLoginModal({
         <form onSubmit={handleSubmit} className="p-6 sm:p-7 space-y-5">
           
           {/* Email Target Indicator */}
-          <div className="p-3 rounded-xl bg-emerald-50/80 border border-emerald-200/70 flex items-center justify-between text-xs text-emerald-900 font-medium">
+          <div className="p-3 rounded-xl bg-[#BBE1FA]/20 border border-[#BBE1FA]/70 flex items-center justify-between text-xs text-[#0F4C75] font-medium">
             <div className="flex items-center gap-2 truncate">
-              <KeyRound className="w-4 h-4 text-[#128c7e] shrink-0" />
+              <KeyRound className="w-4 h-4 text-[#3282B8] shrink-0" />
               <span className="truncate">Sent to: <strong>{email}</strong></span>
             </div>
             {isFirstLogin && (
-              <span className="px-2 py-0.5 rounded-md bg-[#128c7e] text-white text-[10px] font-bold shrink-0">
+              <span className="px-2 py-0.5 rounded-md bg-[#3282B8] text-white text-[10px] font-bold shrink-0">
                 First Login
               </span>
             )}
@@ -227,8 +227,8 @@ export default function OtpLoginModal({
           )}
 
           {successMsg && (
-            <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs text-emerald-800 font-medium flex items-start gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-[#25d366] shrink-0 mt-0.5" />
+            <div className="rounded-xl bg-sky-50 border border-[#BBE1FA] p-3.5 text-xs text-[#0F4C75] font-medium flex items-start gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-[#3282B8] shrink-0 mt-0.5" />
               <span>{successMsg}</span>
             </div>
           )}
@@ -252,8 +252,8 @@ export default function OtpLoginModal({
                   onPaste={handlePaste}
                   className={`w-11 sm:w-12 h-13 rounded-xl border text-center text-xl font-bold font-mono transition-all focus:outline-none ${
                     digit
-                      ? "border-[#128c7e] bg-emerald-50/50 text-[#075e54] ring-2 ring-[#128c7e]/20"
-                      : "border-slate-200 bg-slate-50 text-slate-900 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20"
+                      ? "border-[#3282B8] bg-sky-50 text-[#0F4C75] ring-2 ring-[#3282B8]/20"
+                      : "border-slate-200 bg-slate-50 text-slate-900 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20"
                   }`}
                 />
               ))}
@@ -265,7 +265,7 @@ export default function OtpLoginModal({
             <div className="pt-2 space-y-3.5 border-t border-slate-100">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                  <Lock className="w-3.5 h-3.5 text-[#128c7e]" />
+                  <Lock className="w-3.5 h-3.5 text-[#3282B8]" />
                   Set New Secret Password
                 </span>
                 <span className="text-[10px] text-slate-400 font-medium">Min 6 characters</span>
@@ -279,7 +279,7 @@ export default function OtpLoginModal({
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
                   placeholder="New personal password"
-                  className="w-full h-11 px-3.5 pr-10 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
+                  className="w-full h-11 px-3.5 pr-10 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
                 />
                 <button
                   type="button"
@@ -298,7 +298,7 @@ export default function OtpLoginModal({
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   placeholder="Confirm new password"
-                  className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
+                  className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
                 />
               </div>
             </div>
@@ -308,7 +308,7 @@ export default function OtpLoginModal({
           <button
             type="submit"
             disabled={loading || otpDigits.join("").length !== 6}
-            className="w-full h-12 rounded-xl bg-[#075e54] hover:bg-[#128c7e] text-white font-bold text-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 group"
+            className="w-full h-12 rounded-xl bg-[#0F4C75] hover:bg-[#3282B8] text-white font-bold text-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 group"
           >
             {loading ? (
               <span className="flex items-center gap-2">
@@ -330,7 +330,7 @@ export default function OtpLoginModal({
               type="button"
               onClick={handleResendOtp}
               disabled={resendCooldown > 0 || resending}
-              className="inline-flex items-center gap-1 font-bold text-[#128c7e] hover:text-[#075e54] hover:underline disabled:opacity-50 disabled:no-underline cursor-pointer"
+              className="inline-flex items-center gap-1 font-bold text-[#3282B8] hover:text-[#0F4C75] hover:underline disabled:opacity-50 disabled:no-underline cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${resending ? "animate-spin" : ""}`} />
               {resending

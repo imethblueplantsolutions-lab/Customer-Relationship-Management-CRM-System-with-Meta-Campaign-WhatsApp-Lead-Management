@@ -148,14 +148,14 @@ export default function NotificationBell({
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case "NEW_MESSAGE":
-        return <MessageSquare className="h-4 w-4 text-[#128c7e]" />;
+        return <MessageSquare className="h-4 w-4 text-[#3282B8]" />;
       case "LEAD_ASSIGNED":
         return <UserPlus className="h-4 w-4 text-blue-500" />;
       case "FOLLOWUP_ASSIGNED":
       case "FOLLOWUP_DUE":
         return <Clock className="h-4 w-4 text-amber-500" />;
       default:
-        return <Sparkles className="h-4 w-4 text-emerald-500" />;
+        return <Sparkles className="h-4 w-4 text-sky-500" />;
     }
   };
 
@@ -185,7 +185,7 @@ export default function NotificationBell({
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         aria-label="View notifications"
-        className={`relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-xs transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#128c7e]/30 ${
+        className={`relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-xs transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#3282B8]/30 ${
           hasNewAlert ? "animate-bounce" : ""
         }`}
       >
@@ -223,7 +223,7 @@ export default function NotificationBell({
               <button
                 type="button"
                 onClick={handleMarkAllRead}
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#128c7e] hover:text-[#075e54] transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#3282B8] hover:text-[#0F4C75] transition-colors cursor-pointer"
               >
                 <CheckCheck className="h-3.5 w-3.5" />
                 Mark all read
@@ -241,7 +241,7 @@ export default function NotificationBell({
             ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 mb-2">
-                  <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+                  <CheckCircle2 className="h-6 w-6 text-sky-500" />
                 </div>
                 <p className="text-xs font-bold text-slate-700">You're all caught up!</p>
                 <p className="text-[11px] text-slate-400 mt-0.5">
@@ -256,14 +256,14 @@ export default function NotificationBell({
                     key={notif.id}
                     onClick={() => handleItemClick(notif)}
                     className={`group relative flex items-start gap-3 p-3.5 transition-all cursor-pointer hover:bg-slate-50 ${
-                      !notif.isRead ? "bg-emerald-50/40" : "bg-white"
+                      !notif.isRead ? "bg-[#BBE1FA]/20" : "bg-white"
                     }`}
                   >
                     {/* Type Icon */}
                     <div
                       className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl shadow-xs ${
                         !notif.isRead
-                          ? "bg-white ring-1 ring-emerald-200"
+                          ? "bg-white ring-1 ring-[#BBE1FA]"
                           : "bg-slate-100 text-slate-500"
                       }`}
                     >
@@ -292,7 +292,7 @@ export default function NotificationBell({
                       </p>
 
                       {notif.linkUrl && (
-                        <div className="flex items-center gap-1 text-[10px] font-bold text-[#128c7e] mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center gap-1 text-[10px] font-bold text-[#3282B8] mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                           <span>View lead</span>
                           <ExternalLink className="h-2.5 w-2.5" />
                         </div>
@@ -301,7 +301,7 @@ export default function NotificationBell({
 
                     {/* Unread Indicator Dot */}
                     {!notif.isRead && (
-                      <span className="h-2 w-2 rounded-full bg-[#128c7e] shrink-0 mt-1.5" />
+                      <span className="h-2 w-2 rounded-full bg-[#3282B8] shrink-0 mt-1.5" />
                     )}
                   </div>
                 );

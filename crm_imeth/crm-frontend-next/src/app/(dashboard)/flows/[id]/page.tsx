@@ -318,7 +318,7 @@ export default function FlowEditorPage() {
   if (loading) {
     return (
       <div className="flex h-[calc(100vh-120px)] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[#128c7e]" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#3282B8]" />
       </div>
     );
   }
@@ -329,7 +329,7 @@ export default function FlowEditorPage() {
         <p className="text-sm text-slate-500">Flow not found</p>
         <button
           onClick={() => router.push("/flows")}
-          className="text-sm text-[#128c7e] hover:underline cursor-pointer"
+          className="text-sm text-[#3282B8] hover:underline cursor-pointer"
         >
           ← Back to flows
         </button>
@@ -365,7 +365,7 @@ export default function FlowEditorPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-[#128c7e] px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-[#075e54] disabled:opacity-50 transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-[#3282B8] px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-[#0F4C75] disabled:opacity-50 transition-all cursor-pointer"
           >
             <Save className="h-3.5 w-3.5" />
             {saving ? "Saving..." : "Save"}
@@ -470,7 +470,7 @@ export default function FlowEditorPage() {
                       ((selectedNode.data as Record<string, unknown>)?.config as Record<string, string>)?.subject_key || ""
                     }
                     onChange={(e) => updateNodeConfig(selectedNode.id, "subject_key", e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none"
                     autoFocus
                   />
                   <p className="mt-1.5 text-[11px] text-slate-500 leading-normal">
@@ -493,7 +493,7 @@ export default function FlowEditorPage() {
                       ((selectedNode.data as Record<string, unknown>)?.config as Record<string, string>)?.text || ""
                     }
                     onChange={(e) => updateNodeConfig(selectedNode.id, "text", e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 p-3 text-xs text-slate-800 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none leading-relaxed"
+                    className="w-full rounded-xl border border-slate-200 p-3 text-xs text-slate-800 placeholder-slate-400 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none leading-relaxed"
                     autoFocus
                   />
                   <p className="mt-1.5 text-[11px] text-slate-500 leading-normal">
@@ -516,7 +516,7 @@ export default function FlowEditorPage() {
                       ((selectedNode.data as Record<string, unknown>)?.config as Record<string, string>)?.department || ""
                     }
                     onChange={(e) => updateNodeConfig(selectedNode.id, "department", e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none"
                   />
                   <p className="mt-1.5 text-[11px] text-slate-500 leading-normal">
                     Alerts human agents on the CRM dashboard when a lead reaches this point.

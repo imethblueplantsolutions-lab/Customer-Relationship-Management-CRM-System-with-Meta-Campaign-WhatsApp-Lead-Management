@@ -1,26 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  /* WhatsApp-inspired palette */
-  --wa-dark-teal: #075e54;
-  --wa-teal: #128c7e;
-  --wa-green: #4c8c62;
-  --wa-light-green: #dcf8c6;
-  --wa-cream: #ece5dd;
-  --wa-chat-bg: #e5ddd5;
+  /* New Theme Palette: #1B262C, #0F4C75, #3282B8, #BBE1FA */
+  --wa-dark-teal: #1B262C;
+  --wa-teal: #3282B8;
+  --wa-green: #0F4C75;
+  --wa-light-green: #BBE1FA;
+  --wa-cream: #f0f7fc;
+  --wa-chat-bg: #e2f1fd;
 
   /* Semantic tokens */
-  --color-bg: #f0fdf4;
+  --color-bg: #f4f9fd;
   --color-bg-gradient: radial-gradient(ellipse at 55% 40%,
-      #dcf8c6 0%,
-      #25d366 100%);
+      #BBE1FA 0%,
+      #3282B8 100%);
   --color-bg-card: #ffffff;
-  --color-bg-sidebar: #0f172a;
-  --color-text: #0f172a;
+  --color-bg-sidebar: #1B262C;
+  --color-text: #1B262C;
   --color-text-muted: #64748b;
   --color-border: #e2e8f0;
-  --color-primary: #128c7e;
-  --color-primary-hover: #075e54;
+  --color-primary: #3282B8;
+  --color-primary-hover: #0F4C75;
   /* Fluid typography tokens using clamp() */
   --fluid-nav: clamp(0.875rem, 1vw + 0.5rem, 1rem);
   /* 14px -> 16px */
@@ -168,6 +168,6 @@ td {
 .react-flow__handle {
   width: 10px !important;
   height: 10px !important;
-  border: 2px solid #128c7e !important;
+  border: 2px solid #3282B8 !important;
   background: white !important;
 }

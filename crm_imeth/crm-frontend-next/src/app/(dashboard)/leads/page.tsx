@@ -156,7 +156,7 @@ export default function LeadsPage() {
               onClick={() => setShowMergeModal(true)}
               className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-5 py-3.5 text-sm font-bold shadow-xs transition-all cursor-pointer"
             >
-              <GitMerge className="h-4 w-4 text-[#128c7e]" />
+              <GitMerge className="h-4 w-4 text-[#3282B8]" />
               Merge Duplicates
             </button>
           )}
@@ -168,7 +168,7 @@ export default function LeadsPage() {
             }}
             className={`inline-flex items-center gap-3 rounded-xl px-7 py-3.5 text-sm font-bold shadow-md transition-all cursor-pointer ${showAddForm
               ? "bg-slate-200 text-slate-700 hover:bg-slate-300"
-              : "bg-[#128c7e] text-white hover:bg-[#075e54]"
+              : "bg-[#3282B8] text-white hover:bg-[#0F4C75]"
               }`}
           >
             {showAddForm ? (
@@ -190,9 +190,9 @@ export default function LeadsPage() {
           {/* Form Header */}
           <div className="flex items-center justify-between bg-slate-50/70 border-b border-slate-200/80 px-5 py-4">
             <div>
-              <h3 className="text-base font-bold text-[#075e54] flex items-center gap-2">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#25d366]/10">
-                  <Plus className="h-4 w-4 text-[#25d366]" />
+              <h3 className="text-base font-bold text-[#0F4C75] flex items-center gap-2">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#BBE1FA]/30">
+                  <Plus className="h-4 w-4 text-[#3282B8]" />
                 </span>
                 Manual Lead Injection
               </h3>
@@ -245,7 +245,7 @@ export default function LeadsPage() {
                     required
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
+                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
                     placeholder="e.g. Katherine Lim"
                   />
                 </div>
@@ -262,7 +262,7 @@ export default function LeadsPage() {
                     type="text"
                     value={formDisplayName}
                     onChange={(e) => setFormDisplayName(e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
+                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
                     placeholder="e.g. Katherine"
                   />
                 </div>
@@ -287,7 +287,7 @@ export default function LeadsPage() {
                     required
                     value={formPhone}
                     onChange={(e) => setFormPhone(e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 font-mono placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
+                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 font-mono placeholder-slate-400 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
                     placeholder="e.g. +94 1234 5678"
                   />
                 </div>
@@ -304,7 +304,7 @@ export default function LeadsPage() {
                     type="tel"
                     value={formWhatsappNumber}
                     onChange={(e) => setFormWhatsappNumber(e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 font-mono placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
+                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 font-mono placeholder-slate-400 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
                     placeholder="e.g. +94 1234 5678"
                   />
                 </div>
@@ -324,7 +324,7 @@ export default function LeadsPage() {
                     type="email"
                     value={formEmail}
                     onChange={(e) => setFormEmail(e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
+                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
                     placeholder="e.g. katherine@example.com"
                   />
                 </div>
@@ -340,7 +340,7 @@ export default function LeadsPage() {
                   <select
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value)}
-                    className="w-full appearance-none rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-8 text-sm text-slate-900 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all cursor-pointer"
+                    className="w-full appearance-none rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-8 text-sm text-slate-900 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all cursor-pointer"
                   >
                     {CATEGORY_OPTIONS.map((cat) => (
                       <option key={cat} value={cat}>
@@ -363,7 +363,7 @@ export default function LeadsPage() {
                   <select
                     value={formAssignedTo}
                     onChange={(e) => setFormAssignedTo(e.target.value)}
-                    className="w-full appearance-none rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-8 text-sm text-slate-900 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all cursor-pointer"
+                    className="w-full appearance-none rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-8 text-sm text-slate-900 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all cursor-pointer"
                   >
                     <option value="">Unassigned</option>
                     {agents.map((ag) => (
@@ -387,7 +387,7 @@ export default function LeadsPage() {
                   value={formNotes}
                   onChange={(e) => setFormNotes(e.target.value)}
                   rows={3}
-                  className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all resize-none"
+                  className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all resize-none"
                   placeholder="Add notes about your client here..."
                 />
               </div>
@@ -408,7 +408,7 @@ export default function LeadsPage() {
               <button
                 type="submit"
                 disabled={formSubmitting}
-                className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#25d366] hover:bg-[#128c7e] text-white font-bold text-xs rounded-xl shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#3282B8] hover:bg-[#0F4C75] text-white font-bold text-xs rounded-xl shadow-sm transition-all disabled:opacity-50 cursor-pointer"
               >
                 {formSubmitting ? (
                   <>
@@ -433,13 +433,13 @@ export default function LeadsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name or phone..."
-            className="w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none transition-all"
+            className="w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
           />
         </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none cursor-pointer"
+          className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none cursor-pointer"
         >
           <option value="">All Statuses</option>
           <option value="NEW">New</option>
@@ -453,7 +453,7 @@ export default function LeadsPage() {
       {/* Leads list */}
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#128c7e] border-t-transparent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#3282B8] border-t-transparent" />
         </div>
       ) : leads.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-slate-200 py-16 text-center">
@@ -472,7 +472,7 @@ export default function LeadsPage() {
               className="flex items-center justify-between rounded-2xl bg-white border border-slate-200/60 px-6 py-5 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group"
             >
               <div className="flex items-center gap-4 min-w-0">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#128c7e]/10 text-sm font-bold text-[#128c7e]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#3282B8]/10 text-sm font-bold text-[#3282B8]">
                   {(lead.name || lead.phoneNumber).charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0">
@@ -509,7 +509,7 @@ export default function LeadsPage() {
                 >
                   {lead.status}
                 </span>
-                <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-[#128c7e] transition-colors" />
+                <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-[#3282B8] transition-colors" />
               </div>
             </Link>
           ))}

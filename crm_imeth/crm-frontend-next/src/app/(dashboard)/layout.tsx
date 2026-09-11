@@ -145,8 +145,8 @@ export default function DashboardLayout({
 
   if (isLoading || !isAuthenticated) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#0b131e]">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#25d366] border-t-transparent shadow-lg" />
+      <div className="flex h-screen items-center justify-center bg-[#1B262C]">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#3282B8] border-t-transparent shadow-lg" />
       </div>
     );
   }
@@ -165,14 +165,14 @@ export default function DashboardLayout({
 
       {/* ================= SIDEBAR (DESKTOP & MOBILE DRAWER) ================= */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col bg-[#0f172a] text-white shadow-2xl transition-all duration-300 ease-in-out md:static ${
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col bg-[#1B262C] text-white shadow-2xl transition-all duration-300 ease-in-out md:static ${
           mobileOpen ? "translate-x-0 w-72" : "-translate-x-full md:translate-x-0"
         } ${isCollapsed ? "md:w-20" : "md:w-64"}`}
       >
         {/* Brand Header */}
         <div className="flex h-18 items-center justify-between border-b border-white/10 px-4">
           <div className="flex items-center gap-3 overflow-hidden">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-[#128c7e] to-[#25d366] text-xl shadow-md shadow-[#25d366]/20">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-[#0F4C75] to-[#3282B8] text-xl shadow-md shadow-[#3282B8]/20">
               💬
             </span>
             {!isCollapsed && (
@@ -230,13 +230,13 @@ export default function DashboardLayout({
                 title={isCollapsed ? item.label : undefined}
                 className={`flex items-center gap-4 rounded-xl px-4 py-3 text-fluid-nav font-medium transition-all group ${
                   isActive
-                    ? "bg-[#128c7e] text-white shadow-md shadow-[#128c7e]/30"
+                    ? "bg-[#3282B8] text-white shadow-md shadow-[#3282B8]/30"
                     : "text-slate-300 hover:bg-white/5 hover:text-white"
                 } ${isCollapsed ? "justify-center px-2" : ""}`}
               >
                 <Icon
                   className={`h-5 w-5 shrink-0 transition-transform group-hover:scale-110 ${
-                    isActive ? "text-white" : "text-slate-400 group-hover:text-emerald-400"
+                    isActive ? "text-white" : "text-slate-400 group-hover:text-[#BBE1FA]"
                   }`}
                 />
                 {!isCollapsed && <span className="truncate">{item.label}</span>}
@@ -265,13 +265,13 @@ export default function DashboardLayout({
 
             {/* Notification Dropdown */}
             {notifOpen && (
-              <div className="absolute bottom-full left-0 mb-2 w-80 rounded-2xl border border-slate-700 bg-[#0f172a] shadow-2xl overflow-hidden z-50">
+              <div className="absolute bottom-full left-0 mb-2 w-80 rounded-2xl border border-slate-700 bg-[#1B262C] shadow-2xl overflow-hidden z-50">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">Notifications</h3>
                   {unreadCount > 0 && (
                     <button
                       onClick={markAllRead}
-                      className="flex items-center gap-1 text-[10px] font-semibold text-emerald-400 hover:text-emerald-300 cursor-pointer"
+                      className="flex items-center gap-1 text-[10px] font-semibold text-[#BBE1FA] hover:text-white cursor-pointer"
                     >
                       <CheckCheck className="h-3 w-3" /> Mark all read
                     </button>
@@ -289,7 +289,7 @@ export default function DashboardLayout({
                         key={notif.id}
                         onClick={() => handleNotifClick(notif)}
                         className={`w-full text-left px-4 py-3 hover:bg-white/5 transition-colors cursor-pointer ${
-                          !notif.isRead ? "border-l-2 border-[#25d366]" : ""
+                          !notif.isRead ? "border-l-2 border-[#3282B8]" : ""
                         }`}
                       >
                         <p className={`text-xs font-semibold truncate ${
@@ -313,7 +313,7 @@ export default function DashboardLayout({
               isCollapsed ? "justify-center flex-col gap-4" : ""
             }`}
           >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#128c7e] to-[#25d366] text-xs font-bold text-white shadow-sm">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#0F4C75] to-[#3282B8] text-xs font-bold text-white shadow-sm">
               {user?.name ? user.name.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || "A"}
             </div>
             {!isCollapsed && (
@@ -352,7 +352,7 @@ export default function DashboardLayout({
               aria-label="Open navigation menu"
             >
               <svg
-                className="w-6 h-6 text-[#075e54]"
+                className="w-6 h-6 text-[#0F4C75]"
                 viewBox="0 0 24 24"
                 fill="currentColor"
               >
@@ -365,7 +365,7 @@ export default function DashboardLayout({
 
             {/* Brand Title */}
             <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-[#128c7e] to-[#25d366] text-sm text-white">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-[#0F4C75] to-[#3282B8] text-sm text-white">
                 💬
               </span>
               <span className="text-sm font-bold text-slate-900 tracking-tight">
@@ -375,8 +375,8 @@ export default function DashboardLayout({
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-[11px] font-semibold text-emerald-700 border border-emerald-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#BBE1FA]/30 text-[#0F4C75] text-[11px] font-semibold border border-[#BBE1FA]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3282B8] animate-pulse" />
               Live
             </span>
           </div>
@@ -393,8 +393,8 @@ export default function DashboardLayout({
       {/* Real-time Floating Notification Toast for Assigned Leads */}
       {toastNotif && (
         <div className="fixed top-5 right-5 z-50 max-w-sm w-full animate-in fade-in slide-in-from-top-4 duration-300">
-          <div className="flex items-start gap-3 rounded-2xl border border-emerald-500/40 bg-[#0f172a]/95 backdrop-blur-md p-4 shadow-2xl ring-1 ring-emerald-500/20 text-white">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30">
+          <div className="flex items-start gap-3 rounded-2xl border border-[#3282B8]/40 bg-[#1B262C]/95 backdrop-blur-md p-4 shadow-2xl ring-1 ring-[#3282B8]/20 text-white">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#3282B8]/20 text-[#BBE1FA] ring-1 ring-[#3282B8]/30">
               <Bell className="h-5 w-5 animate-pulse" />
             </div>
             <div className="flex-1 min-w-0">
@@ -419,7 +419,7 @@ export default function DashboardLayout({
                       handleNotifClick(toastNotif);
                       setToastNotif(null);
                     }}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-[#128c7e] px-2.5 py-1 text-[11px] font-semibold text-white shadow hover:bg-[#075e54] transition-all cursor-pointer"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-[#3282B8] px-2.5 py-1 text-[11px] font-semibold text-white shadow hover:bg-[#0F4C75] transition-all cursor-pointer"
                   >
                     View Lead →
                   </button>

@@ -188,7 +188,7 @@ export default function PipelinesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-[#128c7e]" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#3282B8]" />
       </div>
     );
   }
@@ -202,13 +202,13 @@ export default function PipelinesPage() {
             <select
               value={selectedId}
               onChange={(e) => setSelectedId(e.target.value)}
-              className="appearance-none rounded-xl border border-slate-200 bg-white pl-10 pr-10 py-2.5 text-sm font-semibold text-slate-800 cursor-pointer focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none"
+              className="appearance-none rounded-xl border border-slate-200 bg-white pl-10 pr-10 py-2.5 text-sm font-semibold text-slate-800 cursor-pointer focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none"
             >
               {pipelines.map((p) => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
-            <GitBranch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#128c7e]" />
+            <GitBranch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#3282B8]" />
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           </div>
         </div>
@@ -226,7 +226,7 @@ export default function PipelinesPage() {
               setShowDealForm(true);
             }}
             disabled={!selectedId || stages.length === 0}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-[#128c7e] px-4 py-2.5 text-sm font-bold text-white shadow-md hover:bg-[#075e54] transition-all disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-[#3282B8] px-4 py-2.5 text-sm font-bold text-white shadow-md hover:bg-[#0F4C75] transition-all disabled:opacity-50 cursor-pointer"
           >
             <Plus className="h-4 w-4" /> Add Deal
           </button>
@@ -241,7 +241,7 @@ export default function PipelinesPage() {
           <p className="mt-2 text-sm text-slate-400">Create one to start tracking deals</p>
           <button
             onClick={() => setShowNewPipeline(true)}
-            className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-[#128c7e] px-4 py-2.5 text-sm font-bold text-white cursor-pointer"
+            className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-[#3282B8] px-4 py-2.5 text-sm font-bold text-white cursor-pointer"
           >
             <Plus className="h-4 w-4" /> Create Pipeline
           </button>
@@ -292,7 +292,7 @@ export default function PipelinesPage() {
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="e.g. Sales Pipeline"
-              className="mt-4 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none"
+              className="mt-4 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none"
               onKeyDown={(e) => e.key === "Enter" && handleCreatePipeline()}
               autoFocus
             />
@@ -307,7 +307,7 @@ export default function PipelinesPage() {
               <button
                 onClick={handleCreatePipeline}
                 disabled={creating || !newName.trim()}
-                className="rounded-xl bg-[#128c7e] px-4 py-2 text-sm font-bold text-white hover:bg-[#075e54] disabled:opacity-50 cursor-pointer"
+                className="rounded-xl bg-[#3282B8] px-4 py-2 text-sm font-bold text-white hover:bg-[#0F4C75] disabled:opacity-50 cursor-pointer"
               >
                 {creating ? "Creating..." : "Create"}
               </button>
@@ -326,7 +326,7 @@ export default function PipelinesPage() {
                 value={dealTitle}
                 onChange={(e) => setDealTitle(e.target.value)}
                 placeholder="Deal title"
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none"
                 autoFocus
               />
               <input
@@ -334,12 +334,12 @@ export default function PipelinesPage() {
                 value={dealValue}
                 onChange={(e) => setDealValue(e.target.value)}
                 placeholder="Value (USD)"
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none"
               />
               <select
                 value={dealStageId}
                 onChange={(e) => setDealStageId(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-[#128c7e] focus:ring-2 focus:ring-[#128c7e]/20 focus:outline-none cursor-pointer"
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none cursor-pointer"
               >
                 {stages.map((s) => (
                   <option key={s.id} value={s.id}>{s.name}</option>
@@ -356,7 +356,7 @@ export default function PipelinesPage() {
               <button
                 onClick={handleCreateDeal}
                 disabled={!dealTitle.trim()}
-                className="rounded-xl bg-[#128c7e] px-4 py-2 text-sm font-bold text-white hover:bg-[#075e54] disabled:opacity-50 cursor-pointer"
+                className="rounded-xl bg-[#3282B8] px-4 py-2 text-sm font-bold text-white hover:bg-[#0F4C75] disabled:opacity-50 cursor-pointer"
               >
                 Create Deal
               </button>
@@ -396,7 +396,7 @@ function StageColumn({
       <div
         ref={setNodeRef}
         className={`mt-3 flex flex-1 flex-col gap-2 rounded-xl transition-all min-h-[80px] ${
-          isOver ? "bg-[#128c7e]/5 outline outline-2 outline-dashed outline-[#128c7e] outline-offset-2" : ""
+          isOver ? "bg-[#3282B8]/5 outline outline-2 outline-dashed outline-[#3282B8] outline-offset-2" : ""
         }`}
       >
         {deals.length === 0 ? (
@@ -484,7 +484,7 @@ function DealCard({
       </div>
 
       <div className="mt-2 flex items-center justify-between">
-        <span className="text-sm font-bold text-[#128c7e]">
+        <span className="text-sm font-bold text-[#3282B8]">
           {formatCurrency(deal.value, deal.currency)}
         </span>
         {deal.expectedCloseDate && (

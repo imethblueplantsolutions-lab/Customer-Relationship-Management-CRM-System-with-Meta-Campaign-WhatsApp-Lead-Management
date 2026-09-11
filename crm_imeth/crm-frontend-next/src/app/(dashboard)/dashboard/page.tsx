@@ -47,7 +47,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#128c7e] border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#3282B8] border-t-transparent" />
       </div>
     );
   }
