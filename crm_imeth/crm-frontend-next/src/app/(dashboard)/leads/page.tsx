@@ -147,8 +147,11 @@ export default function LeadsPage() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Leads Pipeline</h2>
-          <p className="text-sm text-slate-500 mt-2">
+          <h2 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <Users className="h-6 w-6 text-blue-600" />
+            Leads Pipeline
+          </h2>
+          <p className="text-sm text-slate-500 mt-1">
             {leads.length} leads total
           </p>
         </div>

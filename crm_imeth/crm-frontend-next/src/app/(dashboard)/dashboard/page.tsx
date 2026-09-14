@@ -16,6 +16,7 @@ import {
   Cell,
 } from "recharts";
 import type { PieLabelRenderProps } from "recharts";
+import { LayoutDashboard } from "lucide-react";
 
 const STATUS_COLORS: Record<string, string> = {
   NEW: "#3b82f6",
@@ -78,8 +79,11 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold text-slate-800">Dashboard</h2>
-        <p className="text-md text-slate-500 mt-2">Campaign & Lead Analytics Overview</p>
+        <h2 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+          <LayoutDashboard className="h-6 w-6 text-blue-600" />
+          Dashboard
+        </h2>
+        <p className="text-sm text-slate-500 mt-1">Campaign & Lead Analytics Overview</p>
       </div>
 
       {/* Stat Cards */}
@@ -103,8 +107,8 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Bar Chart */}
         <div className="rounded-2xl bg-white border border-slate-200/60 p-6 shadow-sm">
-          <h3 className="text-sm font-bold text-slate-700 mb-5">Leads by Status</h3>
-          <ResponsiveContainer width="100%" height={260}>
+          <h3 className="text-base font-bold text-slate-800 text-center mb-6">Leads by Status</h3>
+          <ResponsiveContainer width="100%" height={290}>
             <BarChart data={statusData} barSize={36}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#64748b" }} />
@@ -127,13 +131,13 @@ export default function DashboardPage() {
 
         {/* Pie Chart */}
         <div className="rounded-2xl bg-white border border-slate-200/60 p-6 shadow-sm">
-          <h3 className="text-sm font-bold text-slate-700 mb-5">Status Distribution</h3>
-          <ResponsiveContainer width="100%" height={320}>
+          <h3 className="text-base font-bold text-slate-800 text-center mb-6">Status Distribution</h3>
+          <ResponsiveContainer width="100%" height={290}>
             <PieChart>
               <Pie
                 data={statusData}
                 cx="50%"
-                cy="45%"
+                cy="50%"
                 innerRadius={55}
                 outerRadius={90}
                 paddingAngle={3}

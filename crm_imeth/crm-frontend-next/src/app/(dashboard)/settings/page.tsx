@@ -16,6 +16,7 @@ import {
   RefreshCw,
   AlertCircle,
   KeyRound,
+  Settings,
 } from "lucide-react";
 
 interface TenantSettings {
@@ -221,7 +222,10 @@ export default function SettingsPage() {
   return (
     <div className="space-y-8 max-w-2xl pb-16">
       <div>
-        <h2 className="text-2xl font-bold text-slate-800">Account & Settings</h2>
+        <h2 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+          <Settings className="h-6 w-6 text-blue-600" />
+          Account & Settings
+        </h2>
         <p className="text-sm text-slate-500 mt-1">
           Manage your account profile, OTP security credentials, and MyCRM configurations
         </p>

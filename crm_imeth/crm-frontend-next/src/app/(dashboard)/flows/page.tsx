@@ -117,8 +117,11 @@ export default function FlowsPage() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Automation Flows</h2>
-          <p className="text-sm text-slate-500 mt-2">
+          <h2 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <Workflow className="h-6 w-6 text-blue-600" />
+            Automation Flows
+          </h2>
+          <p className="text-sm text-slate-500 mt-1">
             {flows.length} flow{flows.length !== 1 ? "s" : ""} configured
           </p>
         </div>
