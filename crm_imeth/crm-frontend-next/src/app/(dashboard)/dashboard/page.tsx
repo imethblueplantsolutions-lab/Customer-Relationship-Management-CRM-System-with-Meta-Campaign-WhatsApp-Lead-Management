@@ -16,7 +16,6 @@ import {
   Cell,
 } from "recharts";
 import type { PieLabelRenderProps } from "recharts";
-import { Users, UserCheck, TrendingUp, Clock } from "lucide-react";
 
 const STATUS_COLORS: Record<string, string> = {
   NEW: "#3b82f6",
@@ -70,10 +69,10 @@ export default function DashboardPage() {
   }));
 
   const statCards = [
-    { label: "Total Leads", value: stats.totalLeads, icon: Users, color: "bg-blue-500" },
-    { label: "Converted", value: stats.statusBreakdown.CONVERTED || 0, icon: UserCheck, color: "bg-emerald-500" },
-    { label: "Qualified", value: stats.statusBreakdown.QUALIFIED || 0, icon: TrendingUp, color: "bg-purple-500" },
-    { label: "Pending Follow-ups", value: stats.pendingFollowups, icon: Clock, color: "bg-amber-500" },
+    { label: "Total Leads", value: stats.totalLeads },
+    { label: "Converted", value: stats.statusBreakdown.CONVERTED || 0 },
+    { label: "Qualified", value: stats.statusBreakdown.QUALIFIED || 0 },
+    { label: "Pending Follow-ups", value: stats.pendingFollowups },
   ];
 
   return (
@@ -85,29 +84,19 @@ export default function DashboardPage() {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        {statCards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <div
-              key={card.label}
-              className="rounded-2xl bg-white border border-slate-200/60 p-6 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-slate-500 uppercase tracking-widest">
-                    {card.label}
-                  </p>
-                  <p className="text-3xl font-extrabold text-slate-800 mt-2">
-                    {card.value}
-                  </p>
-                </div>
-                <div className={`${card.color} rounded-xl p-3 text-white shadow-sm`}>
-                  <Icon className="h-5 w-5" />
-                </div>
-              </div>
-            </div>
-          );
-        })}
+        {statCards.map((card) => (
+          <div
+            key={card.label}
+            className="rounded-2xl bg-white border border-slate-200/60 p-6 shadow-sm hover:shadow-md transition-shadow text-left"
+          >
+            <p className="text-[15px] font-semibold text-slate-500 uppercase tracking-wider">
+              {card.label}
+            </p>
+            <p className="text-4xl sm:text-[40px] font-extrabold text-slate-800 mt-2.5 leading-none">
+              {card.value}
+            </p>
+          </div>
+        ))}
       </div>
 
       {/* Charts row */}
