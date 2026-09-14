@@ -131,13 +131,13 @@ export default function LoginPage() {
     <div className="relative min-h-screen w-full bg-[#f4f9fd] flex items-center justify-center p-5 sm:p-6 lg:p-8 font-sans overflow-x-hidden">
       {/* Decorative Ambient Background Glows */}
       <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-[#BBE1FA]/50 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-[#3282B8]/20 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-blue-600/20 blur-3xl pointer-events-none" />
 
       {/* Subtle Floating Shapes */}
       <div className="absolute top-12 left-1/4 w-10 h-10 bg-white/70 backdrop-blur-md rounded-2xl rotate-12 shadow-sm pointer-events-none" />
       <div className="absolute bottom-16 left-12 w-8 h-8 bg-[#BBE1FA]/40 backdrop-blur-md rounded-xl -rotate-12 shadow-sm pointer-events-none" />
       <div className="absolute top-20 right-16 w-12 h-12 bg-white/80 backdrop-blur-md rounded-2xl rotate-45 shadow-sm pointer-events-none" />
-      <div className="absolute bottom-24 right-1/4 w-9 h-9 bg-[#3282B8]/20 backdrop-blur-md rounded-xl rotate-6 shadow-sm pointer-events-none" />
+      <div className="absolute bottom-24 right-1/4 w-9 h-9 bg-blue-600/20 backdrop-blur-md rounded-xl rotate-6 shadow-sm pointer-events-none" />
 
       {/* Main Split Container (50/50 Grid) - Enlarged & Spacious */}
       <div className="relative z-10 w-full max-w-6xl min-h-[720px] bg-white rounded-xl shadow-[0_25px_70px_rgba(27,38,44,0.12)] border border-slate-100 overflow-hidden grid grid-cols-1 md:grid-cols-2">
@@ -152,12 +152,12 @@ export default function LoginPage() {
                 <MessageSquare className="w-5 h-5 text-white" />
               </div>
               <div className="flex items-baseline gap-0.5">
-                <span className="text-2xl font-bold text-[#3282B8] tracking-tight">MyCRM</span>
+                <span className="text-2xl font-bold text-blue-600 tracking-tight">MyCRM</span>
               </div>
             </div>
 
             <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#BBE1FA]/30 border border-[#BBE1FA] text-xs font-semibold text-[#0F4C75] shrink-0">
-              <span className="w-2 h-2 rounded-full bg-[#3282B8] animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
               <span>v1.0 Live</span>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400 ml-0.5" />
             </div>
@@ -180,7 +180,7 @@ export default function LoginPage() {
             <div className="w-full p-3.5 rounded-xl bg-[#BBE1FA]/20 border border-[#BBE1FA]/60 space-y-2.5">
               <div className="flex items-center justify-between">
                 <p className="text-[#0F4C75] font-bold text-xs flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-[#3282B8] shrink-0" /> Quick Test Accounts
+                  <Sparkles className="w-3.5 h-3.5 text-blue-600 shrink-0" /> Quick Test Accounts
                 </p>
                 <span className="text-[10px] text-slate-400 font-medium">Click role to auto-fill</span>
               </div>
@@ -191,7 +191,7 @@ export default function LoginPage() {
                   onClick={() => handleQuickFill("ADMIN")}
                   className={`py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer text-center border ${
                     email === "admin@crm.com"
-                      ? "bg-[#3282B8] text-white border-[#3282B8] shadow-xs"
+                      ? "bg-blue-600 text-white border-blue-600 shadow-xs"
                       : "bg-white hover:bg-sky-50 text-slate-700 border-slate-200"
                   }`}
                 >
@@ -203,7 +203,7 @@ export default function LoginPage() {
                   onClick={() => handleQuickFill("TEAM_LEAD")}
                   className={`py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer text-center border ${
                     email === "teamlead@crm.com"
-                      ? "bg-[#3282B8] text-white border-[#3282B8] shadow-xs"
+                      ? "bg-blue-600 text-white border-blue-600 shadow-xs"
                       : "bg-white hover:bg-sky-50 text-slate-700 border-slate-200"
                   }`}
                 >
@@ -215,7 +215,7 @@ export default function LoginPage() {
                   onClick={() => handleQuickFill("AGENT")}
                   className={`py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer text-center border ${
                     email === "agent@crm.com"
-                      ? "bg-[#3282B8] text-white border-[#3282B8] shadow-xs"
+                      ? "bg-blue-600 text-white border-blue-600 shadow-xs"
                       : "bg-white hover:bg-sky-50 text-slate-700 border-slate-200"
                   }`}
                 >
@@ -234,7 +234,7 @@ export default function LoginPage() {
 
             {successMsg && (
               <div className="rounded-xl bg-sky-50 border border-[#BBE1FA] p-4 text-xs sm:text-sm text-[#0F4C75] font-medium flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#3282B8] shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
                 <span>{successMsg}</span>
               </div>
             )}
@@ -253,7 +253,7 @@ export default function LoginPage() {
                   required
                   placeholder="Your email address"
                   style={{ paddingLeft: "48px", paddingRight: "16px" }}
-                  className="w-full h-12 rounded-xl bg-[#f4f7f6] border border-transparent text-sm text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-[#3282B8] focus:ring-4 focus:ring-[#3282B8]/10 focus:outline-none"
+                  className="w-full h-12 rounded-xl bg-[#f4f7f6] border border-transparent text-sm text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-none"
                 />
               </div>
 
@@ -268,7 +268,7 @@ export default function LoginPage() {
                   required
                   placeholder="Your password"
                   style={{ paddingLeft: "48px", paddingRight: "48px" }}
-                  className="w-full h-12 rounded-xl bg-[#f4f7f6] border border-transparent text-sm text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-[#3282B8] focus:ring-4 focus:ring-[#3282B8]/10 focus:outline-none"
+                  className="w-full h-12 rounded-xl bg-[#f4f7f6] border border-transparent text-sm text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-none"
                 />
                 <button
                   suppressHydrationWarning
@@ -287,7 +287,7 @@ export default function LoginPage() {
                   suppressHydrationWarning
                   type="button"
                   onClick={() => handleQuickFill("ADMIN")}
-                  className="text-[#3282B8] hover:text-[#0F4C75] font-semibold hover:underline cursor-pointer"
+                  className="text-blue-600 hover:text-[#0F4C75] font-semibold hover:underline cursor-pointer"
                 >
                   Need password reset?
                 </button>
@@ -298,7 +298,7 @@ export default function LoginPage() {
                 suppressHydrationWarning
                 type="submit"
                 disabled={loading}
-                className="w-full h-13 rounded-xl bg-[#1B262C] hover:bg-[#0F4C75] text-white font-semibold text-sm sm:text-base transition-all duration-200 shadow-md hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 mt-1 group"
+                className="w-full h-13 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm sm:text-base transition-all duration-200 shadow-md hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 mt-1 group"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
@@ -324,9 +324,9 @@ export default function LoginPage() {
                 type="button"
                 onClick={handleSeedDatabase}
                 disabled={seeding}
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-[#3282B8] transition-colors cursor-pointer disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-blue-600 transition-colors cursor-pointer disabled:opacity-50"
               >
-                <Database className="w-4 h-4 text-[#3282B8]" />
+                <Database className="w-4 h-4 text-blue-600" />
                 {seeding ? "Initializing database..." : "First time setup? Seed default database"}
               </button>
             </div>
@@ -336,7 +336,7 @@ export default function LoginPage() {
           <div className="mt-6 pt-4 text-center border-t border-slate-100">
             <p className="text-xs text-slate-400">
               Need assistance?{" "}
-              <a href="mailto:support@metacrm.io" className="text-[#3282B8] font-semibold hover:underline">
+              <a href="mailto:support@metacrm.io" className="text-blue-600 font-semibold hover:underline">
                 support@metacrm.io
               </a>
             </p>

@@ -208,11 +208,11 @@ export default function OtpLoginModal({
           {/* Email Target Indicator */}
           <div className="p-3 rounded-xl bg-[#BBE1FA]/20 border border-[#BBE1FA]/70 flex items-center justify-between text-xs text-[#0F4C75] font-medium">
             <div className="flex items-center gap-2 truncate">
-              <KeyRound className="w-4 h-4 text-[#3282B8] shrink-0" />
+              <KeyRound className="w-4 h-4 text-blue-600 shrink-0" />
               <span className="truncate">Sent to: <strong>{email}</strong></span>
             </div>
             {isFirstLogin && (
-              <span className="px-2 py-0.5 rounded-md bg-[#3282B8] text-white text-[10px] font-bold shrink-0">
+              <span className="px-2 py-0.5 rounded-md bg-blue-600 text-white text-[10px] font-bold shrink-0">
                 First Login
               </span>
             )}
@@ -228,7 +228,7 @@ export default function OtpLoginModal({
 
           {successMsg && (
             <div className="rounded-xl bg-sky-50 border border-[#BBE1FA] p-3.5 text-xs text-[#0F4C75] font-medium flex items-start gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-[#3282B8] shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
               <span>{successMsg}</span>
             </div>
           )}
@@ -252,8 +252,8 @@ export default function OtpLoginModal({
                   onPaste={handlePaste}
                   className={`w-11 sm:w-12 h-13 rounded-xl border text-center text-xl font-bold font-mono transition-all focus:outline-none ${
                     digit
-                      ? "border-[#3282B8] bg-sky-50 text-[#0F4C75] ring-2 ring-[#3282B8]/20"
-                      : "border-slate-200 bg-slate-50 text-slate-900 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20"
+                      ? "border-blue-500 bg-sky-50 text-[#0F4C75] ring-2 ring-blue-500/20"
+                      : "border-slate-200 bg-slate-50 text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                   }`}
                 />
               ))}
@@ -265,7 +265,7 @@ export default function OtpLoginModal({
             <div className="pt-2 space-y-3.5 border-t border-slate-100">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                  <Lock className="w-3.5 h-3.5 text-[#3282B8]" />
+                  <Lock className="w-3.5 h-3.5 text-blue-600" />
                   Set New Secret Password
                 </span>
                 <span className="text-[10px] text-slate-400 font-medium">Min 6 characters</span>
@@ -279,7 +279,7 @@ export default function OtpLoginModal({
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
                   placeholder="New personal password"
-                  className="w-full h-11 px-3.5 pr-10 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
+                  className="w-full h-11 px-3.5 pr-10 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
                 />
                 <button
                   type="button"
@@ -298,7 +298,7 @@ export default function OtpLoginModal({
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   placeholder="Confirm new password"
-                  className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
+                  className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
                 />
               </div>
             </div>
@@ -308,7 +308,7 @@ export default function OtpLoginModal({
           <button
             type="submit"
             disabled={loading || otpDigits.join("").length !== 6}
-            className="w-full h-12 rounded-xl bg-[#0F4C75] hover:bg-[#3282B8] text-white font-bold text-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 group"
+            className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 group"
           >
             {loading ? (
               <span className="flex items-center gap-2">
@@ -330,7 +330,7 @@ export default function OtpLoginModal({
               type="button"
               onClick={handleResendOtp}
               disabled={resendCooldown > 0 || resending}
-              className="inline-flex items-center gap-1 font-bold text-[#3282B8] hover:text-[#0F4C75] hover:underline disabled:opacity-50 disabled:no-underline cursor-pointer"
+              className="inline-flex items-center gap-1 font-bold text-blue-600 hover:text-[#0F4C75] hover:underline disabled:opacity-50 disabled:no-underline cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${resending ? "animate-spin" : ""}`} />
               {resending

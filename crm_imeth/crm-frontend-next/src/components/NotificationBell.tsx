@@ -148,7 +148,7 @@ export default function NotificationBell({
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case "NEW_MESSAGE":
-        return <MessageSquare className="h-4 w-4 text-[#3282B8]" />;
+        return <MessageSquare className="h-4 w-4 text-blue-600" />;
       case "LEAD_ASSIGNED":
         return <UserPlus className="h-4 w-4 text-blue-500" />;
       case "FOLLOWUP_ASSIGNED":
@@ -185,7 +185,7 @@ export default function NotificationBell({
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         aria-label="View notifications"
-        className={`relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-xs transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#3282B8]/30 ${
+        className={`relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-xs transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/30 ${
           hasNewAlert ? "animate-bounce" : ""
         }`}
       >
@@ -223,7 +223,7 @@ export default function NotificationBell({
               <button
                 type="button"
                 onClick={handleMarkAllRead}
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#3282B8] hover:text-[#0F4C75] transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-[#0F4C75] transition-colors cursor-pointer"
               >
                 <CheckCheck className="h-3.5 w-3.5" />
                 Mark all read
@@ -292,7 +292,7 @@ export default function NotificationBell({
                       </p>
 
                       {notif.linkUrl && (
-                        <div className="flex items-center gap-1 text-[10px] font-bold text-[#3282B8] mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center gap-1 text-[10px] font-bold text-blue-600 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                           <span>View lead</span>
                           <ExternalLink className="h-2.5 w-2.5" />
                         </div>
@@ -301,7 +301,7 @@ export default function NotificationBell({
 
                     {/* Unread Indicator Dot */}
                     {!notif.isRead && (
-                      <span className="h-2 w-2 rounded-full bg-[#3282B8] shrink-0 mt-1.5" />
+                      <span className="h-2 w-2 rounded-full bg-blue-600 shrink-0 mt-1.5" />
                     )}
                   </div>
                 );

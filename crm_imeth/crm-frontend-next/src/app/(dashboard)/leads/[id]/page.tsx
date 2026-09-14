@@ -712,7 +712,7 @@ export default function LeadDetailPage() {
   if (loading) {
     return (
       <div className="flex h-96 items-center justify-center">
-        <Loader2 className="h-9 w-9 animate-spin text-[#3282B8]" />
+        <Loader2 className="h-9 w-9 animate-spin text-blue-600" />
       </div>
     );
   }
@@ -823,7 +823,7 @@ export default function LeadDetailPage() {
                       <span>{opt.label}</span>
                     </div>
                     {lead.status === opt.value && (
-                      <Check className="h-3.5 w-3.5 text-[#3282B8]" />
+                      <Check className="h-3.5 w-3.5 text-blue-600" />
                     )}
                   </button>
                 ))}
@@ -844,7 +844,7 @@ export default function LeadDetailPage() {
               <div className="flex items-center justify-between border-b border-slate-100 bg-[#f8fafc] px-5 py-3.5">
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#3282B8] text-white shadow-xs">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white shadow-xs">
                       <MessageSquare className="h-4 w-4" />
                     </div>
                   </div>
@@ -927,12 +927,12 @@ export default function LeadDetailPage() {
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
                   disabled={sendingMessage}
-                  className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:border-[#3282B8] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#3282B8]/20 transition-all"
+                  className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                 />
                 <button
                   type="submit"
                   disabled={sendingMessage || !messageText.trim()}
-                  className="inline-flex h-10 items-center justify-center rounded-xl bg-[#3282B8] px-4 text-xs font-bold text-white shadow-sm hover:bg-[#0F4C75] disabled:opacity-50 transition-all cursor-pointer"
+                  className="inline-flex h-10 items-center justify-center rounded-xl bg-blue-600 px-4 text-xs font-bold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50 transition-all cursor-pointer"
                 >
                   {sendingMessage ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -958,7 +958,7 @@ export default function LeadDetailPage() {
               </div>
               <button
                 onClick={() => setShowFollowupForm(!showFollowupForm)}
-                className="text-xs font-bold text-[#3282B8] hover:text-[#0F4C75] hover:underline cursor-pointer"
+                className="text-xs font-bold text-blue-600 hover:text-[#0F4C75] hover:underline cursor-pointer"
               >
                 {showFollowupForm ? "Cancel" : "+ Schedule Task"}
               </button>
@@ -975,7 +975,7 @@ export default function LeadDetailPage() {
                     <select
                       value={followupType}
                       onChange={(e) => setFollowupType(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-[#3282B8] focus:outline-none"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-blue-500 focus:outline-none"
                     >
                       <option value="CALL">Phone Call</option>
                       <option value="MEETING">Video / Live Meeting</option>
@@ -991,7 +991,7 @@ export default function LeadDetailPage() {
                       type="datetime-local"
                       value={followupDueAt}
                       onChange={(e) => setFollowupDueAt(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-[#3282B8] focus:outline-none"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-blue-500 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -1005,7 +1005,7 @@ export default function LeadDetailPage() {
                     <select
                       value={followupAssignee}
                       onChange={(e) => setFollowupAssignee(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-[#3282B8] focus:outline-none"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-blue-500 focus:outline-none"
                     >
                       <option value="">Assign to myself ({user?.email})</option>
                       {agents.map((ag) => (
@@ -1027,14 +1027,14 @@ export default function LeadDetailPage() {
                     value={followupNote}
                     onChange={(e) => setFollowupNote(e.target.value)}
                     required
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-[#3282B8] focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-blue-500 focus:outline-none"
                   />
                 </div>
                 <div className="flex justify-end">
                   <button
                     type="submit"
                     disabled={addingFollowup}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-[#3282B8] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#0F4C75] disabled:opacity-50 cursor-pointer"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
                   >
                     {addingFollowup ? "Saving..." : "Save Reminder"}
                   </button>
@@ -1065,7 +1065,7 @@ export default function LeadDetailPage() {
                         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors cursor-pointer ${
                           item.completed
                             ? "bg-emerald-600 border-emerald-600 text-white"
-                            : "border-slate-300 bg-white hover:border-[#3282B8]"
+                            : "border-slate-300 bg-white hover:border-blue-500"
                         }`}
                         title={item.completed ? "Mark as pending" : "Mark as completed"}
                       >
@@ -1308,7 +1308,7 @@ export default function LeadDetailPage() {
                             {/* WhatsApp Green Box with 0.5 Opacity and Black Text */}
                             {activity.createdBy && (
                               <div className="flex items-center gap-2">
-                                <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#3282B8]/40 bg-[#BBE1FA]/30 px-2.5 py-1 text-xs font-bold text-[#0F4C75] shadow-xs">
+                                <span className="inline-flex items-center gap-1.5 rounded-lg border border-blue-500/40 bg-[#BBE1FA]/30 px-2.5 py-1 text-xs font-bold text-[#0F4C75] shadow-xs">
                                   <UserIcon className="h-3.5 w-3.5 text-black stroke-[2.5]" />
                                   By {authorName}
                                 </span>
@@ -1418,7 +1418,7 @@ export default function LeadDetailPage() {
                     href={lead.attribution.sourceUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs text-[#3282B8] hover:underline font-semibold mt-1"
+                    className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:underline font-semibold mt-1"
                   >
                     <span>View Landing Page / Ad</span>
                     <ExternalLink className="h-3 w-3" />
@@ -1444,7 +1444,7 @@ export default function LeadDetailPage() {
               {!editMode ? (
                 <button
                   onClick={enterEditMode}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#3282B8] hover:text-[#0F4C75] hover:underline cursor-pointer transition-colors"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-[#0F4C75] hover:underline cursor-pointer transition-colors"
                 >
                   <Pencil className="h-3 w-3" />
                   Edit Details
@@ -1461,7 +1461,7 @@ export default function LeadDetailPage() {
                   <button
                     onClick={handleSaveDetails}
                     disabled={savingDetails}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-white bg-[#3282B8] hover:bg-[#0F4C75] px-3 py-1.5 rounded-lg disabled:opacity-50 cursor-pointer transition-colors"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg disabled:opacity-50 cursor-pointer transition-colors"
                   >
                     {savingDetails ? (
                       <Loader2 className="h-3 w-3 animate-spin" />
@@ -1486,7 +1486,7 @@ export default function LeadDetailPage() {
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     placeholder="e.g. Katherine Lim"
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
                   />
                 </div>
 
@@ -1499,7 +1499,7 @@ export default function LeadDetailPage() {
                     value={editDisplayName}
                     onChange={(e) => setEditDisplayName(e.target.value)}
                     placeholder="e.g. Katherine"
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
                   />
                   <p className="text-[10px] text-slate-400 mt-0.5">Display name is what your clients will see</p>
                 </div>
@@ -1514,7 +1514,7 @@ export default function LeadDetailPage() {
                       value={editWhatsappNumber}
                       onChange={(e) => setEditWhatsappNumber(e.target.value)}
                       placeholder="e.g. +94 1234 5678"
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 font-mono placeholder-slate-400 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
+                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 font-mono placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
                     />
                   </div>
                 )}
@@ -1528,7 +1528,7 @@ export default function LeadDetailPage() {
                     value={editEmail}
                     onChange={(e) => setEditEmail(e.target.value)}
                     placeholder="e.g. katherine@example.com"
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all"
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
                   />
                 </div>
 
@@ -1541,7 +1541,7 @@ export default function LeadDetailPage() {
                     onChange={(e) => setEditNotes(e.target.value)}
                     rows={3}
                     placeholder="Add notes about your client here..."
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/20 focus:outline-none transition-all resize-none"
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all resize-none"
                   />
                 </div>
               </div>
@@ -1595,7 +1595,7 @@ export default function LeadDetailPage() {
                         value={lead.assignedToId || ""}
                         onChange={(e) => handleAssignLead(e.target.value)}
                         disabled={assigningLead}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-800 focus:border-[#3282B8] focus:outline-none cursor-pointer"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-800 focus:border-blue-500 focus:outline-none cursor-pointer"
                       >
                         <option value="">Unassigned</option>
                         {agents.map((ag) => (
@@ -1605,7 +1605,7 @@ export default function LeadDetailPage() {
                         ))}
                       </select>
                       {assigningLead && (
-                        <p className="text-[10px] text-[#3282B8] mt-0.5">Saving assignment...</p>
+                        <p className="text-[10px] text-blue-600 mt-0.5">Saving assignment...</p>
                       )}
                     </div>
                   ) : (
@@ -1707,7 +1707,7 @@ export default function LeadDetailPage() {
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-4">
               <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                <Layers className="h-4 w-4 text-[#3282B8]" />
+                <Layers className="h-4 w-4 text-blue-600" />
                 Log Activity
               </h3>
               <button
@@ -1728,7 +1728,7 @@ export default function LeadDetailPage() {
                 <select
                   value={activityForm.type}
                   onChange={(e) => setActivityForm({ ...activityForm, type: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/10 focus:outline-none transition-all"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none transition-all"
                 >
                   <option value="PHONE_CALL">📞 Phone Call</option>
                   <option value="MESSAGE">{HIDE_WHATSAPP_MESSAGING ? "💬 Direct Message" : "💬 WhatsApp Message"}</option>
@@ -1745,7 +1745,7 @@ export default function LeadDetailPage() {
                   <select
                     value={activityForm.createdById || user?.id || ""}
                     onChange={(e) => setActivityForm({ ...activityForm, createdById: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/10 focus:outline-none transition-all"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none transition-all"
                   >
                     <option value={user?.id || ""}>
                       Me ({user?.name || user?.email.split("@")[0]})
@@ -1770,7 +1770,7 @@ export default function LeadDetailPage() {
                   required
                   value={activityForm.occurredAt}
                   onChange={(e) => setActivityForm({ ...activityForm, occurredAt: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/10 focus:outline-none transition-all"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none transition-all"
                 />
               </div>
 
@@ -1784,7 +1784,7 @@ export default function LeadDetailPage() {
                   placeholder="e.g. Discovery call with Katherine"
                   value={activityForm.title}
                   onChange={(e) => setActivityForm({ ...activityForm, title: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/10 focus:outline-none transition-all"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none transition-all"
                 />
               </div>
 
@@ -1797,7 +1797,7 @@ export default function LeadDetailPage() {
                   rows={4}
                   value={activityForm.description}
                   onChange={(e) => setActivityForm({ ...activityForm, description: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:border-[#3282B8] focus:ring-2 focus:ring-[#3282B8]/10 focus:outline-none transition-all resize-none"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none transition-all resize-none"
                 />
               </div>
 
@@ -1812,7 +1812,7 @@ export default function LeadDetailPage() {
                 <button
                   type="submit"
                   disabled={isSubmittingActivity}
-                  className="flex-1 rounded-xl bg-[#3282B8] py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#0F4C75] disabled:opacity-50 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  className="flex-1 rounded-xl bg-blue-600 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50 transition-all cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   {isSubmittingActivity ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />

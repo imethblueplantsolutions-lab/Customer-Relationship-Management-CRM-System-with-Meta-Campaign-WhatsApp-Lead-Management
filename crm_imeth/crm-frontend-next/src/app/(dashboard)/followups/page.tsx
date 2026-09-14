@@ -164,7 +164,7 @@ export default function FollowupsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
-            <Clock className="h-6 w-6 text-[#3282B8]" />
+            <Clock className="h-6 w-6 text-blue-600" />
             Follow-up Reminders & Tasks
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
@@ -176,7 +176,7 @@ export default function FollowupsPage() {
           onClick={fetchFollowups}
           className="inline-flex items-center justify-center gap-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2.5 text-xs font-bold shadow-xs transition-all cursor-pointer shrink-0"
         >
-          <RefreshCw className={`h-4 w-4 text-[#3282B8] ${loading ? "animate-spin" : ""}`} />
+          <RefreshCw className={`h-4 w-4 text-blue-600 ${loading ? "animate-spin" : ""}`} />
           Refresh Tasks
         </button>
       </div>
@@ -221,7 +221,7 @@ export default function FollowupsPage() {
           onClick={() => setActiveTab("TODAY")}
           className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === "TODAY"
-              ? "bg-[#3282B8] text-white shadow-sm"
+              ? "bg-blue-600 text-white shadow-sm"
               : "text-slate-600 hover:bg-slate-50"
           }`}
         >
@@ -246,7 +246,7 @@ export default function FollowupsPage() {
       {/* Follow-up Cards List */}
       {loading ? (
         <div className="py-20 text-center">
-          <RefreshCw className="mx-auto h-8 w-8 text-[#3282B8] animate-spin mb-2" />
+          <RefreshCw className="mx-auto h-8 w-8 text-blue-600 animate-spin mb-2" />
           <p className="text-xs text-slate-500 font-medium">Loading follow-ups...</p>
         </div>
       ) : activeList.length === 0 ? (
@@ -287,7 +287,7 @@ export default function FollowupsPage() {
                       className={`h-6 w-6 rounded-lg border flex items-center justify-center transition-all cursor-pointer shrink-0 ${
                         f.completed
                           ? "bg-emerald-600 border-emerald-600 text-white"
-                          : "border-slate-300 hover:border-[#3282B8] bg-white text-transparent"
+                          : "border-slate-300 hover:border-blue-500 bg-white text-transparent"
                       }`}
                     >
                       <CheckCircle2 className="h-4 w-4" />
@@ -339,7 +339,7 @@ export default function FollowupsPage() {
                 <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500">
                   <div className="flex items-center gap-4">
                     {f.assignedTo && (
-                      <span className="flex items-center gap-1 text-[#3282B8] font-semibold">
+                      <span className="flex items-center gap-1 text-blue-600 font-semibold">
                         <User className="h-3.5 w-3.5" />
                         Assigned: {f.assignedTo.name || f.assignedTo.email}
                       </span>
@@ -349,7 +349,7 @@ export default function FollowupsPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedFollowupForUpload(f)}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#3282B8] hover:text-[#0F4C75] cursor-pointer"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-[#0F4C75] cursor-pointer"
                   >
                     <Plus className="h-3.5 w-3.5" />
                     Attach File ({f.attachments?.length || 0})
@@ -379,7 +379,7 @@ export default function FollowupsPage() {
           <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden p-6 sm:p-7 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <FileText className="h-5 w-5 text-[#3282B8]" />
+                <FileText className="h-5 w-5 text-blue-600" />
                 Upload Attachment for Follow-up
               </h3>
               <button
