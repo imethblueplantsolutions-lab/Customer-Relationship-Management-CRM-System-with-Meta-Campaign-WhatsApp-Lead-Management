@@ -53,10 +53,10 @@ export default function DeadLetterQueuePage() {
       if (res.success && res.data) {
         setJobs(res.data);
       } else {
-        setErrorMsg(res.error || "Failed to load dead letter queue records.");
+        setErrorMsg(res.error || "Failed to load dead leads records.");
       }
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : "Error fetching dead letter jobs");
+      setErrorMsg(err instanceof Error ? err.message : "Error fetching dead leads");
     } finally {
       setLoading(false);
     }
@@ -148,7 +148,7 @@ export default function DeadLetterQueuePage() {
         <ShieldAlert className="mx-auto h-12 w-12 text-red-500 mb-3" />
         <h2 className="text-lg font-bold text-red-800">Admin Privileges Required</h2>
         <p className="text-xs text-red-600 mt-1 max-w-md mx-auto">
-          The Dead Letter Queue inspection console is restricted to system administrators.
+          The Dead Leads inspection console is restricted to system administrators.
         </p>
       </div>
     );
@@ -165,10 +165,10 @@ export default function DeadLetterQueuePage() {
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-                Dead Letter Queue (DLQ)
+                Dead Leads
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                Inspect, diagnose, and manually replay webhooks that exhausted max retry attempts
+                Inspect, diagnose, and manually recover leads and webhooks that exhausted max retry attempts
               </p>
             </div>
           </div>
@@ -288,18 +288,18 @@ export default function DeadLetterQueuePage() {
         {loading && jobs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <RefreshCw className="h-8 w-8 animate-spin text-blue-600 mb-3" />
-            <p className="text-xs font-semibold text-slate-500">Loading dead letter jobs...</p>
+            <p className="text-xs font-semibold text-slate-500">Loading dead leads...</p>
           </div>
         ) : filteredJobs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center px-4">
             <div className="h-14 w-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 mb-3">
               <CheckCircle2 className="h-7 w-7" />
             </div>
-            <h3 className="text-sm font-bold text-slate-800">Dead Letter Queue is Clean</h3>
+            <h3 className="text-sm font-bold text-slate-800">Dead Leads Queue is Clean</h3>
             <p className="text-xs text-slate-400 mt-1 max-w-sm">
               {searchQuery || statusFilter !== "ALL"
                 ? "No failed jobs match your current search and filter criteria."
-                : "All Meta webhook jobs have been processed cleanly without exhausting retry limits."}
+                : "All Meta webhook leads and messages have been processed cleanly without exhausting retry limits."}
             </p>
           </div>
         ) : (

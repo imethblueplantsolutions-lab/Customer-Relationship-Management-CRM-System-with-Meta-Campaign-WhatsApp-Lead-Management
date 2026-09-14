@@ -37,7 +37,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/leads", label: "Leads", icon: Users },
   { href: "/followups", label: "Follow-ups", icon: Clock },
   { href: "/users", label: "Users", icon: UserCheck },
-  { href: "/admin/dead-letters", label: "Dead Letters", icon: AlertOctagon, adminOnly: true },
+  { href: "/admin/dead-letters", label: "Dead Leads", icon: AlertOctagon, adminOnly: true },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
