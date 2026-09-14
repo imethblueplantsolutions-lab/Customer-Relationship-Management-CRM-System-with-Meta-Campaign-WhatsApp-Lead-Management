@@ -145,7 +145,7 @@ export default function DashboardLayout({
 
   if (isLoading || !isAuthenticated) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#1B262C]">
+      <div className="flex h-screen items-center justify-center bg-slate-900">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#3282B8] border-t-transparent shadow-lg" />
       </div>
     );
@@ -230,13 +230,13 @@ export default function DashboardLayout({
                 title={isCollapsed ? item.label : undefined}
                 className={`flex items-center gap-4 rounded-xl px-4 py-3 text-fluid-nav font-medium transition-all group ${
                   isActive
-                    ? "bg-[#3282B8] text-white shadow-md shadow-[#3282B8]/30"
+                    ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
                     : "text-slate-300 hover:bg-white/5 hover:text-white"
                 } ${isCollapsed ? "justify-center px-2" : ""}`}
               >
                 <Icon
                   className={`h-5 w-5 shrink-0 transition-transform group-hover:scale-110 ${
-                    isActive ? "text-white" : "text-slate-400 group-hover:text-[#BBE1FA]"
+                    isActive ? "text-white" : "text-slate-400 group-hover:text-blue-300"
                   }`}
                 />
                 {!isCollapsed && <span className="truncate">{item.label}</span>}
@@ -289,7 +289,7 @@ export default function DashboardLayout({
                         key={notif.id}
                         onClick={() => handleNotifClick(notif)}
                         className={`w-full text-left px-4 py-3 hover:bg-white/5 transition-colors cursor-pointer ${
-                          !notif.isRead ? "border-l-2 border-[#3282B8]" : ""
+                          !notif.isRead ? "border-l-2 border-blue-500" : ""
                         }`}
                       >
                         <p className={`text-xs font-semibold truncate ${
@@ -376,14 +376,14 @@ export default function DashboardLayout({
 
           <div className="flex items-center gap-2">
             <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#BBE1FA]/30 text-[#0F4C75] text-[11px] font-semibold border border-[#BBE1FA]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#3282B8] animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
               Live
             </span>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto page-bg-gradient">
+        <main className="flex-1 overflow-y-auto bg-[#F8FAFC]">
           <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:px-10">
             {children}
           </div>
@@ -393,8 +393,8 @@ export default function DashboardLayout({
       {/* Real-time Floating Notification Toast for Assigned Leads */}
       {toastNotif && (
         <div className="fixed top-5 right-5 z-50 max-w-sm w-full animate-in fade-in slide-in-from-top-4 duration-300">
-          <div className="flex items-start gap-3 rounded-2xl border border-[#3282B8]/40 bg-[#1B262C]/95 backdrop-blur-md p-4 shadow-2xl ring-1 ring-[#3282B8]/20 text-white">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#3282B8]/20 text-[#BBE1FA] ring-1 ring-[#3282B8]/30">
+          <div className="flex items-start gap-3 rounded-2xl border border-blue-500/40 bg-slate-900/95 backdrop-blur-md p-4 shadow-2xl ring-1 ring-blue-500/20 text-white">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600/20 text-blue-300 ring-1 ring-blue-500/30">
               <Bell className="h-5 w-5 animate-pulse" />
             </div>
             <div className="flex-1 min-w-0">
@@ -419,7 +419,7 @@ export default function DashboardLayout({
                       handleNotifClick(toastNotif);
                       setToastNotif(null);
                     }}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-[#3282B8] px-2.5 py-1 text-[11px] font-semibold text-white shadow hover:bg-[#0F4C75] transition-all cursor-pointer"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-2.5 py-1 text-[11px] font-semibold text-white shadow hover:bg-blue-700 transition-all cursor-pointer"
                   >
                     View Lead →
                   </button>

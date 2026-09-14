@@ -10,17 +10,15 @@
   --wa-chat-bg: #e2f1fd;
 
   /* Semantic tokens */
-  --color-bg: #f4f9fd;
-  --color-bg-gradient: radial-gradient(ellipse at 55% 40%,
-      #BBE1FA 0%,
-      #3282B8 100%);
+  --color-bg: #f8fafc;
+  --color-bg-gradient: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 50%, #EEF2F6 100%);
   --color-bg-card: #ffffff;
   --color-bg-sidebar: #1B262C;
   --color-text: #1B262C;
   --color-text-muted: #64748b;
   --color-border: #e2e8f0;
-  --color-primary: #3282B8;
-  --color-primary-hover: #0F4C75;
+  --color-primary: #2563EB;
+  --color-primary-hover: #1D4ED8;
   /* Fluid typography tokens using clamp() */
   --fluid-nav: clamp(0.875rem, 1vw + 0.5rem, 1rem);
   /* 14px -> 16px */
@@ -168,6 +166,6 @@ td {
 .react-flow__handle {
   width: 10px !important;
   height: 10px !important;
-  border: 2px solid #3282B8 !important;
+  border: 2px solid #2563EB !important;
   background: white !important;
 }
