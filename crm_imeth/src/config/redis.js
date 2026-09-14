@@ -4,9 +4,7 @@ let redisClient = null;
 let redisAvailable = false;
 
 try {
-  redisClient = new Redis({
-    host: process.env.REDIS_HOST || '127.0.0.1',
-    port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379,
+  const redisOptions = {
     maxRetriesPerRequest: null,
     retryStrategy(times) {
       if (times > 3) {
@@ -16,7 +14,18 @@ try {
       return Math.min(times * 500, 2000);
     },
     lazyConnect: true,
-  });
+  };
+
+  if (process.env.REDIS_URL) {
+    redisClient = new Redis(process.env.REDIS_URL, redisOptions);
+  } else {
+    redisClient = new Redis({
+      host: process.env.REDIS_HOST || '127.0.0.1',
+      port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379,
+      password: process.env.REDIS_PASSWORD || undefined,
+      ...redisOptions,
+    });
+  }
 
   redisClient.on('connect', () => {
     redisAvailable = true;

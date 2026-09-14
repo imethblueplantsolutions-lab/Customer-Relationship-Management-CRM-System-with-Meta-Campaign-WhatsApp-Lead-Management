@@ -131,7 +131,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start HTTP Server
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`======================================================`);
   console.log(`🚀 Meta CRM Server & WebSockets running on port ${PORT}`);
   console.log(`⚡ BullMQ Webhook Queue & Worker Pool Active (Concurrency: 25)`);
