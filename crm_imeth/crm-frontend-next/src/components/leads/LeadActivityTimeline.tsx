@@ -189,14 +189,14 @@ export default function LeadActivityTimeline({
               circleBg: "bg-emerald-100 text-emerald-600",
               icon: <MessageCircle className="h-3.5 w-3.5" />,
               smallIcon: <MessageCircle className="h-3 w-3" />,
-              label: "WhatsApp Message",
+              label: "Direct Message",
               tagBg: "bg-emerald-50 text-emerald-700 border-emerald-200",
             },
             WHATSAPP_MOBILE_REPLY: {
               circleBg: "bg-emerald-100 text-emerald-700",
               icon: <Smartphone className="h-3.5 w-3.5" />,
               smallIcon: <Smartphone className="h-3 w-3" />,
-              label: "WhatsApp Mobile Reply",
+              label: "Mobile Reply",
               tagBg: "bg-emerald-50 text-emerald-800 border-emerald-200",
             },
             MEETING: {
@@ -360,7 +360,7 @@ export default function LeadActivityTimeline({
                   className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none transition-all"
                 >
                   <option value="PHONE_CALL">📞 Phone Call</option>
-                  <option value="MESSAGE">💬 Direct Message / WhatsApp</option>
+                  <option value="MESSAGE">💬 Direct Message</option>
                   <option value="MEETING">📅 Meeting</option>
                   <option value="NOTE">📝 Note</option>
                 </select>

@@ -13,6 +13,8 @@ import {
 import type { Lead, Attachment } from "@/types";
 import AttachmentUploader from "@/components/AttachmentUploader";
 
+const HIDE_WHATSAPP_MESSAGING = true;
+
 interface LeadInfoCardProps {
   lead: Lead;
   canManageAssignment: boolean;
@@ -122,7 +124,7 @@ export default function LeadInfoCard({
                   Source
                 </span>
                 <p className="capitalize text-slate-700">
-                  {lead.attribution.sourceType || "Click-to-WhatsApp"}
+                  {lead.attribution.sourceType || "Ad Campaign"}
                 </p>
               </div>
             </div>
@@ -141,7 +143,7 @@ export default function LeadInfoCard({
           </div>
         ) : (
           <div className="rounded-xl border border-dashed border-slate-200 p-4 text-center">
-            <p className="text-xs font-medium text-slate-500">Organic WhatsApp Lead</p>
+            <p className="text-xs font-medium text-slate-500">Organic Lead</p>
             <p className="text-[11px] text-slate-400 mt-1">
               This lead reached out directly without clicking a sponsored Meta Ad campaign.
             </p>
@@ -218,18 +220,20 @@ export default function LeadInfoCard({
               <p className="text-[10px] text-slate-400 mt-0.5">Display name is what your clients will see</p>
             </div>
 
-            <div>
-              <label className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-1">
-                WhatsApp Number
-              </label>
-              <input
-                type="tel"
-                value={editWhatsappNumber}
-                onChange={(e) => setEditWhatsappNumber(e.target.value)}
-                placeholder="e.g. +94 1234 5678"
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 font-mono placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
-              />
-            </div>
+            {!HIDE_WHATSAPP_MESSAGING && (
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-1">
+                  WhatsApp Number
+                </label>
+                <input
+                  type="tel"
+                  value={editWhatsappNumber}
+                  onChange={(e) => setEditWhatsappNumber(e.target.value)}
+                  placeholder="e.g. +94 1234 5678"
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 font-mono placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                />
+              </div>
+            )}
 
             <div>
               <label className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-1">
@@ -281,7 +285,7 @@ export default function LeadInfoCard({
               <p className="font-mono text-slate-800">{lead.phoneNumber}</p>
             </div>
 
-            {lead.whatsappNumber && (
+            {!HIDE_WHATSAPP_MESSAGING && lead.whatsappNumber && (
               <div>
                 <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-0.5">
                   WhatsApp Number

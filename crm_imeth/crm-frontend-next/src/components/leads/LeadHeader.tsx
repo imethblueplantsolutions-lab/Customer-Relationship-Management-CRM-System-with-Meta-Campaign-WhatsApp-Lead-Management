@@ -137,16 +137,18 @@ export default function LeadHeader({
             </button>
           )}
 
-          {/* WhatsApp Direct Link */}
-          <a
-            href={`https://wa.me/${lead.phoneNumber.replace(/[^0-9]/g, "")}`}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-colors shadow-xs"
-          >
-            <MessageSquare className="h-3.5 w-3.5 text-emerald-600" />
-            <span className="hidden sm:inline">WhatsApp Web</span>
-          </a>
+          {/* WhatsApp Direct Link (Hidden in Phase 1) */}
+          {false && (
+            <a
+              href={`https://wa.me/${lead.phoneNumber.replace(/[^0-9]/g, "")}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-colors shadow-xs"
+            >
+              <MessageSquare className="h-3.5 w-3.5 text-emerald-600" />
+              <span className="hidden sm:inline">WhatsApp Web</span>
+            </a>
+          )}
 
           {/* Secondary Dropdown Status Selector */}
           <div className="relative" ref={statusMenuRef}>
@@ -202,24 +204,15 @@ export default function LeadHeader({
             </span>
           </div>
 
-          {/* Quick Mark Lost Button / Notice */}
-          <div className="flex items-center gap-2">
-            {isLost ? (
+          {/* Lost Notice (Only shown when closed as lost) */}
+          {isLost && (
+            <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-lg bg-rose-50 border border-rose-200 px-2.5 py-1 text-xs font-bold text-rose-700">
                 <XCircle className="h-3.5 w-3.5 text-rose-600" />
                 Lead Closed as Lost
               </span>
-            ) : (
-              <button
-                type="button"
-                onClick={() => onUpdateStatus("LOST")}
-                disabled={statusUpdating}
-                className="text-xs font-semibold text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
-              >
-                Mark as Lost
-              </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Stepper Chevrons / Grid */}

@@ -15,6 +15,9 @@ import LeadFollowupsCard from "@/components/leads/LeadFollowupsCard";
 import LeadActivityTimeline from "@/components/leads/LeadActivityTimeline";
 import LeadInfoCard from "@/components/leads/LeadInfoCard";
 
+// Phase 1 toggle: Set to false when WhatsApp messaging feature is enabled
+const HIDE_WHATSAPP_MESSAGING = true;
+
 export default function LeadDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -505,12 +508,14 @@ export default function LeadDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column (2 Cols): Chat, Follow-ups, Activities */}
         <div className="lg:col-span-2 space-y-6">
-          <LeadWhatsAppChat
-            messages={lead.messages || []}
-            phoneNumber={lead.phoneNumber}
-            onSendMessage={handleSendMessage}
-            sendingMessage={sendingMessage}
-          />
+          {!HIDE_WHATSAPP_MESSAGING && (
+            <LeadWhatsAppChat
+              messages={lead.messages || []}
+              phoneNumber={lead.phoneNumber}
+              onSendMessage={handleSendMessage}
+              sendingMessage={sendingMessage}
+            />
+          )}
 
           <LeadFollowupsCard
             followups={lead.followups || []}
