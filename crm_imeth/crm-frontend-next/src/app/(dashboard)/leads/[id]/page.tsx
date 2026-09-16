@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/hooks/use-auth";
-import { useSocket } from "@/hooks/use-socket";
+import { useLeadSocket } from "@/hooks/use-lead-socket";
 import type { Lead, Message, Followup, Activity, Attachment } from "@/types";
 import { Loader2, ArrowLeft } from "lucide-react";
 
@@ -14,6 +14,9 @@ import LeadWhatsAppChat from "@/components/leads/LeadWhatsAppChat";
 import LeadFollowupsCard from "@/components/leads/LeadFollowupsCard";
 import LeadActivityTimeline from "@/components/leads/LeadActivityTimeline";
 import LeadInfoCard from "@/components/leads/LeadInfoCard";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { LeadDetailSkeleton } from "@/components/ui/Skeleton";
+import { toast } from "sonner";
 
 // Phase 1 toggle: Set to false when WhatsApp messaging feature is enabled
 const HIDE_WHATSAPP_MESSAGING = true;
@@ -22,7 +25,6 @@ export default function LeadDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
-  const { socket } = useSocket();
 
   const canManageAssignment = user?.role === "ADMIN" || user?.role === "TEAM_LEAD";
   const canDeleteLead = user?.role === "ADMIN" || user?.role === "TEAM_LEAD";
@@ -35,6 +37,7 @@ export default function LeadDetailPage() {
   const [agents, setAgents] = useState<{ id: string; name?: string; email: string; role: string }[]>([]);
   const [assigningLead, setAssigningLead] = useState(false);
   const [deletingLead, setDeletingLead] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [addingFollowup, setAddingFollowup] = useState(false);
@@ -72,125 +75,8 @@ export default function LeadDetailPage() {
     fetchLead();
   }, [fetchLead]);
 
-  // ─── Real-Time Socket.IO Synchronization ──────────────────────
-  useEffect(() => {
-    if (!socket || !params.id) return;
-
-    const handleActivityCreated = (data: { leadId: string; activity: Activity }) => {
-      if (data.leadId === params.id && data.activity) {
-        setLead((prev) => {
-          if (!prev) return prev;
-          if (prev.activities?.some((a) => a.id === data.activity.id)) return prev;
-          const hasOptimistic = prev.activities?.some(
-            (a) => a.id.startsWith("optimistic_") && a.type === data.activity.type
-          );
-          const base = hasOptimistic
-            ? (prev.activities || []).filter(
-                (a) => !(a.id.startsWith("optimistic_") && a.type === data.activity.type)
-              )
-            : prev.activities || [];
-          const updatedActivities = [...base, data.activity].sort(
-            (a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
-          );
-          return { ...prev, activities: updatedActivities };
-        });
-      }
-    };
-
-    const handleActivityDeleted = (data: { leadId: string; activityId: string }) => {
-      if (data.leadId === params.id) {
-        setLead((prev) => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            activities: (prev.activities || []).filter((a) => a.id !== data.activityId),
-          };
-        });
-      }
-    };
-
-    const handleLeadUpdated = (data: { leadId: string; lead: Partial<Lead> }) => {
-      if (data.leadId === params.id && data.lead) {
-        setLead((prev) => (prev ? { ...prev, ...data.lead } : null));
-      }
-    };
-
-    const handleUserUpdated = (updatedUser: { id: string; name?: string; email: string; role: string }) => {
-      setAgents((prev) =>
-        prev.map((a) => (a.id === updatedUser.id ? { ...a, ...updatedUser } : a))
-      );
-      setLead((prev) => {
-        if (!prev) return prev;
-        const updatedActivities = (prev.activities || []).map((act) => {
-          if (act.createdBy?.id === updatedUser.id || act.createdById === updatedUser.id) {
-            return {
-              ...act,
-              createdBy: {
-                ...act.createdBy,
-                id: updatedUser.id,
-                name: updatedUser.name,
-                email: updatedUser.email,
-                role: updatedUser.role,
-              },
-            };
-          }
-          return act;
-        });
-
-        const updatedAssignedTo =
-          prev.assignedTo?.id === updatedUser.id
-            ? { ...prev.assignedTo, name: updatedUser.name, email: updatedUser.email, role: updatedUser.role }
-            : prev.assignedTo;
-
-        return { ...prev, activities: updatedActivities, assignedTo: updatedAssignedTo };
-      });
-    };
-
-    const handleNewMessage = (data: { leadId: string; message: Message }) => {
-      if (data.leadId === params.id && data.message) {
-        setLead((prev) => {
-          if (!prev) return prev;
-          if (prev.messages?.some((m) => m.id === data.message.id)) return prev;
-          return {
-            ...prev,
-            messages: [...(prev.messages || []), data.message],
-          };
-        });
-      }
-    };
-
-    const handleMessageStatusUpdate = (data: { messageId: string; status: string; leadId: string }) => {
-      if (data.leadId === params.id) {
-        setLead((prev) => {
-          if (!prev || !prev.messages) return prev;
-          return {
-            ...prev,
-            messages: prev.messages.map((m) =>
-              m.messageId === data.messageId || m.id === data.messageId
-                ? { ...m, status: data.status }
-                : m
-            ),
-          };
-        });
-      }
-    };
-
-    socket.on("lead_activity_created", handleActivityCreated);
-    socket.on("lead_activity_deleted", handleActivityDeleted);
-    socket.on("lead_updated", handleLeadUpdated);
-    socket.on("user_updated", handleUserUpdated);
-    socket.on("new_message", handleNewMessage);
-    socket.on("message_status_update", handleMessageStatusUpdate);
-
-    return () => {
-      socket.off("lead_activity_created", handleActivityCreated);
-      socket.off("lead_activity_deleted", handleActivityDeleted);
-      socket.off("lead_updated", handleLeadUpdated);
-      socket.off("user_updated", handleUserUpdated);
-      socket.off("new_message", handleNewMessage);
-      socket.off("message_status_update", handleMessageStatusUpdate);
-    };
-  }, [socket, params.id]);
+  // ─── Real-Time Socket.IO Synchronization (Extracted to custom hook) ──
+  useLeadSocket({ leadId: params.id, setLead, setAgents });
 
   // ─── Status Update Handler ────────────────────────────────────
   const handleUpdateStatus = async (newStatus: string) => {
@@ -214,19 +100,28 @@ export default function LeadDetailPage() {
   // ─── Delete Lead Handler ──────────────────────────────────────
   const handleDeleteLead = async () => {
     if (!lead || !canDeleteLead || deletingLead) return;
-    if (!window.confirm(`Are you sure you want to delete lead "${lead.name || lead.phoneNumber}"? This action cannot be undone.`)) {
-      return;
-    }
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteLead = async () => {
+    if (!lead || !canDeleteLead || deletingLead) return;
     setDeletingLead(true);
     try {
       const res = await apiClient(`/leads/${lead.id}`, { method: "DELETE" });
       if (res.success) {
+        toast.success("Lead deleted successfully");
         router.push("/leads");
+      } else {
+        const errorMsg = typeof res.error === "string" ? res.error : (res.error as any)?.message || "Failed to delete lead. Please try again.";
+        toast.error(errorMsg);
+        setDeletingLead(false);
+        setIsDeleteDialogOpen(false);
       }
     } catch (err) {
       console.error("Failed to delete lead:", err);
-      alert("Failed to delete lead. Please try again.");
+      toast.error("Failed to delete lead. Please try again.");
       setDeletingLead(false);
+      setIsDeleteDialogOpen(false);
     }
   };
 
@@ -470,11 +365,7 @@ export default function LeadDetailPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex h-96 items-center justify-center">
-        <Loader2 className="h-9 w-9 animate-spin text-blue-600" />
-      </div>
-    );
+    return <LeadDetailSkeleton />;
   }
 
   if (error || !lead) {
@@ -502,6 +393,17 @@ export default function LeadDetailPage() {
         statusUpdating={statusUpdating}
         onUpdateStatus={handleUpdateStatus}
         onDeleteLead={handleDeleteLead}
+      />
+
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        title="Delete Lead"
+        message={`Are you sure you want to delete lead "${lead.name || lead.phoneNumber}"? This action cannot be undone.`}
+        confirmLabel="Delete Lead"
+        variant="danger"
+        isLoading={deletingLead}
+        onConfirm={confirmDeleteLead}
+        onClose={() => setIsDeleteDialogOpen(false)}
       />
 
       {/* ─── Main 2-Column Responsive Layout ────────────────────── */}

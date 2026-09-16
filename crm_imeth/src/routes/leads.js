@@ -650,10 +650,30 @@ router.get('/followups/all', async (req, res) => {
     const tenantId = req.user?.tenantId || store?.tenantId;
     const isAgent = req.user?.role === 'AGENT';
     const currentUserId = req.user?.userId || req.user?.id;
+    const { filter } = req.query;
+
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+    const filterClause = {};
+    if (filter === 'OVERDUE' || filter === 'overdue') {
+      filterClause.completed = false;
+      filterClause.dueAt = { lt: startOfToday };
+    } else if (filter === 'TODAY' || filter === 'today') {
+      filterClause.dueAt = { gte: startOfToday, lte: endOfToday };
+    } else if (filter === 'UPCOMING' || filter === 'upcoming') {
+      filterClause.OR = [
+        { completed: true },
+        { dueAt: { gt: endOfToday } },
+        { dueAt: null },
+      ];
+    }
 
     const followups = await prisma.followup.findMany({
       where: {
         lead: { tenantId },
+        ...filterClause,
         ...(isAgent && {
           OR: [
             { assignedToId: currentUserId },

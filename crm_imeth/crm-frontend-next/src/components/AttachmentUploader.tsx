@@ -14,6 +14,8 @@ import {
   ExternalLink,
   Trash2,
 } from "lucide-react";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { toast } from "sonner";
 
 interface AttachmentUploaderProps {
   leadId?: string;
@@ -35,6 +37,7 @@ export default function AttachmentUploader({
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [attachmentToDelete, setAttachmentToDelete] = useState<Attachment | null>(null);
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -71,16 +74,31 @@ export default function AttachmentUploader({
     }
   };
 
-  // Upload multiple files sequentially
+  // Upload multiple files concurrently (up to 3 in parallel)
   const handleUploadFiles = async (files: FileList | File[]) => {
-    if (!files || files.length === 0) return;
+    const fileList = Array.from(files);
+    if (fileList.length === 0) return;
 
     setUploading(true);
     setError("");
 
     try {
-      for (let i = 0; i < files.length; i++) {
-        await uploadSingleFile(files[i]);
+      const results: string[] = [];
+      const CONCURRENCY_LIMIT = 3;
+      for (let i = 0; i < fileList.length; i += CONCURRENCY_LIMIT) {
+        const batch = fileList.slice(i, i + CONCURRENCY_LIMIT);
+        const batchResults = await Promise.allSettled(batch.map((f) => uploadSingleFile(f)));
+        for (const res of batchResults) {
+          if (res.status === "rejected") {
+            results.push(res.reason instanceof Error ? res.reason.message : "Upload failed");
+          }
+        }
+      }
+      if (results.length > 0) {
+        setError(results.join("; "));
+        toast.error(`Some files failed: ${results[0]}`);
+      } else {
+        toast.success(fileList.length === 1 ? "File uploaded successfully" : `${fileList.length} files uploaded successfully`);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Error uploading attachment");
@@ -93,16 +111,15 @@ export default function AttachmentUploader({
   };
 
   // Delete attachment handler
-  const handleDeleteAttachment = async (attachmentId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!confirm("Are you sure you want to delete this attachment?")) return;
+  const confirmDeleteAttachment = async () => {
+    if (!attachmentToDelete) return;
 
-    setDeletingId(attachmentId);
+    setDeletingId(attachmentToDelete.id);
     setError("");
 
     try {
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-      const response = await fetch(`${API_BASE_URL}/attachments/${attachmentId}`, {
+      const response = await fetch(`${API_BASE_URL}/attachments/${attachmentToDelete.id}`, {
         method: "DELETE",
         headers: {
           ...(token && { Authorization: `Bearer ${token}` }),
@@ -112,16 +129,22 @@ export default function AttachmentUploader({
       const data = await response.json();
 
       if (response.ok && data.success) {
+        toast.success("Attachment deleted");
         if (onDeleteAttachment) {
-          onDeleteAttachment(attachmentId);
+          onDeleteAttachment(attachmentToDelete.id);
         }
       } else {
-        setError(data.error || "Failed to delete attachment");
+        const msg = data.error || "Failed to delete attachment";
+        setError(msg);
+        toast.error(msg);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Error deleting attachment");
+      const msg = err instanceof Error ? err.message : "Error deleting attachment";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setDeletingId(null);
+      setAttachmentToDelete(null);
     }
   };
 
@@ -281,7 +304,10 @@ export default function AttachmentUploader({
                       <button
                         type="button"
                         disabled={isDeleting}
-                        onClick={(e) => handleDeleteAttachment(att.id, e)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setAttachmentToDelete(att);
+                        }}
                         className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-50"
                         title="Delete Attachment"
                       >
@@ -299,6 +325,18 @@ export default function AttachmentUploader({
           </div>
         </div>
       )}
+
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        isOpen={!!attachmentToDelete}
+        title="Delete Attachment"
+        message={`Are you sure you want to delete "${attachmentToDelete?.fileName}"? This action cannot be undone.`}
+        confirmLabel="Delete Attachment"
+        variant="danger"
+        isLoading={!!deletingId}
+        onConfirm={confirmDeleteAttachment}
+        onClose={() => setAttachmentToDelete(null)}
+      />
     </div>
   );
 }

@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/hooks/use-auth";
 import type { Lead } from "@/types";
 import {
-  Search,
   Plus,
   ChevronRight,
+  ChevronLeft,
   Phone,
   Tag,
   Users,
@@ -22,6 +23,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import MergeLeadsModal from "@/components/leads/MergeLeadsModal";
+import LeadFilters from "@/components/leads/LeadFilters";
+import { TableSkeleton } from "@/components/ui/Skeleton";
 
 const STATUS_COLORS: Record<string, string> = {
   NEW: "#3b82f6",
@@ -43,13 +46,33 @@ const CATEGORY_OPTIONS = [
 const HIDE_WHATSAPP_MESSAGING = true;
 
 export default function LeadsPage() {
+  return (
+    <Suspense fallback={<TableSkeleton rows={8} columns={5} />}>
+      <LeadsPageContent />
+    </Suspense>
+  );
+}
+
+function LeadsPageContent() {
   const { user } = useAuth();
   const canAssign = user?.role === "ADMIN" || user?.role === "TEAM_LEAD";
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const search = searchParams.get("search") || "";
+  const statusFilter = searchParams.get("status") || "";
+  const tagId = searchParams.get("tagId") || "";
+  const currentPage = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
 
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 25,
+    total: 0,
+    totalPages: 1,
+  });
 
   // Add Lead form state
   const [showAddForm, setShowAddForm] = useState(false);
@@ -79,23 +102,40 @@ export default function LeadsPage() {
   }, [canAssign]);
 
   const fetchLeads = useCallback(async () => {
+    setLoading(true);
     try {
       const params = new URLSearchParams();
       if (search) params.set("search", search);
-      if (statusFilter) params.set("status", statusFilter);
+      if (statusFilter && statusFilter !== "ALL") params.set("status", statusFilter);
+      if (tagId && tagId !== "ALL") params.set("tagId", tagId);
+      params.set("page", String(currentPage));
+      params.set("limit", "25");
+
       const qs = params.toString();
       const res = await apiClient<Lead[]>(`/leads${qs ? `?${qs}` : ""}`);
-      if (res.success && res.data) setLeads(res.data);
+      if (res.success && res.data) {
+        setLeads(res.data);
+        if (res.pagination) {
+          setPagination(res.pagination);
+        }
+      }
     } catch (err) {
       console.error("Failed to fetch leads:", err);
     } finally {
       setLoading(false);
     }
-  }, [search, statusFilter]);
+  }, [search, statusFilter, tagId, currentPage]);
 
   useEffect(() => {
     fetchLeads();
   }, [fetchLeads]);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > pagination.totalPages) return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", String(newPage));
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   const handleAddLead = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -432,37 +472,12 @@ export default function LeadsPage() {
         </div>
       )}
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-4">
-        <div className="relative flex-1 min-w-[220px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name or phone..."
-            className="w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
-          />
-        </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none cursor-pointer"
-        >
-          <option value="">All Statuses</option>
-          <option value="NEW">New</option>
-          <option value="CONTACTED">Contacted</option>
-          <option value="QUALIFIED">Qualified</option>
-          <option value="CONVERTED">Converted</option>
-          <option value="LOST">Lost</option>
-        </select>
-      </div>
+      {/* Unified LeadFilters Component with Debounce, Tags & Status */}
+      <LeadFilters />
 
       {/* Leads list */}
       {loading ? (
-        <div className="flex justify-center py-20">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-        </div>
+        <TableSkeleton rows={6} columns={5} />
       ) : leads.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-slate-200 py-16 text-center">
           <Users className="mx-auto h-12 w-12 text-slate-300" />
@@ -521,6 +536,43 @@ export default function LeadsPage() {
               </div>
             </Link>
           ))}
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {!loading && leads.length > 0 && pagination.totalPages > 1 && (
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white px-6 py-4 shadow-xs">
+          <p className="text-xs font-medium text-slate-500">
+            Showing <span className="font-bold text-slate-800">{(pagination.page - 1) * pagination.limit + 1}</span> to{" "}
+            <span className="font-bold text-slate-800">
+              {Math.min(pagination.page * pagination.limit, pagination.total)}
+            </span>{" "}
+            of <span className="font-bold text-slate-800">{pagination.total}</span> leads
+          </p>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={pagination.page <= 1}
+              onClick={() => handlePageChange(pagination.page - 1)}
+              className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" /> Previous
+            </button>
+
+            <span className="px-3 py-1 text-xs font-bold text-slate-700">
+              Page {pagination.page} of {pagination.totalPages}
+            </span>
+
+            <button
+              type="button"
+              disabled={pagination.page >= pagination.totalPages}
+              onClick={() => handlePageChange(pagination.page + 1)}
+              className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              Next <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
       )}
 

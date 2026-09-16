@@ -16,8 +16,75 @@ import {
   X,
   Loader2,
   User as UserIcon,
+  type LucideIcon,
 } from "lucide-react";
 import type { Activity } from "@/types";
+import { formatDateTime } from "@/lib/utils";
+
+interface ActivityTypeStyle {
+  circleBg: string;
+  Icon: LucideIcon;
+  label: string;
+  tagBg: string;
+}
+
+const ACTIVITY_TYPE_CONFIG: Record<string, ActivityTypeStyle> = {
+  PHONE_CALL: {
+    circleBg: "bg-blue-100 text-blue-600",
+    Icon: Phone,
+    label: "Phone Call",
+    tagBg: "bg-blue-50 text-blue-700 border-blue-200",
+  },
+  MESSAGE: {
+    circleBg: "bg-emerald-100 text-emerald-600",
+    Icon: MessageCircle,
+    label: "Direct Message",
+    tagBg: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  },
+  WHATSAPP_MOBILE_REPLY: {
+    circleBg: "bg-emerald-100 text-emerald-700",
+    Icon: Smartphone,
+    label: "Mobile Reply",
+    tagBg: "bg-emerald-50 text-emerald-800 border-emerald-200",
+  },
+  MEETING: {
+    circleBg: "bg-purple-100 text-purple-600",
+    Icon: Calendar,
+    label: "Meeting",
+    tagBg: "bg-purple-50 text-purple-700 border-purple-200",
+  },
+  NOTE: {
+    circleBg: "bg-amber-100 text-amber-600",
+    Icon: FileText,
+    label: "Note",
+    tagBg: "bg-amber-50 text-amber-700 border-amber-200",
+  },
+  SYSTEM_ASSIGNMENT: {
+    circleBg: "bg-indigo-50 text-indigo-700 border border-indigo-200",
+    Icon: UserCheck,
+    label: "System Assignment",
+    tagBg: "bg-indigo-50 text-indigo-700 border-indigo-200",
+  },
+  TASK_SCHEDULED: {
+    circleBg: "bg-teal-50 text-teal-700 border border-teal-200",
+    Icon: Clock,
+    label: "Task Scheduled",
+    tagBg: "bg-teal-50 text-teal-700 border-teal-200",
+  },
+  TASK_COMPLETED: {
+    circleBg: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+    Icon: CheckCircle2,
+    label: "Task Completed",
+    tagBg: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  },
+};
+
+const DEFAULT_ACTIVITY_STYLE: ActivityTypeStyle = {
+  circleBg: "bg-slate-100 text-slate-600",
+  Icon: FileText,
+  label: "Activity",
+  tagBg: "bg-slate-50 text-slate-700 border-slate-200",
+};
 
 interface LeadActivityTimelineProps {
   activities: Activity[];
@@ -170,87 +237,24 @@ export default function LeadActivityTimeline({
             <p className="text-xs font-bold text-slate-700">Lead Created</p>
             <p className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
               <Clock className="h-2.5 w-2.5" />
-              {new Date(leadCreatedAt).toLocaleString()}
+              {formatDateTime(leadCreatedAt)}
             </p>
           </div>
         </div>
 
         {/* Dynamic Activity Nodes */}
         {activities.map((activity) => {
-          const typeConfig = {
-            PHONE_CALL: {
-              circleBg: "bg-blue-100 text-blue-600",
-              icon: <Phone className="h-3.5 w-3.5" />,
-              smallIcon: <Phone className="h-3 w-3" />,
-              label: "Phone Call",
-              tagBg: "bg-blue-50 text-blue-700 border-blue-200",
-            },
-            MESSAGE: {
-              circleBg: "bg-emerald-100 text-emerald-600",
-              icon: <MessageCircle className="h-3.5 w-3.5" />,
-              smallIcon: <MessageCircle className="h-3 w-3" />,
-              label: "Direct Message",
-              tagBg: "bg-emerald-50 text-emerald-700 border-emerald-200",
-            },
-            WHATSAPP_MOBILE_REPLY: {
-              circleBg: "bg-emerald-100 text-emerald-700",
-              icon: <Smartphone className="h-3.5 w-3.5" />,
-              smallIcon: <Smartphone className="h-3 w-3" />,
-              label: "Mobile Reply",
-              tagBg: "bg-emerald-50 text-emerald-800 border-emerald-200",
-            },
-            MEETING: {
-              circleBg: "bg-purple-100 text-purple-600",
-              icon: <Calendar className="h-3.5 w-3.5" />,
-              smallIcon: <Calendar className="h-3 w-3" />,
-              label: "Meeting",
-              tagBg: "bg-purple-50 text-purple-700 border-purple-200",
-            },
-            NOTE: {
-              circleBg: "bg-amber-100 text-amber-600",
-              icon: <FileText className="h-3.5 w-3.5" />,
-              smallIcon: <FileText className="h-3 w-3" />,
-              label: "Note",
-              tagBg: "bg-amber-50 text-amber-700 border-amber-200",
-            },
-            SYSTEM_ASSIGNMENT: {
-              circleBg: "bg-indigo-50 text-indigo-700 border border-indigo-200",
-              icon: <UserCheck className="h-3.5 w-3.5" />,
-              smallIcon: <UserCheck className="h-3 w-3" />,
-              label: "System Assignment",
-              tagBg: "bg-indigo-50 text-indigo-700 border-indigo-200",
-            },
-            TASK_SCHEDULED: {
-              circleBg: "bg-teal-50 text-teal-700 border border-teal-200",
-              icon: <Clock className="h-3.5 w-3.5" />,
-              smallIcon: <Clock className="h-3 w-3" />,
-              label: "Task Scheduled",
-              tagBg: "bg-teal-50 text-teal-700 border-teal-200",
-            },
-            TASK_COMPLETED: {
-              circleBg: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-              icon: <CheckCircle2 className="h-3.5 w-3.5" />,
-              smallIcon: <CheckCircle2 className="h-3 w-3" />,
-              label: "Task Completed",
-              tagBg: "bg-emerald-50 text-emerald-700 border-emerald-200",
-            },
-          }[activity.type] || {
-            circleBg: "bg-slate-100 text-slate-600",
-            icon: <FileText className="h-3.5 w-3.5" />,
-            smallIcon: <FileText className="h-3 w-3" />,
-            label: activity.type,
-            tagBg: "bg-slate-50 text-slate-700 border-slate-200",
-          };
-
+          const config = ACTIVITY_TYPE_CONFIG[activity.type] || DEFAULT_ACTIVITY_STYLE;
+          const IconComponent = config.Icon;
           const authorName = getAuthorDisplayName(activity.createdBy);
 
           return (
             <div key={activity.id} className="relative group/activity">
               {/* Activity Icon on Vertical Track */}
               <div
-                className={`absolute -left-[27px] mt-1.5 flex h-7 w-7 items-center justify-center rounded-full ${typeConfig.circleBg} ring-4 ring-white shadow-xs transition-transform group-hover/activity:scale-110`}
+                className={`absolute -left-[27px] mt-1.5 flex h-7 w-7 items-center justify-center rounded-full ${config.circleBg} ring-4 ring-white shadow-xs transition-transform group-hover/activity:scale-110`}
               >
-                {typeConfig.icon}
+                <IconComponent className="h-3.5 w-3.5" />
               </div>
 
               <div className="ml-3 rounded-2xl border border-slate-200/80 bg-white p-4.5 shadow-xs hover:shadow-md transition-all">
@@ -259,13 +263,13 @@ export default function LeadActivityTimeline({
                     {/* Title & Type Badge */}
                     <div className="flex items-center gap-2 flex-wrap">
                       <h4 className="text-sm font-bold text-slate-900 tracking-tight">
-                        {activity.title || typeConfig.label}
+                        {activity.title || config.label}
                       </h4>
                       <span
-                        className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-bold ${typeConfig.tagBg}`}
+                        className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-bold ${config.tagBg}`}
                       >
-                        {typeConfig.smallIcon}
-                        {typeConfig.label}
+                        <IconComponent className="h-3 w-3" />
+                        {config.label}
                       </span>
                     </div>
 
@@ -294,13 +298,7 @@ export default function LeadActivityTimeline({
 
                       <span className="flex items-center gap-1 text-[11px] font-medium text-slate-400 ml-auto">
                         <Clock className="h-3 w-3" />
-                        {new Date(activity.occurredAt).toLocaleString(undefined, {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {formatDateTime(activity.occurredAt)}
                       </span>
                     </div>
                   </div>

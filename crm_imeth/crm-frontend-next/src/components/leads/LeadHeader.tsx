@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -61,8 +61,8 @@ export default function LeadHeader({
   }, []);
 
   // Calculate Stage Duration (relative from updatedAt)
-  const calculateStageDuration = () => {
-    const now = new Date().getTime();
+  const durationInfo = useMemo(() => {
+    const now = Date.now();
     const updated = new Date(lead.updatedAt || lead.createdAt).getTime();
     const diffMs = Math.max(0, now - updated);
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
@@ -75,14 +75,18 @@ export default function LeadHeader({
       return { days: 0, text: `${diffHours}h in stage`, isStale: false };
     }
     return { days: 0, text: "Just moved", isStale: false };
-  };
+  }, [lead.updatedAt, lead.createdAt, lead.status]);
 
-  const durationInfo = calculateStageDuration();
-  const currentStageIndex = PIPELINE_STAGES.findIndex((s) => s.value === lead.status);
+  const currentStageIndex = useMemo(
+    () => PIPELINE_STAGES.findIndex((s) => s.value === lead.status),
+    [lead.status]
+  );
   const isLost = lead.status === "LOST";
 
-  const currentStatusObj =
-    STATUS_OPTIONS.find((s) => s.value === lead.status) || STATUS_OPTIONS[0];
+  const currentStatusObj = useMemo(
+    () => STATUS_OPTIONS.find((s) => s.value === lead.status) || STATUS_OPTIONS[0],
+    [lead.status]
+  );
 
   return (
     <div className="space-y-4">

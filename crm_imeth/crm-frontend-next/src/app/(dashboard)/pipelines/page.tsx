@@ -17,6 +17,7 @@ import {
 import { apiClient } from "@/lib/api-client";
 import { formatCurrency, initials } from "@/lib/utils";
 import type { Pipeline, PipelineStage, Deal } from "@/types";
+import { PipelineSkeleton } from "@/components/ui/Skeleton";
 import {
   GitBranch,
   Plus,
@@ -52,7 +53,7 @@ export default function PipelinesPage() {
   const [activeDealId, setActiveDealId] = useState<string | null>(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 10 } }),
     useSensor(KeyboardSensor)
   );
 
@@ -187,8 +188,12 @@ export default function PipelinesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="h-10 w-48 bg-slate-200/70 rounded-xl animate-pulse" />
+          <div className="h-10 w-32 bg-slate-200/70 rounded-xl animate-pulse" />
+        </div>
+        <PipelineSkeleton columns={4} />
       </div>
     );
   }

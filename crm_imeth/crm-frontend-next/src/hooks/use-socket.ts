@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 const SOCKET_URL =
@@ -10,10 +10,14 @@ const SOCKET_URL =
 export function useSocket() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     if (!token) return;
+
+    // Prevent duplicate connections
+    if (socketRef.current?.connected) return;
 
     const socketInstance = io(SOCKET_URL, {
       auth: { token },
@@ -22,9 +26,10 @@ export function useSocket() {
       reconnectionDelay: 1000,
     });
 
+    socketRef.current = socketInstance;
+
     socketInstance.on('connect', () => {
       setIsConnected(true);
-      // Expose the instance only after connection is established
       setSocket(socketInstance);
     });
 
@@ -36,14 +41,14 @@ export function useSocket() {
       console.warn('[Socket] Connection error:', err.message);
     });
 
-    // Set immediately so event listeners can be attached even before 'connect'
-    setSocket(socketInstance);
-
     return () => {
       socketInstance.disconnect();
+      socketRef.current = null;
       setSocket(null);
+      setIsConnected(false);
     };
   }, []);
 
   return { socket, isConnected };
 }
+

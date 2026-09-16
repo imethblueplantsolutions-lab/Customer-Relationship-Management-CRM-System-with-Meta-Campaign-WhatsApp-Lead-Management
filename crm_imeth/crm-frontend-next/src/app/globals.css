@@ -1,23 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  /* OKLCH Color Palette */
-  --bg-dark: oklch(0.1 0.075 232);
-  --bg: oklch(0.15 0.075 232);
-  --bg-light: oklch(0.2 0.075 232);
-  --text: oklch(0.96 0.1 232);
-  --text-muted: oklch(0.76 0.1 232);
-  --highlight: oklch(0.5 0.15 232);
-  --border: oklch(0.4 0.15 232);
-  --border-muted: oklch(0.3 0.15 232);
-  --primary: oklch(0.76 0.15 232);
-  --secondary: oklch(0.76 0.15 52);
-  --danger: oklch(0.7 0.15 30);
-  --warning: oklch(0.7 0.15 100);
-  --success: oklch(0.7 0.15 160);
-  --info: oklch(0.7 0.15 260);
-
-  /* New Theme Palette: #1B262C, #0F4C75, #3282B8, #BBE1FA */
+  /* Theme Palette: #1B262C, #0F4C75, #3282B8, #BBE1FA */
   --wa-dark-teal: #1B262C;
   --wa-teal: #3282B8;
   --wa-green: #0F4C75;
@@ -35,34 +19,6 @@
   --color-border: #e2e8f0;
   --color-primary: #2563EB;
   --color-primary-hover: #1D4ED8;
-  /* Fluid typography tokens using clamp() */
-  --fluid-nav: clamp(0.875rem, 1vw + 0.5rem, 1rem);
-  /* 14px -> 16px */
-  --fluid-title: clamp(0.8125rem, 1.2vw + 0.25rem, 1rem);
-  /* 13px -> 16px */
-  --fluid-meta: clamp(0.6875rem, 1vw + 0.2rem, 0.875rem);
-  /* 11px -> 14px */
-}
-
-@theme {
-  --color-bg-dark: var(--bg-dark);
-  --color-bg-oklch: var(--bg);
-  --color-bg-light: var(--bg-light);
-  --color-text-oklch: var(--text);
-  --color-text-muted-oklch: var(--text-muted);
-  --color-highlight: var(--highlight);
-  --color-border-oklch: var(--border);
-  --color-border-muted: var(--border-muted);
-  --color-primary-oklch: var(--primary);
-  --color-secondary-oklch: var(--secondary);
-  --color-danger-oklch: var(--danger);
-  --color-warning-oklch: var(--warning);
-  --color-success-oklch: var(--success);
-  --color-info-oklch: var(--info);
-
-  --font-size-fluid-nav: clamp(0.875rem, 1vw + 0.5rem, 1rem);
-  --font-size-fluid-title: clamp(0.8125rem, 1.2vw + 0.25rem, 1rem);
-  --font-size-fluid-meta: clamp(0.6875rem, 1vw + 0.2rem, 0.875rem);
 }
 
 .text-fluid-nav {

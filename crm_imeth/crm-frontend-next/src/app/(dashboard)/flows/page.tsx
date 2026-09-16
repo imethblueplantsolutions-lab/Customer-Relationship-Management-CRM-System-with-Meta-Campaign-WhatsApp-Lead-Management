@@ -15,6 +15,9 @@ import {
   Loader2,
   MoreVertical,
 } from "lucide-react";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { CardGridSkeleton } from "@/components/ui/Skeleton";
+import { toast } from "sonner";
 
 export default function FlowsPage() {
   const [flows, setFlows] = useState<Flow[]>([]);
@@ -25,6 +28,8 @@ export default function FlowsPage() {
   const [newTrigger, setNewTrigger] = useState("keyword");
   const [creating, setCreating] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [flowToDelete, setFlowToDelete] = useState<Flow | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchFlows = useCallback(async () => {
     try {
@@ -85,15 +90,25 @@ export default function FlowsPage() {
     setOpenMenu(null);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Delete this flow? This cannot be undone.")) return;
+  const confirmDelete = async () => {
+    if (!flowToDelete) return;
+    setDeleting(true);
     try {
-      await apiClient(`/flows/${id}`, { method: "DELETE" });
-      await fetchFlows();
+      const res = await apiClient(`/flows/${flowToDelete.id}`, { method: "DELETE" });
+      if (res.success) {
+        toast.success("Flow deleted successfully");
+        setFlows((prev) => prev.filter((f) => f.id !== flowToDelete.id));
+      } else {
+        const errorMsg = typeof res.error === "string" ? res.error : (res.error as any)?.message || "Failed to delete flow";
+        toast.error(errorMsg);
+      }
     } catch (err) {
       console.error("Failed to delete:", err);
+      toast.error("Failed to delete flow");
+    } finally {
+      setDeleting(false);
+      setFlowToDelete(null);
     }
-    setOpenMenu(null);
   };
 
   const triggerLabel = (t: string) => {
@@ -104,14 +119,6 @@ export default function FlowsPage() {
       default: return t;
     }
   };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-8">
@@ -133,7 +140,9 @@ export default function FlowsPage() {
         </button>
       </div>
 
-      {flows.length === 0 ? (
+      {loading ? (
+        <CardGridSkeleton count={6} columns="grid-cols-1 md:grid-cols-2 lg:grid-cols-3" />
+      ) : flows.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 py-20">
           <Workflow className="h-12 w-12 text-slate-300" />
           <h3 className="mt-4 text-lg font-semibold text-slate-600">No flows yet</h3>
@@ -205,7 +214,10 @@ export default function FlowsPage() {
                           </button>
                         )}
                         <button
-                          onClick={() => handleDelete(flow.id)}
+                          onClick={() => {
+                            setFlowToDelete(flow);
+                            setOpenMenu(null);
+                          }}
                           className="flex w-full items-center gap-2 px-3 py-2 text-xs text-red-600 hover:bg-red-50 cursor-pointer"
                         >
                           <Trash2 className="h-3.5 w-3.5" /> Delete
@@ -298,6 +310,18 @@ export default function FlowsPage() {
           </div>
         </div>
       )}
+
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        isOpen={!!flowToDelete}
+        title="Delete Flow"
+        message={`Are you sure you want to delete flow "${flowToDelete?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete Flow"
+        variant="danger"
+        isLoading={deleting}
+        onConfirm={confirmDelete}
+        onClose={() => setFlowToDelete(null)}
+      />
     </div>
   );
 }
