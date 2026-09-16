@@ -682,6 +682,7 @@ router.get('/followups/all', async (req, res) => {
         }),
       },
       orderBy: { dueAt: 'asc' },
+      take: 200, // Server-side limit to prevent unbounded result sets
       include: {
         lead: {
           select: { id: true, name: true, phoneNumber: true, status: true, category: true }

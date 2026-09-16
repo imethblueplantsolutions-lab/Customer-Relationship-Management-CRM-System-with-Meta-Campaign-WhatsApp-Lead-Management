@@ -47,6 +47,8 @@ model User {
   createdAttachments Attachment[]   @relation("AttachmentCreator")
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
+
+  @@index([tenantId])
 }
 
 model Lead {
@@ -76,6 +78,8 @@ model Lead {
 
   @@unique([tenantId, phoneNumber])
   @@index([tenantId, status])
+  @@index([tenantId, updatedAt])
+  @@index([tenantId, assignedToId])
 }
 
 model CampaignAttribution {
@@ -104,6 +108,7 @@ model Message {
   createdAt  DateTime @default(now())
 
   @@index([leadId])
+  @@index([leadId, createdAt])
 }
 
 model Followup {
@@ -124,6 +129,8 @@ model Followup {
 
   @@index([leadId])
   @@index([dueAt])
+  @@index([assignedToId, completed])
+  @@index([completed, dueAt])
 }
 
 model Attachment {
@@ -258,6 +265,7 @@ model Activity {
 
   @@index([leadId])
   @@index([occurredAt])
+  @@index([leadId, occurredAt])
 }
 
 model FailedJob {

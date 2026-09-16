@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import { MessageSquare, Clock, Smartphone, Send, Loader2 } from "lucide-react";
 import type { Message } from "@/types";
 
@@ -58,7 +58,7 @@ function renderMessageStatusTick(status?: string) {
   );
 }
 
-export default function LeadWhatsAppChat({
+export default memo(function LeadWhatsAppChat({
   messages,
   phoneNumber,
   onSendMessage,
@@ -188,4 +188,4 @@ export default function LeadWhatsAppChat({
       </form>
     </div>
   );
-}
+});

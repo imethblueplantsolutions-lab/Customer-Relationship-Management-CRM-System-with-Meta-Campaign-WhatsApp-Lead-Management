@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import {
   Clock,
   Phone,
@@ -105,7 +105,7 @@ interface LeadActivityTimelineProps {
   isSubmittingActivity: boolean;
 }
 
-export default function LeadActivityTimeline({
+export default memo(function LeadActivityTimeline({
   activities,
   leadCreatedAt,
   canManageAssignment,
@@ -455,4 +455,4 @@ export default function LeadActivityTimeline({
       )}
     </div>
   );
-}
+});

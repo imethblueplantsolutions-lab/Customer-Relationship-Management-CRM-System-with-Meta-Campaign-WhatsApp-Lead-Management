@@ -31,12 +31,12 @@ export default function FollowupsPage() {
   const [successMsg, setSuccessMsg] = useState("");
   const [selectedFollowupForUpload, setSelectedFollowupForUpload] = useState<Followup | null>(null);
 
-  // Fetch all follow-ups
-  const fetchFollowups = async () => {
+  // Fetch follow-ups with server-side filter
+  const fetchFollowups = async (filter: string = activeTab) => {
     try {
       setLoading(true);
       setErrorMsg("");
-      const res = await apiClient<Followup[]>("/leads/followups/all");
+      const res = await apiClient<Followup[]>(`/leads/followups/all?filter=${filter}`);
       if (res.success && res.data) {
         setFollowups(res.data);
       }
@@ -48,8 +48,8 @@ export default function FollowupsPage() {
   };
 
   useEffect(() => {
-    fetchFollowups();
-  }, []);
+    fetchFollowups(activeTab);
+  }, [activeTab]);
 
   // Filter follow-ups into 3 distinct sections
   const now = new Date();
@@ -187,7 +187,7 @@ export default function FollowupsPage() {
         </div>
 
         <button
-          onClick={fetchFollowups}
+          onClick={() => fetchFollowups()}
           className="inline-flex items-center justify-center gap-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2.5 text-xs font-bold shadow-xs transition-all cursor-pointer shrink-0"
         >
           <RefreshCw className={`h-4 w-4 text-blue-600 ${loading ? "animate-spin" : ""}`} />

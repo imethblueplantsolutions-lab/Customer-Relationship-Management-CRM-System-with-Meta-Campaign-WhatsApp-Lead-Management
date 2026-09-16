@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
 import { apiClient } from "@/lib/api-client";
 import type { User } from "@/types";
 
@@ -99,19 +99,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.location.href = "/login";
   }, []);
 
+  const value = useMemo(() => ({
+    user,
+    token,
+    isAuthenticated: !!token,
+    isLoading,
+    login,
+    logout,
+    updateUser,
+    setSession,
+  }), [user, token, isLoading, login, logout, updateUser, setSession]);
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        token,
-        isAuthenticated: !!token,
-        isLoading,
-        login,
-        logout,
-        updateUser,
-        setSession,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

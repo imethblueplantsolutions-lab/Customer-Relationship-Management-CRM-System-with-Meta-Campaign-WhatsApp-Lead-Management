@@ -14,10 +14,12 @@ router.get('/', async (req, res) => {
       return res.status(401).json({ success: false, error: 'User ID not found in token' });
     }
 
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 50));
+
     const notifications = await prisma.notification.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
-      take: 50,
+      take: limit,
     });
 
     // Normalize to ensure both message and body are populated

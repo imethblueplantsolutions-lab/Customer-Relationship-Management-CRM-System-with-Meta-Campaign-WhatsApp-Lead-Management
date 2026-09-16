@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/hooks/use-auth";
 import { useLeadSocket } from "@/hooks/use-lead-socket";
+import { useAgentList } from "@/hooks/use-agent-list";
 import type { Lead, Message, Followup, Activity, Attachment } from "@/types";
 import { Loader2, ArrowLeft } from "lucide-react";
 
@@ -33,8 +34,8 @@ export default function LeadDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Agent list for assignment
-  const [agents, setAgents] = useState<{ id: string; name?: string; email: string; role: string }[]>([]);
+  // Agent list for assignment (cached with 5-minute stale time)
+  const { agents, setAgents } = useAgentList(canManageAssignment);
   const [assigningLead, setAssigningLead] = useState(false);
   const [deletingLead, setDeletingLead] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -42,17 +43,6 @@ export default function LeadDetailPage() {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [addingFollowup, setAddingFollowup] = useState(false);
   const [isSubmittingActivity, setIsSubmittingActivity] = useState(false);
-
-  // Load agents if authorized
-  useEffect(() => {
-    if (canManageAssignment) {
-      apiClient<{ id: string; name?: string; email: string; role: string }[]>("/users")
-        .then((res) => {
-          if (res.success && res.data) setAgents(res.data);
-        })
-        .catch((err) => console.warn("Could not load users list:", err));
-    }
-  }, [canManageAssignment]);
 
   // ─── Fetch Lead Details ──────────────────────────────────────
   const fetchLead = useCallback(async () => {

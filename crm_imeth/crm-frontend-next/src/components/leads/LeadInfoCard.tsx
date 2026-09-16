@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import {
   Megaphone,
   User as UserIcon,
@@ -32,7 +32,7 @@ interface LeadInfoCardProps {
   onAttachmentDelete: (attachmentId: string) => void;
 }
 
-export default function LeadInfoCard({
+export default memo(function LeadInfoCard({
   lead,
   canManageAssignment,
   agents,
@@ -401,4 +401,4 @@ export default function LeadInfoCard({
       </div>
     </div>
   );
-}
+});

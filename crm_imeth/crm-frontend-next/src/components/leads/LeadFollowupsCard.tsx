@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { Calendar, Check } from "lucide-react";
 import type { Followup } from "@/types";
 
@@ -19,7 +19,7 @@ interface LeadFollowupsCardProps {
   addingFollowup: boolean;
 }
 
-export default function LeadFollowupsCard({
+export default memo(function LeadFollowupsCard({
   followups,
   canManageAssignment,
   agents,
@@ -220,4 +220,4 @@ export default function LeadFollowupsCard({
       )}
     </div>
   );
-}
+});

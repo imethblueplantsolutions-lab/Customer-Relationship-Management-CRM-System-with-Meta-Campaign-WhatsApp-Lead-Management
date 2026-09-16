@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, memo } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -38,7 +38,7 @@ interface LeadHeaderProps {
   onDeleteLead: () => Promise<void>;
 }
 
-export default function LeadHeader({
+export default memo(function LeadHeader({
   lead,
   canDeleteLead,
   deletingLead,
@@ -272,4 +272,4 @@ export default function LeadHeader({
       </div>
     </div>
   );
-}
+});

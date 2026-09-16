@@ -100,6 +100,10 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id']
 }));
 
+// Gzip/Brotli response compression (~80% bandwidth reduction on JSON payloads)
+const compression = require('compression');
+app.use(compression());
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
