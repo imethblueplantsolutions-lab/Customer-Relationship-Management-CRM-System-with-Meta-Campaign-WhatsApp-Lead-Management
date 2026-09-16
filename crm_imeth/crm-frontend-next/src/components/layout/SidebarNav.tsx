@@ -20,14 +20,15 @@ interface NavItem {
   label: string;
   icon: LucideIcon;
   adminOnly?: boolean;
+  hidden?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/leads", label: "Leads", icon: Users },
   { href: "/followups", label: "Follow-ups", icon: Clock },
-  { href: "/pipelines", label: "Pipelines", icon: GitBranch },
-  { href: "/flows", label: "Automation Flows", icon: Workflow },
+  { href: "/pipelines", label: "Pipelines", icon: GitBranch, hidden: true },
+  { href: "/flows", label: "Automation Flows", icon: Workflow, hidden: true },
   { href: "/users", label: "Users", icon: UserCheck },
   { href: "/admin/dead-letters", label: "Dead Leads", icon: AlertOctagon, adminOnly: true },
   { href: "/settings", label: "Settings", icon: Settings },
@@ -43,6 +44,9 @@ export default function SidebarNav({ user, isCollapsed, onNavigate }: SidebarNav
   const pathname = usePathname();
 
   const filteredItems = NAV_ITEMS.filter((item) => {
+    if (item.hidden) {
+      return false;
+    }
     if (item.adminOnly && user?.role !== "ADMIN") {
       return false;
     }
