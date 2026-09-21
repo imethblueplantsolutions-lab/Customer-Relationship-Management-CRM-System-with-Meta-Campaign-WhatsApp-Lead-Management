@@ -15,11 +15,13 @@ import {
   Layers,
   X,
   Loader2,
+  Pencil,
   User as UserIcon,
   type LucideIcon,
 } from "lucide-react";
 import type { Activity } from "@/types";
 import { formatDateTime } from "@/lib/utils";
+import DateTimePicker24h from "@/components/ui/DateTimePicker24h";
 
 interface ActivityTypeStyle {
   circleBg: string;
@@ -101,6 +103,15 @@ interface LeadActivityTimelineProps {
     occurredAt: string;
     createdById?: string;
   }) => Promise<void>;
+  onUpdateActivity?: (
+    activityId: string,
+    data: {
+      type?: string;
+      title?: string;
+      description?: string;
+      occurredAt?: string;
+    }
+  ) => Promise<void>;
   onDeleteActivity: (activityId: string) => Promise<void>;
   isSubmittingActivity: boolean;
 }
@@ -114,33 +125,55 @@ export default memo(function LeadActivityTimeline({
   currentUserName,
   currentUserEmail,
   onCreateActivity,
+  onUpdateActivity,
   onDeleteActivity,
   isSubmittingActivity,
 }: LeadActivityTimelineProps) {
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const [activityForm, setActivityForm] = useState<{
     type: string;
-    title: string;
     description: string;
     occurredAt: string;
     createdById?: string;
   }>({
     type: "NOTE",
-    title: "",
     description: "",
-    occurredAt: new Date().toISOString().slice(0, 16),
+    occurredAt: new Date().toISOString(),
     createdById: "",
+  });
+
+  // Edit Activity Modal State
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
+  const [isUpdatingActivity, setIsUpdatingActivity] = useState(false);
+  const [editForm, setEditForm] = useState<{
+    type: string;
+    description: string;
+    occurredAt: string;
+  }>({
+    type: "NOTE",
+    description: "",
+    occurredAt: new Date().toISOString(),
   });
 
   const openActivityModal = (type: string) => {
     setActivityForm({
       type,
-      title: "",
       description: "",
-      occurredAt: new Date().toISOString().slice(0, 16),
+      occurredAt: new Date().toISOString(),
       createdById: currentUserId || "",
     });
     setIsActivityModalOpen(true);
+  };
+
+  const openEditModal = (activity: Activity) => {
+    setEditingActivity(activity);
+    setEditForm({
+      type: activity.type,
+      description: activity.description || "",
+      occurredAt: activity.occurredAt || new Date().toISOString(),
+    });
+    setIsEditModalOpen(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -149,13 +182,30 @@ export default memo(function LeadActivityTimeline({
 
     await onCreateActivity({
       type: activityForm.type,
-      title: activityForm.title.trim(),
+      title: "",
       description: activityForm.description.trim(),
       occurredAt: new Date(activityForm.occurredAt).toISOString(),
       createdById: activityForm.createdById || undefined,
     });
 
     setIsActivityModalOpen(false);
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingActivity || !onUpdateActivity || isUpdatingActivity) return;
+    setIsUpdatingActivity(true);
+    try {
+      await onUpdateActivity(editingActivity.id, {
+        type: editForm.type,
+        description: editForm.description.trim(),
+        occurredAt: new Date(editForm.occurredAt).toISOString(),
+      });
+      setIsEditModalOpen(false);
+      setEditingActivity(null);
+    } finally {
+      setIsUpdatingActivity(false);
+    }
   };
 
   const getAuthorDisplayName = (createdBy?: { name?: string; email?: string; role?: string }) => {
@@ -303,17 +353,27 @@ export default memo(function LeadActivityTimeline({
                     </div>
                   </div>
 
-                  {/* Delete Activity Button — hidden for system-generated entries */}
-                  {!["TASK_SCHEDULED", "TASK_COMPLETED", "SYSTEM_ASSIGNMENT"].includes(activity.type) && (
+                  {/* Action Buttons in top right corner */}
+                  <div className="flex items-center gap-1 shrink-0">
                     <button
                       type="button"
-                      onClick={() => onDeleteActivity(activity.id)}
-                      className="shrink-0 p-1.5 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                      title="Delete activity"
+                      onClick={() => openEditModal(activity)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                      title="Edit activity"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Pencil className="h-3.5 w-3.5" />
                     </button>
-                  )}
+                    {!["TASK_SCHEDULED", "TASK_COMPLETED", "SYSTEM_ASSIGNMENT"].includes(activity.type) && (
+                      <button
+                        type="button"
+                        onClick={() => onDeleteActivity(activity.id)}
+                        className="p-1.5 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                        title="Delete activity"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -327,7 +387,7 @@ export default memo(function LeadActivityTimeline({
         )}
       </div>
 
-      {/* ─── Activity Modal Overlay ──────────────────────────── */}
+      {/* ─── Log Activity Modal Overlay ──────────────────────── */}
       {isActivityModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="relative w-full max-w-md mx-4 rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden">
@@ -390,28 +450,12 @@ export default memo(function LeadActivityTimeline({
 
               <div>
                 <label className="block text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1.5">
-                  Date & Time
+                  Date & Time (24H)
                 </label>
-                <input
-                  type="datetime-local"
-                  required
+                <DateTimePicker24h
                   value={activityForm.occurredAt}
-                  onChange={(e) => setActivityForm({ ...activityForm, occurredAt: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1.5">
-                  Title
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Discovery call with client"
-                  value={activityForm.title}
-                  onChange={(e) => setActivityForm({ ...activityForm, title: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none transition-all"
+                  onChange={(val) => setActivityForm({ ...activityForm, occurredAt: val })}
+                  placeholder="Select date & 24h time"
                 />
               </div>
 
@@ -453,6 +497,111 @@ export default memo(function LeadActivityTimeline({
           </div>
         </div>
       )}
+
+      {/* ─── Edit Activity Modal Overlay ──────────────────────── */}
+      {isEditModalOpen && editingActivity && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="relative w-full max-w-md mx-4 rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-4">
+              <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <Pencil className="h-4 w-4 text-blue-600" />
+                Edit Activity
+              </h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditModalOpen(false);
+                  setEditingActivity(null);
+                }}
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition-colors cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
+              {!["SYSTEM_ASSIGNMENT", "TASK_SCHEDULED", "TASK_COMPLETED"].includes(editingActivity.type) ? (
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1.5">
+                    Activity Type
+                  </label>
+                  <select
+                    value={editForm.type}
+                    onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none transition-all"
+                  >
+                    <option value="PHONE_CALL">📞 Phone Call</option>
+                    <option value="MESSAGE">💬 Direct Message</option>
+                    <option value="MEETING">📅 Meeting</option>
+                    <option value="NOTE">📝 Note</option>
+                  </select>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1.5">
+                    Activity Type
+                  </label>
+                  <div className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-semibold text-slate-600">
+                    {ACTIVITY_TYPE_CONFIG[editingActivity.type]?.label || editingActivity.type}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1.5">
+                  Date & Time (24H)
+                </label>
+                <DateTimePicker24h
+                  value={editForm.occurredAt}
+                  onChange={(val) => setEditForm({ ...editForm, occurredAt: val })}
+                  placeholder="Select date & 24h time"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1.5">
+                  Description / Notes
+                </label>
+                <textarea
+                  placeholder="Add notes about this activity..."
+                  rows={4}
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none transition-all resize-none"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditModalOpen(false);
+                    setEditingActivity(null);
+                  }}
+                  className="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdatingActivity}
+                  className="flex-1 rounded-xl bg-blue-600 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  {isUpdatingActivity ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                  )}
+                  {isUpdatingActivity ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 });
+

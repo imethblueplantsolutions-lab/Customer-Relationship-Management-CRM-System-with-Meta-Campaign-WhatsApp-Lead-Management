@@ -3,6 +3,7 @@
 import { useState, memo } from "react";
 import { Calendar, Check } from "lucide-react";
 import type { Followup } from "@/types";
+import DateTimePicker24h from "@/components/ui/DateTimePicker24h";
 
 interface LeadFollowupsCardProps {
   followups: Followup[];
@@ -30,6 +31,7 @@ export default memo(function LeadFollowupsCard({
 }: LeadFollowupsCardProps) {
   const [showFollowupForm, setShowFollowupForm] = useState(false);
   const [followupType, setFollowupType] = useState("CALL");
+  const [customFollowupType, setCustomFollowupType] = useState("");
   const [followupNote, setFollowupNote] = useState("");
   const [followupDueAt, setFollowupDueAt] = useState("");
   const [followupAssignee, setFollowupAssignee] = useState("");
@@ -38,14 +40,20 @@ export default memo(function LeadFollowupsCard({
     e.preventDefault();
     if (addingFollowup || !followupNote.trim()) return;
 
+    const finalType =
+      followupType === "OTHER"
+        ? customFollowupType.trim() || "Other"
+        : followupType;
+
     await onAddFollowup({
-      type: followupType,
+      type: finalType,
       note: followupNote.trim(),
       dueAt: followupDueAt,
       assignedToId: canManageAssignment && followupAssignee ? followupAssignee : undefined,
     });
 
     setFollowupNote("");
+    setCustomFollowupType("");
     setFollowupDueAt("");
     setFollowupAssignee("");
     setShowFollowupForm(false);
@@ -85,17 +93,33 @@ export default memo(function LeadFollowupsCard({
                 <option value="MEETING">Video / Live Meeting</option>
                 <option value="DEMO">Product Demo</option>
                 <option value="NOTE">General Note</option>
+                <option value="OTHER">Other</option>
               </select>
+
+              {followupType === "OTHER" && (
+                <div className="mt-2">
+                  <label className="block text-[10px] font-semibold text-slate-500 mb-1">
+                    Specify Task Type
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Site Visit, Send Contract..."
+                    value={customFollowupType}
+                    onChange={(e) => setCustomFollowupType(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-                Due Date & Time
+                Due Date & Time (24H)
               </label>
-              <input
-                type="datetime-local"
+              <DateTimePicker24h
                 value={followupDueAt}
-                onChange={(e) => setFollowupDueAt(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-blue-500 focus:outline-none"
+                onChange={setFollowupDueAt}
+                placeholder="Select date & 24h time"
               />
             </div>
           </div>

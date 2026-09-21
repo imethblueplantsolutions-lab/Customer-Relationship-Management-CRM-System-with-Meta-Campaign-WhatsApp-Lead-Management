@@ -945,6 +945,64 @@ router.post('/:id/activities', async (req, res) => {
   }
 });
 
+// PUT: Update an activity (creator or Admin/Team Lead)
+router.put('/:id/activities/:activityId', async (req, res) => {
+  try {
+    const store = tenantStorage.getStore();
+    const tenantId = req.user?.tenantId || store?.tenantId;
+    const isAgent = req.user?.role === 'AGENT';
+    const currentUserId = req.user?.userId || req.user?.id;
+    const { type, title, description, occurredAt } = req.body;
+
+    const activity = await prisma.activity.findFirst({
+      where: { id: req.params.activityId, leadId: req.params.id },
+      include: { lead: true }
+    });
+
+    if (!activity || activity.lead.tenantId !== tenantId) {
+      return res.status(404).json({ success: false, error: 'Activity not found' });
+    }
+
+    // Agents can only edit their own activities
+    if (isAgent && activity.createdById !== currentUserId) {
+      return res.status(403).json({ success: false, error: 'Forbidden: You can only edit your own activities' });
+    }
+
+    const updated = await prisma.activity.update({
+      where: { id: req.params.activityId },
+      data: {
+        ...(type !== undefined && { type }),
+        ...(title !== undefined && { title: title || null }),
+        ...(description !== undefined && { description: description || null }),
+        ...(occurredAt !== undefined && { occurredAt: new Date(occurredAt) }),
+      },
+      include: {
+        createdBy: { select: { id: true, name: true, email: true, role: true } }
+      }
+    });
+
+    await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
+
+    // Broadcast activity update
+    try {
+      const { io } = require('../index');
+      if (io) {
+        io.to(`tenant:${tenantId}`).emit('lead_activity_updated', {
+          leadId: req.params.id,
+          activity: updated
+        });
+      }
+    } catch (socketErr) {
+      console.warn('[Socket] Failed to broadcast lead_activity_updated:', socketErr.message);
+    }
+
+    res.status(200).json({ success: true, data: updated });
+  } catch (error) {
+    console.error('Error updating activity:', error);
+    res.status(500).json({ success: false, error: 'Failed to update activity' });
+  }
+});
+
 // DELETE: Remove an activity (creator or Admin/Team Lead)
 router.delete('/:id/activities/:activityId', async (req, res) => {
   try {

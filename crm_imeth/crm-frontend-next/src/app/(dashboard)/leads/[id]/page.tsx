@@ -290,6 +290,31 @@ export default function LeadDetailPage() {
     }
   };
 
+  const handleUpdateActivity = async (
+    activityId: string,
+    data: { type?: string; title?: string; description?: string; occurredAt?: string }
+  ) => {
+    if (!lead) return;
+    try {
+      const res = await apiClient<Activity>(`/leads/${lead.id}/activities/${activityId}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      });
+      if (res.success && res.data) {
+        const updated = res.data;
+        setLead((prev) => {
+          if (!prev) return prev;
+          const updatedActivities = (prev.activities || [])
+            .map((a) => (a.id === activityId ? updated : a))
+            .sort((a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime());
+          return { ...prev, activities: updatedActivities };
+        });
+      }
+    } catch (err) {
+      console.error("Failed to update activity:", err);
+    }
+  };
+
   const handleDeleteActivity = async (activityId: string) => {
     if (!lead) return;
     try {
@@ -428,6 +453,7 @@ export default function LeadDetailPage() {
             currentUserName={user?.name}
             currentUserEmail={user?.email}
             onCreateActivity={handleCreateActivity}
+            onUpdateActivity={handleUpdateActivity}
             onDeleteActivity={handleDeleteActivity}
             isSubmittingActivity={isSubmittingActivity}
           />
