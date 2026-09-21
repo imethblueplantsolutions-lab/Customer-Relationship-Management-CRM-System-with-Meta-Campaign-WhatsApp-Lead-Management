@@ -659,9 +659,10 @@ router.get('/followups/all', async (req, res) => {
     const filterClause = {};
     if (filter === 'OVERDUE' || filter === 'overdue') {
       filterClause.completed = false;
-      filterClause.dueAt = { lt: startOfToday };
+      filterClause.dueAt = { lt: now };
     } else if (filter === 'TODAY' || filter === 'today') {
-      filterClause.dueAt = { gte: startOfToday, lte: endOfToday };
+      filterClause.completed = false;
+      filterClause.dueAt = { gte: now, lte: endOfToday };
     } else if (filter === 'UPCOMING' || filter === 'upcoming') {
       filterClause.OR = [
         { completed: true },

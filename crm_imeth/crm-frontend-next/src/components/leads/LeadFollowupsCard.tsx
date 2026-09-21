@@ -188,69 +188,91 @@ export default memo(function LeadFollowupsCard({
         </p>
       ) : (
         <div className="space-y-2.5">
-          {followups.map((item) => (
-            <div
-              key={item.id}
-              className={`flex items-center justify-between rounded-xl border p-3 transition-colors ${
-                item.completed
-                  ? "border-emerald-100 bg-emerald-50/40"
-                  : "border-slate-100 bg-slate-50/70"
-              }`}
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <button
-                  type="button"
-                  onClick={() => onToggleComplete(item.id, item.completed)}
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors cursor-pointer ${
-                    item.completed
-                      ? "bg-emerald-600 border-emerald-600 text-white"
-                      : "border-slate-300 bg-white hover:border-blue-500"
-                  }`}
-                  title={item.completed ? "Mark as pending" : "Mark as completed"}
-                >
-                  {item.completed && <Check className="h-3 w-3" />}
-                </button>
-                <div
-                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
-                    item.completed ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
-                  }`}
-                >
-                  {item.type.charAt(0)}
-                </div>
-                <div className="min-w-0">
-                  <p
-                    className={`text-xs font-semibold truncate ${
-                      item.completed ? "text-slate-400 line-through" : "text-slate-800"
+          {followups.map((item) => {
+            const isOverdue = !item.completed && item.dueAt && new Date(item.dueAt) < new Date();
+            return (
+              <div
+                key={item.id}
+                className={`flex items-center justify-between rounded-xl border p-3 transition-colors ${
+                  item.completed
+                    ? "border-emerald-100 bg-emerald-50/40"
+                    : isOverdue
+                    ? "border-red-200 bg-red-50/30"
+                    : "border-slate-100 bg-slate-50/70"
+                }`}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <button
+                    type="button"
+                    onClick={() => onToggleComplete(item.id, item.completed)}
+                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors cursor-pointer ${
+                      item.completed
+                        ? "bg-emerald-600 border-emerald-600 text-white"
+                        : isOverdue
+                        ? "border-red-300 bg-white hover:border-red-500"
+                        : "border-slate-300 bg-white hover:border-blue-500"
+                    }`}
+                    title={item.completed ? "Mark as pending" : "Mark as completed"}
+                  >
+                    {item.completed && <Check className="h-3 w-3" />}
+                  </button>
+                  <div
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
+                      item.completed
+                        ? "bg-emerald-100 text-emerald-700"
+                        : isOverdue
+                        ? "bg-red-100 text-red-700"
+                        : "bg-amber-100 text-amber-700"
                     }`}
                   >
-                    {item.note || item.type}
-                  </p>
-                  <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 mt-0.5">
-                    <span>
-                      {item.dueAt ? `Due: ${new Date(item.dueAt).toLocaleString()}` : "No due date set"}
-                    </span>
-                    {item.assignedTo && (
-                      <>
-                        <span>•</span>
-                        <span className="text-emerald-700 font-medium">
-                          Assigned: {item.assignedTo.name || item.assignedTo.email}
-                        </span>
-                      </>
-                    )}
-                    {item.createdBy && item.createdBy.id !== item.assignedTo?.id && (
-                      <>
-                        <span>•</span>
-                        <span>By: {item.createdBy.name || item.createdBy.email}</span>
-                      </>
-                    )}
+                    {item.type.charAt(0)}
+                  </div>
+                  <div className="min-w-0">
+                    <p
+                      className={`text-xs font-semibold truncate ${
+                        item.completed
+                          ? "text-slate-400 line-through"
+                          : isOverdue
+                          ? "text-red-900 font-bold"
+                          : "text-slate-800"
+                      }`}
+                    >
+                      {item.note || item.type}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 mt-0.5">
+                      <span className={isOverdue ? "text-red-600 font-semibold" : ""}>
+                        {item.dueAt ? `Due: ${new Date(item.dueAt).toLocaleString()}` : "No due date set"}
+                      </span>
+                      {item.assignedTo && (
+                        <>
+                          <span>•</span>
+                          <span className="text-emerald-700 font-medium">
+                            Assigned: {item.assignedTo.name || item.assignedTo.email}
+                          </span>
+                        </>
+                      )}
+                      {item.createdBy && item.createdBy.id !== item.assignedTo?.id && (
+                        <>
+                          <span>•</span>
+                          <span>By: {item.createdBy.name || item.createdBy.email}</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
+                <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                  {isOverdue && (
+                    <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[9px] font-bold text-red-700 uppercase tracking-wide">
+                      Overdue
+                    </span>
+                  )}
+                  <span className="inline-flex items-center rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-600">
+                    {item.type}
+                  </span>
+                </div>
               </div>
-              <span className="inline-flex shrink-0 items-center rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-600 ml-2">
-                {item.type}
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

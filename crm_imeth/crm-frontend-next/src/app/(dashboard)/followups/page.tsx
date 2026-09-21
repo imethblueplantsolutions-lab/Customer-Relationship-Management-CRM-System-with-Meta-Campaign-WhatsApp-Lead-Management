@@ -31,12 +31,12 @@ export default function FollowupsPage() {
   const [successMsg, setSuccessMsg] = useState("");
   const [selectedFollowupForUpload, setSelectedFollowupForUpload] = useState<Followup | null>(null);
 
-  // Fetch follow-ups with server-side filter
-  const fetchFollowups = async (filter: string = activeTab) => {
+  // Fetch all follow-ups to populate tabs and counts accurately
+  const fetchFollowups = async () => {
     try {
       setLoading(true);
       setErrorMsg("");
-      const res = await apiClient<Followup[]>(`/leads/followups/all?filter=${filter}`);
+      const res = await apiClient<Followup[]>(`/leads/followups/all`);
       if (res.success && res.data) {
         setFollowups(res.data);
       }
@@ -48,28 +48,36 @@ export default function FollowupsPage() {
   };
 
   useEffect(() => {
-    fetchFollowups(activeTab);
-  }, [activeTab]);
+    fetchFollowups();
+    // Auto-refresh tasks every 30s so overdue tasks transition in real-time
+    const interval = setInterval(() => {
+      fetchFollowups();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
-  // Filter follow-ups into 3 distinct sections
+  // Filter follow-ups into 3 distinct sections based on current time
   const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
+  // Overdue: Uncompleted tasks whose deadline has passed (dueAt < now)
   const overdueList = followups.filter((f) => {
     if (f.completed) return false;
     if (!f.dueAt) return false;
-    return new Date(f.dueAt) < startOfToday;
+    return new Date(f.dueAt) < now;
   });
 
+  // Due Today: Uncompleted tasks remaining for today (now <= dueAt <= endOfToday)
   const todayList = followups.filter((f) => {
+    if (f.completed) return false;
     if (!f.dueAt) return false;
     const dueDate = new Date(f.dueAt);
-    return dueDate >= startOfToday && dueDate <= endOfToday;
+    return dueDate >= now && dueDate <= endOfToday;
   });
 
+  // Upcoming: Future tasks beyond today, or completed tasks history
   const upcomingList = followups.filter((f) => {
-    if (f.completed) return true; // Include completed tasks in upcoming/history
+    if (f.completed) return true; // Include completed tasks in history
     if (!f.dueAt) return true;
     return new Date(f.dueAt) > endOfToday;
   });
@@ -291,7 +299,7 @@ export default function FollowupsPage() {
         <div className="space-y-4">
           {activeList.map((f) => {
             const isOverdue =
-              !f.completed && f.dueAt && new Date(f.dueAt) < startOfToday;
+              !f.completed && f.dueAt && new Date(f.dueAt) < now;
             const leadName = f.lead?.name || f.lead?.phoneNumber || "Unassigned Lead";
 
             return (

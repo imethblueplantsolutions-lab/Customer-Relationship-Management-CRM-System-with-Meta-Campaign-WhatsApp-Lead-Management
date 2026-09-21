@@ -144,4 +144,13 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`⚙️ Settings Service Mounted at /api/settings`);
   console.log(`👥 Users & Agent Routing Mounted at /api/users`);
   console.log(`======================================================`);
+
+  // Start Overdue Task Monitor & Sales Agent Notifier
+  try {
+    const { startOverdueChecker } = require('./services/overdueChecker');
+    startOverdueChecker(io, 60000);
+  } catch (err) {
+    console.warn('⚠️  Failed to start Overdue Checker service:', err.message);
+  }
 });
+

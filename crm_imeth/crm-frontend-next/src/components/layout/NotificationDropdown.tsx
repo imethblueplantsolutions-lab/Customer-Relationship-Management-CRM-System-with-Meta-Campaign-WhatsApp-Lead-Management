@@ -44,6 +44,9 @@ export default function NotificationDropdown({ isCollapsed }: NotificationDropdo
 
   useEffect(() => {
     fetchNotifications();
+    // 30-second polling fallback to guarantee notification delivery
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
   }, [fetchNotifications]);
 
   // Real-time notification updates via Socket
@@ -54,16 +57,29 @@ export default function NotificationDropdown({ isCollapsed }: NotificationDropdo
       setNotifications((prev) => [notif, ...prev.slice(0, 19)]);
       setUnreadCount((prev) => prev + 1);
 
-      // Trigger sonner toast directly
-      toast(notif.title, {
-        description: notif.body,
-        action: notif.linkUrl
-          ? {
-              label: "View",
-              onClick: () => router.push(notif.linkUrl!),
-            }
-          : undefined,
-      });
+      // Trigger sonner toast directly with priority for overdue alerts
+      const isOverdue = notif.type === "TASK_OVERDUE";
+      if (isOverdue) {
+        toast.error(notif.title, {
+          description: notif.body || notif.message,
+          action: notif.linkUrl
+            ? {
+                label: "View Task",
+                onClick: () => router.push(notif.linkUrl!),
+              }
+            : undefined,
+        });
+      } else {
+        toast.info(notif.title, {
+          description: notif.body || notif.message,
+          action: notif.linkUrl
+            ? {
+                label: "View",
+                onClick: () => router.push(notif.linkUrl!),
+              }
+            : undefined,
+        });
+      }
     };
 
     socket.on("new_notification", handleNewNotification);
@@ -160,7 +176,11 @@ export default function NotificationDropdown({ isCollapsed }: NotificationDropdo
                   key={notif.id}
                   onClick={() => handleNotifClick(notif)}
                   className={`w-full text-left px-4 py-3 hover:bg-white/5 transition-colors cursor-pointer ${
-                    !notif.isRead ? "border-l-2 border-blue-500" : ""
+                    !notif.isRead
+                      ? notif.type === "TASK_OVERDUE"
+                        ? "border-l-2 border-red-500 bg-red-500/10"
+                        : "border-l-2 border-blue-500"
+                      : ""
                   }`}
                 >
                   <p
