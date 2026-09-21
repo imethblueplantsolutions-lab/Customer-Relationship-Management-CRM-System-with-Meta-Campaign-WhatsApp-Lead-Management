@@ -161,11 +161,46 @@ export default function DateTimePicker24h({
     onChange("");
   };
 
+  const handleSelectPrevMonthDay = (day: number) => {
+    const prevDate = new Date(year, month - 1, 1);
+    const prevYear = prevDate.getFullYear();
+    const prevMonth = prevDate.getMonth();
+    setViewDate(new Date(prevYear, prevMonth, 1));
+    const monthStr = String(prevMonth + 1).padStart(2, "0");
+    const dayStr = String(day).padStart(2, "0");
+    const hourStr = String(selectedHour).padStart(2, "0");
+    const minStr = String(selectedMinute).padStart(2, "0");
+    onChange(`${prevYear}-${monthStr}-${dayStr}T${hourStr}:${minStr}`);
+  };
+
+  const handleSelectNextMonthDay = (day: number) => {
+    const nextDate = new Date(year, month + 1, 1);
+    const nextYear = nextDate.getFullYear();
+    const nextMonth = nextDate.getMonth();
+    setViewDate(new Date(nextYear, nextMonth, 1));
+    const monthStr = String(nextMonth + 1).padStart(2, "0");
+    const dayStr = String(day).padStart(2, "0");
+    const hourStr = String(selectedHour).padStart(2, "0");
+    const minStr = String(selectedMinute).padStart(2, "0");
+    onChange(`${nextYear}-${monthStr}-${dayStr}T${hourStr}:${minStr}`);
+  };
+
   // Calendar math
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
   const firstDayOfWeek = new Date(year, month, 1).getDay(); // 0 is Sunday
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+  // Full 42-cell (6 weeks) calendar grid
+  const prevMonthDays = Array.from({ length: firstDayOfWeek }, (_, i) => {
+    return daysInPrevMonth - firstDayOfWeek + 1 + i;
+  });
+  const currentMonthDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const totalCells = 42;
+  const nextMonthDaysCount = totalCells - (prevMonthDays.length + currentMonthDays.length);
+  const nextMonthDays = Array.from({ length: nextMonthDaysCount }, (_, i) => i + 1);
+
   const monthNames = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
@@ -242,16 +277,22 @@ export default function DateTimePicker24h({
               ))}
             </div>
 
-            {/* Days Grid */}
+            {/* Days Grid: 42 cells (6 weeks) */}
             <div className="grid grid-cols-7 gap-1">
-              {/* Empty offset spaces */}
-              {Array.from({ length: firstDayOfWeek }).map((_, i) => (
-                <div key={`offset-${i}`} className="h-7 w-7" />
+              {/* Previous month days */}
+              {prevMonthDays.map((day) => (
+                <button
+                  key={`prev-${day}`}
+                  type="button"
+                  onClick={() => handleSelectPrevMonthDay(day)}
+                  className="h-7 w-7 rounded-lg text-xs font-normal text-slate-300 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-all cursor-pointer"
+                >
+                  {day}
+                </button>
               ))}
 
-              {/* Days of Month */}
-              {Array.from({ length: daysInMonth }).map((_, i) => {
-                const day = i + 1;
+              {/* Current month days */}
+              {currentMonthDays.map((day) => {
                 const isSelected =
                   selectedDate &&
                   selectedDate.getFullYear() === year &&
@@ -279,6 +320,18 @@ export default function DateTimePicker24h({
                   </button>
                 );
               })}
+
+              {/* Next month days */}
+              {nextMonthDays.map((day) => (
+                <button
+                  key={`next-${day}`}
+                  type="button"
+                  onClick={() => handleSelectNextMonthDay(day)}
+                  className="h-7 w-7 rounded-lg text-xs font-normal text-slate-300 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-all cursor-pointer"
+                >
+                  {day}
+                </button>
+              ))}
             </div>
 
             {/* Bottom Actions for Calendar */}
