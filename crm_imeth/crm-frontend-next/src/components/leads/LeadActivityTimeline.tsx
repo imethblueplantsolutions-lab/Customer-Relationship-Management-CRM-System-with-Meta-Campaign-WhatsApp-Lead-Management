@@ -390,9 +390,9 @@ export default memo(function LeadActivityTimeline({
       {/* ─── Log Activity Modal Overlay ──────────────────────── */}
       {isActivityModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="relative w-full max-w-md mx-4 rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden">
+          <div className="relative w-full max-w-md mx-4 rounded-2xl bg-white shadow-2xl border border-slate-200">
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-4">
+            <div className="flex items-center justify-between rounded-t-2xl border-b border-slate-100 bg-slate-50 px-6 py-4">
               <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
                 <Layers className="h-4 w-4 text-blue-600" />
                 Log Activity
@@ -501,9 +501,9 @@ export default memo(function LeadActivityTimeline({
       {/* ─── Edit Activity Modal Overlay ──────────────────────── */}
       {isEditModalOpen && editingActivity && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="relative w-full max-w-md mx-4 rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden">
+          <div className="relative w-full max-w-md mx-4 rounded-2xl bg-white shadow-2xl border border-slate-200">
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-4">
+            <div className="flex items-center justify-between rounded-t-2xl border-b border-slate-100 bg-slate-50 px-6 py-4">
               <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
                 <Pencil className="h-4 w-4 text-blue-600" />
                 Edit Activity

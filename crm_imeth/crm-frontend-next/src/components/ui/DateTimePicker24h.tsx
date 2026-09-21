@@ -20,6 +20,8 @@ export default function DateTimePicker24h({
 }: DateTimePicker24hProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const hoursListRef = useRef<HTMLDivElement>(null);
+  const minutesListRef = useRef<HTMLDivElement>(null);
 
   // Parse initial date/time from value
   const parseValue = (val?: string) => {
@@ -64,6 +66,27 @@ export default function DateTimePicker24h({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
+  }, [isOpen]);
+
+  // Auto-scroll hour and minute into view when popover opens
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        if (hoursListRef.current) {
+          const selectedBtn = hoursListRef.current.querySelector<HTMLElement>("[data-selected='true']");
+          if (selectedBtn) {
+            selectedBtn.scrollIntoView({ block: "center", behavior: "smooth" });
+          }
+        }
+        if (minutesListRef.current) {
+          const selectedBtn = minutesListRef.current.querySelector<HTMLElement>("[data-selected='true']");
+          if (selectedBtn) {
+            selectedBtn.scrollIntoView({ block: "center", behavior: "smooth" });
+          }
+        }
+      }, 60);
+      return () => clearTimeout(timer);
+    }
   }, [isOpen]);
 
   // Format display string: "YYYY-MM-DD HH:mm"
@@ -292,13 +315,17 @@ export default function DateTimePicker24h({
                 <span className="text-[10px] font-semibold text-slate-400 text-center mb-1">
                   Hour
                 </span>
-                <div className="h-44 w-12 overflow-y-auto rounded-lg border border-slate-100 bg-slate-50/50 p-1 space-y-0.5 scrollbar-thin">
+                <div
+                  ref={hoursListRef}
+                  className="h-36 w-12 overflow-y-auto rounded-lg border border-slate-100 bg-slate-50/50 p-1 pb-8 space-y-0.5 scrollbar-thin"
+                >
                   {hours.map((h) => {
                     const isSelected = selectedHour === h;
                     return (
                       <button
                         key={`h-${h}`}
                         type="button"
+                        data-selected={isSelected}
                         onClick={() => handleHourChange(h)}
                         className={`w-full py-1 text-center text-xs font-semibold rounded-md transition-colors cursor-pointer ${
                           isSelected
@@ -318,13 +345,17 @@ export default function DateTimePicker24h({
                 <span className="text-[10px] font-semibold text-slate-400 text-center mb-1">
                   Minute
                 </span>
-                <div className="h-44 w-12 overflow-y-auto rounded-lg border border-slate-100 bg-slate-50/50 p-1 space-y-0.5 scrollbar-thin">
+                <div
+                  ref={minutesListRef}
+                  className="h-36 w-12 overflow-y-auto rounded-lg border border-slate-100 bg-slate-50/50 p-1 pb-8 space-y-0.5 scrollbar-thin"
+                >
                   {minutes.map((m) => {
                     const isSelected = selectedMinute === m;
                     return (
                       <button
                         key={`m-${m}`}
                         type="button"
+                        data-selected={isSelected}
                         onClick={() => handleMinuteChange(m)}
                         className={`w-full py-1 text-center text-xs font-semibold rounded-md transition-colors cursor-pointer ${
                           isSelected
