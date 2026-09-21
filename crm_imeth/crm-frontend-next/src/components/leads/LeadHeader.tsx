@@ -92,38 +92,39 @@ export default memo(function LeadHeader({
     <div className="space-y-4">
       {/* ─── Breadcrumb & Top Bar ─────────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-4 min-w-0">
-          <Link
-            href="/leads"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-xs"
-            title="Back to Leads"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-800 truncate">
-                {lead.name || "Unknown Customer"}
-              </h1>
-              {lead.category && (
-                <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 border border-slate-200">
-                  {lead.category}
-                </span>
-              )}
-              {durationInfo.isStale && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-300 px-2.5 py-0.5 text-[11px] font-bold text-amber-800 animate-pulse">
-                  <AlertTriangle className="h-3 w-3 text-amber-600" />
-                  Stale ({durationInfo.text})
-                </span>
-              )}
-            </div>
-            <p className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 mt-1">
-              <Phone className="h-3.5 w-3.5 text-slate-400" />
-              <span>{lead.phoneNumber}</span>
-              <span className="text-slate-300">•</span>
-              <span>Created {new Date(lead.createdAt).toLocaleDateString()}</span>
-            </p>
+        <div className="min-w-0">
+          {/* Row 1: Left Arrow + Title + Badges (Horizontally Aligned) */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <Link
+              href="/leads"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-xs"
+              title="Back to Leads"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-800 truncate">
+              {lead.name || "Unknown Customer"}
+            </h1>
+            {lead.category && (
+              <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 border border-slate-200">
+                {lead.category}
+              </span>
+            )}
+            {durationInfo.isStale && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-300 px-2.5 py-0.5 text-[11px] font-bold text-amber-800 animate-pulse">
+                <AlertTriangle className="h-3 w-3 text-amber-600" />
+                Stale ({durationInfo.text})
+              </span>
+            )}
           </div>
+
+          {/* Row 2: Phone & Created Date (Indented to align with lead name) */}
+          <p className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 mt-1 ml-12">
+            <Phone className="h-3.5 w-3.5 text-slate-400" />
+            <span>{lead.phoneNumber}</span>
+            <span className="text-slate-300">•</span>
+            <span>Created {new Date(lead.createdAt).toLocaleDateString()}</span>
+          </p>
         </div>
 
         {/* Top Right Quick Actions */}
