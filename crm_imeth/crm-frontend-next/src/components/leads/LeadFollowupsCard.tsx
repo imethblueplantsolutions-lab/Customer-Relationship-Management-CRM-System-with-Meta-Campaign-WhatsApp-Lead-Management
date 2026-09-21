@@ -5,18 +5,29 @@ import { Calendar, Check } from "lucide-react";
 import type { Followup } from "@/types";
 import DateTimePicker24h from "@/components/ui/DateTimePicker24h";
 
+/**
+ * Props for the LeadFollowupsCard component.
+ * Allows scheduling tasks, reminders, and toggling completion status.
+ */
 interface LeadFollowupsCardProps {
+  /** List of follow-ups linked to this lead */
   followups: Followup[];
+  /** Whether the current user can assign reminders to other agents */
   canManageAssignment: boolean;
+  /** List of agents available for assignment */
   agents: { id: string; name?: string; email: string; role: string }[];
+  /** Current user's email */
   userEmail?: string;
+  /** Handler to schedule a new follow-up */
   onAddFollowup: (data: {
     type: string;
     note: string;
     dueAt: string;
     assignedToId?: string;
   }) => Promise<void>;
+  /** Handler to toggle completion status */
   onToggleComplete: (followupId: string, currentCompleted: boolean) => Promise<void>;
+  /** Loading indicator when saving a new reminder */
   addingFollowup: boolean;
 }
 
