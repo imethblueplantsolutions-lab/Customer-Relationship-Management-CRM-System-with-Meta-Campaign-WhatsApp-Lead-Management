@@ -3,14 +3,29 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, X } from "lucide-react";
 
+/**
+ * @file DateTimePicker24h.tsx
+ * @description Accessible, custom 24-hour calendar and time picker component.
+ * Features a 42-day monthly calendar grid with previous/next month navigation,
+ * and dual scrollable columns for 00-23 hours and 00-59 minutes without AM/PM toggles.
+ */
+
 interface DateTimePicker24hProps {
-  value?: string; // ISO string or "YYYY-MM-DDTHH:mm" or "YYYY-MM-DD HH:mm"
+  /** Selected date value in ISO format or 'YYYY-MM-DDTHH:mm' */
+  value?: string;
+  /** Callback fired when the user updates the date or time */
   onChange: (val: string) => void;
+  /** Custom input placeholder */
   placeholder?: string;
+  /** Additional Tailwind CSS classes */
   className?: string;
+  /** Whether selection is required */
   required?: boolean;
 }
 
+/**
+ * Custom 24-hour date and time picker with complete monthly grid.
+ */
 export default function DateTimePicker24h({
   value,
   onChange,
