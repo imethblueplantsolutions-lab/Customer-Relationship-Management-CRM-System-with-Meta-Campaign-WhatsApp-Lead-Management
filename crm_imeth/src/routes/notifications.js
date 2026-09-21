@@ -1,3 +1,9 @@
+/**
+ * @file notifications.js
+ * @description User notification endpoints for system alerts, lead assignments, and task reminders.
+ * Provides fetching, read-state toggles, and bulk mark-all-as-read operations.
+ */
+
 const express = require('express');
 const router = express.Router();
 const prisma = require('../config/db');
@@ -6,7 +12,10 @@ const { authenticate } = require('../middleware/auth');
 // Enforce JWT authentication on all notification routes
 router.use(authenticate);
 
-// GET /: Fetch all notifications for req.user.userId, ordered by createdAt descending
+/**
+ * GET /api/notifications
+ * Fetches notifications for the authenticated user, ordered by createdAt descending.
+ */
 router.get('/', async (req, res) => {
   try {
     const userId = req.user?.userId || req.user?.id;
