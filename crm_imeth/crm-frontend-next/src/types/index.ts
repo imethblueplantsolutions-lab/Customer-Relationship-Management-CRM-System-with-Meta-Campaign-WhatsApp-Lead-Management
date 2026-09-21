@@ -81,6 +81,9 @@ export interface Attachment {
   createdAt: string;
 }
 
+/**
+ * Represents a scheduled follow-up reminder or task linked to a lead.
+ */
 export interface Followup {
   id: string;
   leadId: string;
@@ -99,6 +102,9 @@ export interface Followup {
 }
 
 // ─── Activity / Timeline ───────────────────────────────────
+/**
+ * Represents an event or interaction in the lead's chronological timeline.
+ */
 export interface Activity {
   id: string;
   leadId: string;
