@@ -15,12 +15,22 @@ import AttachmentUploader from "@/components/AttachmentUploader";
 
 const HIDE_WHATSAPP_MESSAGING = true;
 
+/**
+ * Props for the LeadInfoCard component.
+ * Displays Meta ad attribution, agent assignment, contact details, and attachments.
+ */
 interface LeadInfoCardProps {
+  /** The lead object with full details, attribution, and attachments */
   lead: Lead;
+  /** Whether the current user can assign or reassign the lead */
   canManageAssignment: boolean;
+  /** List of agents available for assignment */
   agents: { id: string; name?: string; email: string; role: string }[];
+  /** Loading indicator when reassigning */
   assigningLead: boolean;
+  /** Handler to assign or reassign the lead to an agent */
   onAssignLead: (agentId: string) => Promise<void>;
+  /** Handler to save edited contact details and notes */
   onSaveDetails: (details: {
     name: string;
     displayName: string;
@@ -28,7 +38,9 @@ interface LeadInfoCardProps {
     email: string;
     notes: string;
   }) => Promise<void>;
+  /** Callback fired upon successful file attachment upload */
   onAttachmentUploadSuccess: (attachment: Attachment) => void;
+  /** Callback fired upon file attachment deletion */
   onAttachmentDelete: (attachmentId: string) => void;
 }
 
