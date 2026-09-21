@@ -1,3 +1,10 @@
+/**
+ * @file attachments.js
+ * @description File attachment management routes for Leads and Follow-ups.
+ * Handles multipart file uploads via Multer, enforces a 25MB file size limit,
+ * and maintains unique filename generation to prevent collisions.
+ */
+
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
@@ -12,7 +19,9 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Configure Multer Disk Storage with unique filenames
+/**
+ * Configure Multer Disk Storage with unique timestamped filenames
+ */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadDir);
@@ -24,6 +33,9 @@ const storage = multer.diskStorage({
   },
 });
 
+/**
+ * Multer upload middleware with 25MB file size limit
+ */
 const upload = multer({
   storage,
   limits: { fileSize: 25 * 1024 * 1024 }, // 25MB max file size limit
