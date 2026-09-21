@@ -282,7 +282,7 @@ export default function DateTimePicker24h({
             <div className="flex items-center gap-1 text-slate-600 mb-2">
               <Clock className="h-3.5 w-3.5 text-blue-600" />
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                24H Time
+                24H
               </span>
             </div>
 
