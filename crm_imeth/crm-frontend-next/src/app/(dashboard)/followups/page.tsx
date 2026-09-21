@@ -18,12 +18,17 @@ import {
   RefreshCw,
   X,
   FileText,
+  Trash2,
 } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function FollowupsPage() {
+  const { user } = useAuth();
+  const canDelete = user?.role === "ADMIN" || user?.role === "TEAM_LEAD";
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [followups, setFollowups] = useState<Followup[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"OVERDUE" | "TODAY" | "UPCOMING">("OVERDUE");
@@ -114,6 +119,45 @@ export default function FollowupsPage() {
         prev.map((item) => (item.id === f.id ? { ...item, completed: previousState } : item))
       );
       toast.error(err instanceof Error ? err.message : "Failed to update follow-up");
+    }
+  };
+
+  // Delete follow-up handler (Admins & Team Leads only)
+  const handleDeleteFollowup = async (f: Followup) => {
+    if (!f.leadId) return;
+    const leadName = f.lead?.name || f.lead?.phoneNumber || "Lead";
+    if (
+      !window.confirm(
+        `Are you sure you want to delete this follow-up for "${leadName}"? This will also remove it from timelines and notifications.`
+      )
+    ) {
+      return;
+    }
+
+    setDeletingId(f.id);
+    const previousFollowups = [...followups];
+
+    // Optimistic removal
+    setFollowups((prev) => prev.filter((item) => item.id !== f.id));
+
+    try {
+      const res = await apiClient<{ success: boolean; message?: string }>(
+        `/leads/${f.leadId}/followups/${f.id}`,
+        { method: "DELETE" }
+      );
+
+      if (res.success) {
+        toast.success("Follow-up and timeline records deleted successfully");
+      } else {
+        // Rollback
+        setFollowups(previousFollowups);
+        toast.error(res.error || "Failed to delete follow-up");
+      }
+    } catch (err: unknown) {
+      setFollowups(previousFollowups);
+      toast.error(err instanceof Error ? err.message : "Failed to delete follow-up");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -348,7 +392,7 @@ export default function FollowupsPage() {
                     </div>
                   </div>
 
-                  {/* Due Date & Status Badge */}
+                  {/* Due Date, Status Badge & Delete Button */}
                   <div className="flex items-center gap-2 self-start sm:self-auto">
                     {isOverdue && (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100 text-red-700 font-bold text-xs border border-red-200 animate-pulse">
@@ -361,6 +405,18 @@ export default function FollowupsPage() {
                       <Clock className="h-3.5 w-3.5 text-slate-400" />
                       {f.dueAt ? formatDateTime(f.dueAt) : "No Date"}
                     </span>
+
+                    {canDelete && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteFollowup(f)}
+                        disabled={deletingId === f.id}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-all cursor-pointer disabled:opacity-50"
+                        title="Delete Follow-up (Admin & Team Lead)"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
 

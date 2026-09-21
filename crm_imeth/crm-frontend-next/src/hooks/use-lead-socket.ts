@@ -115,12 +115,38 @@ export function useLeadSocket({ leadId, setLead, setAgents }: UseLeadSocketProps
       }
     };
 
+    const handleFollowupDeleted = (data: { leadId: string; followupId: string }) => {
+      if (data.leadId === leadId) {
+        setLead((prev) => {
+          if (!prev) return prev;
+          const targetFollowup = (prev.followups || []).find((f) => f.id === data.followupId);
+          const followupNote = targetFollowup?.note || "";
+
+          const nextFollowups = (prev.followups || []).filter((f) => f.id !== data.followupId);
+          const nextActivities = (prev.activities || []).filter((a) => {
+            if (a.type === "TASK_SCHEDULED" || a.type === "TASK_COMPLETED") {
+              if (followupNote && a.description?.includes(followupNote)) {
+                return false;
+              }
+              if (targetFollowup?.type && a.title?.includes(targetFollowup.type)) {
+                return false;
+              }
+            }
+            return true;
+          });
+
+          return { ...prev, followups: nextFollowups, activities: nextActivities };
+        });
+      }
+    };
+
     socket.on("lead_activity_created", handleActivityCreated);
     socket.on("lead_activity_deleted", handleActivityDeleted);
     socket.on("lead_updated", handleLeadUpdated);
     socket.on("user_updated", handleUserUpdated);
     socket.on("new_message", handleNewMessage);
     socket.on("message_status_update", handleMessageStatusUpdate);
+    socket.on("followup_deleted", handleFollowupDeleted);
 
     return () => {
       socket.off("lead_activity_created", handleActivityCreated);
@@ -129,6 +155,7 @@ export function useLeadSocket({ leadId, setLead, setAgents }: UseLeadSocketProps
       socket.off("user_updated", handleUserUpdated);
       socket.off("new_message", handleNewMessage);
       socket.off("message_status_update", handleMessageStatusUpdate);
+      socket.off("followup_deleted", handleFollowupDeleted);
     };
   }, [socket, leadId, setLead, setAgents]);
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, memo } from "react";
-import { Calendar, Check } from "lucide-react";
+import { Calendar, Check, Trash2 } from "lucide-react";
 import type { Followup } from "@/types";
 import DateTimePicker24h from "@/components/ui/DateTimePicker24h";
 
@@ -27,6 +27,8 @@ interface LeadFollowupsCardProps {
   }) => Promise<void>;
   /** Handler to toggle completion status */
   onToggleComplete: (followupId: string, currentCompleted: boolean) => Promise<void>;
+  /** Handler to delete a follow-up (Admins & Team Leads) */
+  onDeleteFollowup?: (followupId: string) => Promise<void>;
   /** Loading indicator when saving a new reminder */
   addingFollowup: boolean;
 }
@@ -38,6 +40,7 @@ export default memo(function LeadFollowupsCard({
   userEmail,
   onAddFollowup,
   onToggleComplete,
+  onDeleteFollowup,
   addingFollowup,
 }: LeadFollowupsCardProps) {
   const [showFollowupForm, setShowFollowupForm] = useState(false);
@@ -269,6 +272,16 @@ export default memo(function LeadFollowupsCard({
                   <span className="inline-flex items-center rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-600">
                     {item.type}
                   </span>
+                  {canManageAssignment && onDeleteFollowup && (
+                    <button
+                      type="button"
+                      onClick={() => onDeleteFollowup(item.id)}
+                      className="p-1 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors cursor-pointer"
+                      title="Delete Follow-up (Admin & Team Lead)"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  )}
                 </div>
               </div>
             );

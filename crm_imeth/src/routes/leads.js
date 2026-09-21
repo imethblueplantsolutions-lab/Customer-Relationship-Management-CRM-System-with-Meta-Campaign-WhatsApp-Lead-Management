@@ -886,6 +886,91 @@ router.put('/:id/followups/:followupId', async (req, res) => {
   }
 });
 
+// DELETE: Delete a follow-up activity (Admins and Team Leads only)
+router.delete('/:id/followups/:followupId', async (req, res) => {
+  try {
+    const store = tenantStorage.getStore();
+    const tenantId = req.user?.tenantId || store?.tenantId;
+    const userRole = req.user?.role;
+
+    // Enforce authorization: Only ADMIN and TEAM_LEAD can delete follow-ups
+    if (userRole !== 'ADMIN' && userRole !== 'TEAM_LEAD') {
+      return res.status(403).json({ success: false, error: 'Forbidden: Only Admins and Team Leads can delete follow-ups' });
+    }
+
+    const followup = await prisma.followup.findFirst({
+      where: { id: req.params.followupId, leadId: req.params.id },
+      include: { lead: true }
+    });
+
+    if (!followup || followup.lead.tenantId !== tenantId) {
+      return res.status(404).json({ success: false, error: 'Follow-up not found' });
+    }
+
+    // 1. Delete associated timeline activities (TASK_SCHEDULED and TASK_COMPLETED)
+    try {
+      await prisma.activity.deleteMany({
+        where: {
+          leadId: req.params.id,
+          type: { in: ['TASK_SCHEDULED', 'TASK_COMPLETED'] },
+          OR: [
+            ...(followup.note ? [{ description: { contains: followup.note } }] : []),
+            { description: { contains: followup.type } }
+          ]
+        }
+      });
+    } catch (actErr) {
+      console.warn('[Activity] Failed to delete matching activities on followup delete:', actErr.message);
+    }
+
+    // 2. Delete associated notifications (TASK_OVERDUE or task links)
+    try {
+      await prisma.notification.deleteMany({
+        where: {
+          OR: [
+            { linkUrl: { contains: req.params.followupId } },
+            { linkUrl: `/leads/${req.params.id}?followupId=${req.params.followupId}` }
+          ]
+        }
+      });
+    } catch (notifErr) {
+      console.warn('[Notification] Failed to delete matching notifications on followup delete:', notifErr.message);
+    }
+
+    // 3. Delete attachments linked to this followup
+    try {
+      await prisma.attachment.deleteMany({
+        where: { followupId: req.params.followupId }
+      });
+    } catch (attErr) {
+      console.warn('[Attachment] Failed to delete attachments on followup delete:', attErr.message);
+    }
+
+    // 4. Delete the followup record
+    await prisma.followup.delete({
+      where: { id: req.params.followupId }
+    });
+
+    // Invalidate dashboard stats cache
+    await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
+
+    // Broadcast real-time deletion events
+    const { io } = require('../index');
+    if (io) {
+      io.to(`tenant:${tenantId}`).emit('followup_deleted', {
+        leadId: req.params.id,
+        followupId: req.params.followupId
+      });
+      io.to(`tenant:${tenantId}`).emit('lead_timeline_updated', { leadId: req.params.id });
+    }
+
+    res.status(200).json({ success: true, message: 'Follow-up and associated timelines deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting followup:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete follow-up' });
+  }
+});
+
 // POST: Create activity / timeline entry for a lead
 router.post('/:id/activities', async (req, res) => {
   try {

@@ -257,6 +257,57 @@ export default function LeadDetailPage() {
     }
   };
 
+  // ─── Delete Followup Handler (Admins & Team Leads) ─────────────
+  const handleDeleteFollowup = async (followupId: string) => {
+    if (!lead) return;
+    const targetFollowup = (lead.followups || []).find((f) => f.id === followupId);
+    const followupNote = targetFollowup?.note || "";
+
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this follow-up? This will also remove it from timelines and notifications."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const res = await apiClient<{ success: boolean; message?: string }>(
+        `/leads/${lead.id}/followups/${followupId}`,
+        { method: "DELETE" }
+      );
+
+      if (res.success) {
+        setLead((prev) => {
+          if (!prev) return prev;
+          const nextFollowups = (prev.followups || []).filter((f) => f.id !== followupId);
+          const nextActivities = (prev.activities || []).filter((a) => {
+            if (a.type === "TASK_SCHEDULED" || a.type === "TASK_COMPLETED") {
+              if (followupNote && a.description?.includes(followupNote)) {
+                return false;
+              }
+              if (targetFollowup?.type && a.title?.includes(targetFollowup.type)) {
+                return false;
+              }
+            }
+            return true;
+          });
+
+          return {
+            ...prev,
+            followups: nextFollowups,
+            activities: nextActivities,
+          };
+        });
+        toast.success("Follow-up and timeline records deleted");
+      } else {
+        toast.error(res.error || "Failed to delete follow-up");
+      }
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete follow-up");
+    }
+  };
+
   // ─── Activity Handlers ────────────────────────────────────────
   const handleCreateActivity = async (form: {
     type: string;
@@ -441,6 +492,7 @@ export default function LeadDetailPage() {
             userEmail={user?.email}
             onAddFollowup={handleAddFollowup}
             onToggleComplete={handleToggleFollowupComplete}
+            onDeleteFollowup={handleDeleteFollowup}
             addingFollowup={addingFollowup}
           />
 
