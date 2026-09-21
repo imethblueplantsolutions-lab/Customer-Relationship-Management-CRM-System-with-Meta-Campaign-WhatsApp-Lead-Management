@@ -1,3 +1,9 @@
+/**
+ * @file deals.js
+ * @description Deal management routes for sales pipeline stages, valuations, and assignments.
+ * Supports updating deal stages, monetary values, currencies, and expected close dates.
+ */
+
 const express = require('express');
 const router = express.Router();
 const prisma = require('../config/db');
@@ -5,7 +11,10 @@ const { authenticate, authorize } = require('../middleware/auth');
 
 router.use(authenticate);
 
-// PUT: Update deal (move stage, edit fields)
+/**
+ * PUT /api/deals/:id
+ * Updates deal attributes, moves stages, or updates assignment.
+ */
 router.put('/:id', async (req, res) => {
   try {
     const { stageId, title, value, currency, notes, expectedCloseDate, assignedToId, status } = req.body;
