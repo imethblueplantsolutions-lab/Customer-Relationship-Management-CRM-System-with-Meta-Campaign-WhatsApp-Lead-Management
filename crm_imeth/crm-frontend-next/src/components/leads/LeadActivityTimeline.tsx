@@ -88,14 +88,26 @@ const DEFAULT_ACTIVITY_STYLE: ActivityTypeStyle = {
   tagBg: "bg-slate-50 text-slate-700 border-slate-200",
 };
 
+/**
+ * Props for the LeadActivityTimeline component.
+ * Manages chronological lead events, quick logging, and inline editing.
+ */
 interface LeadActivityTimelineProps {
+  /** Array of chronological activities linked to this lead */
   activities: Activity[];
+  /** Timestamp when the lead was originally created */
   leadCreatedAt: string;
+  /** Whether the current user can reassign or manage assignments */
   canManageAssignment: boolean;
+  /** List of available agents in the tenant */
   agents: { id: string; name?: string; email: string; role: string }[];
+  /** Current logged-in user ID */
   currentUserId?: string;
+  /** Current user display name */
   currentUserName?: string;
+  /** Current user email */
   currentUserEmail?: string;
+  /** Handler to log a new activity */
   onCreateActivity: (data: {
     type: string;
     title: string;
