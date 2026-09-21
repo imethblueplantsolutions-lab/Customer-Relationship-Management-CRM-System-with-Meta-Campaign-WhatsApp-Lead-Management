@@ -1,3 +1,10 @@
+/**
+ * @file broadcast.js
+ * @description Bulk WhatsApp campaign broadcast routes.
+ * Allows Admins and Team Leads to dispatch templated messages to lead segments
+ * using BullMQ queues for asynchronous worker execution.
+ */
+
 const express = require('express');
 const router = express.Router();
 const prisma = require('../config/db');
@@ -9,7 +16,10 @@ const { broadcastQueue } = require('../workers/broadcastWorker');
 router.use(authenticate);
 router.use(authorize(['ADMIN', 'TEAM_LEAD']));
 
-// POST /: Enqueue bulk WhatsApp template messages for leads
+/**
+ * POST /api/broadcast
+ * Enqueues bulk WhatsApp template messages for specified lead IDs.
+ */
 router.post('/', async (req, res) => {
   try {
     const { leadIds, templateName, languageCode = 'en_US', wabaId, accessToken } = req.body;
