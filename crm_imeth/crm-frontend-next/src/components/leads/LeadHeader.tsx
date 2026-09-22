@@ -1,18 +1,15 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo, memo } from "react";
+import { useMemo, memo } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
   Phone,
-  MessageSquare,
-  ChevronDown,
   Check,
   Trash2,
   AlertTriangle,
   Clock,
   Sparkles,
-  CheckCircle2,
   XCircle,
 } from "lucide-react";
 import type { Lead } from "@/types";
@@ -22,12 +19,10 @@ export const PIPELINE_STAGES = [
   { value: "CONTACTED", label: "Contacted", order: 2, color: "bg-amber-500", text: "text-amber-600", activeBg: "bg-amber-500 text-white" },
   { value: "QUALIFIED", label: "Qualified", order: 3, color: "bg-purple-500", text: "text-purple-600", activeBg: "bg-purple-600 text-white" },
   { value: "CONVERTED", label: "Converted", order: 4, color: "bg-emerald-500", text: "text-emerald-600", activeBg: "bg-emerald-600 text-white" },
+  { value: "LOST", label: "Lost", order: 5, color: "bg-rose-500", text: "text-rose-600", activeBg: "bg-rose-600 text-white" },
 ];
 
-export const STATUS_OPTIONS = [
-  ...PIPELINE_STAGES,
-  { value: "LOST", label: "Lost / Closed", order: 5, color: "bg-rose-500", text: "text-rose-600", activeBg: "bg-rose-600 text-white", bg: "bg-rose-50 border-rose-200" },
-];
+export const STATUS_OPTIONS = PIPELINE_STAGES;
 
 interface LeadHeaderProps {
   lead: Lead;
@@ -46,20 +41,6 @@ export default memo(function LeadHeader({
   onUpdateStatus,
   onDeleteLead,
 }: LeadHeaderProps) {
-  const [statusMenuOpen, setStatusMenuOpen] = useState(false);
-  const statusMenuRef = useRef<HTMLDivElement>(null);
-
-  // Close status dropdown on outside click
-  useEffect(() => {
-    const handleOutside = (e: MouseEvent) => {
-      if (statusMenuRef.current && !statusMenuRef.current.contains(e.target as Node)) {
-        setStatusMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleOutside);
-    return () => document.removeEventListener("mousedown", handleOutside);
-  }, []);
-
   // Calculate Stage Duration (relative from updatedAt)
   const durationInfo = useMemo(() => {
     const now = Date.now();
@@ -142,56 +123,10 @@ export default memo(function LeadHeader({
             </button>
           )}
 
-          {/* WhatsApp Direct Link (Hidden in Phase 1) */}
-          {false && (
-            <a
-              href={`https://wa.me/${lead.phoneNumber.replace(/[^0-9]/g, "")}`}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-colors shadow-xs"
-            >
-              <MessageSquare className="h-3.5 w-3.5 text-emerald-600" />
-              <span className="hidden sm:inline">WhatsApp Web</span>
-            </a>
-          )}
-
-          {/* Secondary Dropdown Status Selector */}
-          <div className="relative" ref={statusMenuRef}>
-            <button
-              onClick={() => setStatusMenuOpen(!statusMenuOpen)}
-              disabled={statusUpdating}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-xs cursor-pointer"
-            >
-              <span className={`h-2 w-2 rounded-full ${currentStatusObj.color}`} />
-              <span>{currentStatusObj.label}</span>
-              <ChevronDown className="h-3.5 w-3.5 opacity-60" />
-            </button>
-
-            {statusMenuOpen && (
-              <div className="absolute right-0 top-11 z-30 w-48 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl">
-                <p className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  Change Lead Status
-                </p>
-                {STATUS_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => {
-                      onUpdateStatus(opt.value);
-                      setStatusMenuOpen(false);
-                    }}
-                    className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className={`h-2 w-2 rounded-full ${opt.color}`} />
-                      <span>{opt.label}</span>
-                    </div>
-                    {lead.status === opt.value && (
-                      <Check className="h-3.5 w-3.5 text-blue-600" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
+          {/* Status Badge (Read-Only Indicator) */}
+          <div className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-xs select-none">
+            <span className={`h-2 w-2 rounded-full ${currentStatusObj.color}`} />
+            <span>{currentStatusObj.label}</span>
           </div>
         </div>
       </div>
@@ -221,21 +156,24 @@ export default memo(function LeadHeader({
         </div>
 
         {/* Stepper Chevrons / Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
           {PIPELINE_STAGES.map((stage, idx) => {
             const isCurrent = lead.status === stage.value;
             const isCompleted = currentStageIndex > idx && !isLost;
-            const isUpcoming = currentStageIndex < idx && !isLost;
 
             let style = "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-slate-300";
             let badge = "bg-slate-200 text-slate-600";
 
             if (isCurrent) {
-              style = `${stage.activeBg} border-transparent shadow-sm ring-2 ring-blue-500/20 font-bold scale-[1.01]`;
+              const ringColor = isLost ? "ring-rose-500/20" : "ring-blue-500/20";
+              style = `${stage.activeBg} border-transparent shadow-sm ring-2 ${ringColor} font-bold scale-[1.01]`;
               badge = "bg-white/25 text-white";
             } else if (isCompleted) {
               style = "bg-emerald-50/70 border-emerald-200 text-emerald-800 hover:bg-emerald-100/60";
               badge = "bg-emerald-200 text-emerald-800";
+            } else if (isLost && stage.value !== "LOST") {
+              style = "bg-slate-50/60 border-slate-200/80 text-slate-400 hover:bg-slate-100/60";
+              badge = "bg-slate-200/80 text-slate-400";
             }
 
             return (
