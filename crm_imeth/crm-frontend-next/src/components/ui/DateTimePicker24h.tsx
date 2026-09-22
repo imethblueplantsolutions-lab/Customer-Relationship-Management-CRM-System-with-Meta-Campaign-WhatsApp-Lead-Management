@@ -247,17 +247,17 @@ export default function DateTimePicker24h({
               e.stopPropagation();
               handleClear();
             }}
-            className="text-slate-300 hover:text-slate-500 p-0.5 rounded-full"
+            className="text-slate-300 hover:text-slate-500 p-1.5 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
             title="Clear date"
           >
-            <X className="h-3 w-3" />
+            <X className="h-3.5 w-3.5" />
           </button>
         )}
       </div>
 
       {/* Popover */}
       {isOpen && (
-        <div className="absolute left-0 top-full mt-1 z-50 rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150 flex flex-col sm:flex-row gap-4 w-[330px] sm:w-[480px]">
+        <div className="absolute left-0 top-full mt-1 z-50 rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150 flex flex-col sm:flex-row gap-4 w-[calc(100vw-2.5rem)] sm:w-[480px] max-w-[340px] sm:max-w-none">
           {/* Left Column: Calendar */}
           <div className="flex-1">
             {/* Month/Year Header */}
@@ -300,7 +300,7 @@ export default function DateTimePicker24h({
                   key={`prev-${day}`}
                   type="button"
                   onClick={() => handleSelectPrevMonthDay(day)}
-                  className="h-7 w-7 rounded-lg text-xs font-normal text-slate-300 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-all cursor-pointer"
+                  className="h-8 w-8 sm:h-7 sm:w-7 rounded-lg text-xs font-normal text-slate-300 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-all cursor-pointer"
                 >
                   {day}
                 </button>
@@ -323,7 +323,7 @@ export default function DateTimePicker24h({
                     key={`day-${day}`}
                     type="button"
                     onClick={() => handleSelectDay(day)}
-                    className={`h-7 w-7 rounded-lg text-xs font-semibold flex items-center justify-center transition-all cursor-pointer ${
+                    className={`h-8 w-8 sm:h-7 sm:w-7 rounded-lg text-xs font-semibold flex items-center justify-center transition-all cursor-pointer ${
                       isSelected
                         ? "bg-blue-600 text-white font-bold shadow-xs"
                         : isToday
@@ -342,7 +342,7 @@ export default function DateTimePicker24h({
                   key={`next-${day}`}
                   type="button"
                   onClick={() => handleSelectNextMonthDay(day)}
-                  className="h-7 w-7 rounded-lg text-xs font-normal text-slate-300 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-all cursor-pointer"
+                  className="h-8 w-8 sm:h-7 sm:w-7 rounded-lg text-xs font-normal text-slate-300 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-all cursor-pointer"
                 >
                   {day}
                 </button>
