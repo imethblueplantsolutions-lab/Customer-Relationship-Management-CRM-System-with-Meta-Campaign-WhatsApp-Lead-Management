@@ -427,36 +427,13 @@ export default function FollowupsPage() {
                   </div>
                 )}
 
-                {/* Footer Meta + Attachments */}
-                <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500">
-                  <div className="flex items-center gap-4">
-                    {f.assignedTo && (
-                      <span className="flex items-center gap-1 text-blue-600 font-semibold">
-                        <User className="h-3.5 w-3.5" />
-                        Assigned: {f.assignedTo.name || f.assignedTo.email}
-                      </span>
-                    )}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setSelectedFollowupForUpload(f)}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-[#0F4C75] cursor-pointer"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    Attach File ({f.attachments?.length || 0})
-                  </button>
-                </div>
-
-                {/* Attachments List */}
-                {f.attachments && f.attachments.length > 0 && (
-                  <div className="pt-2">
-                    <AttachmentUploader
-                      followupId={f.id}
-                      attachments={f.attachments}
-                      onUploadSuccess={handleAttachmentSuccess}
-                      onDeleteAttachment={handleAttachmentDelete}
-                    />
+                {/* Footer Meta */}
+                {f.assignedTo && (
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                    <span className="flex items-center gap-1 text-blue-600 font-semibold">
+                      <User className="h-3.5 w-3.5" />
+                      Assigned: {f.assignedTo.name || f.assignedTo.email}
+                    </span>
                   </div>
                 )}
               </div>
