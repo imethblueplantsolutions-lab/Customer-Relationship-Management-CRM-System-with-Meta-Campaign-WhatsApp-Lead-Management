@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { apiClient } from "@/lib/api-client";
-import type { Followup, Attachment } from "@/types";
-import AttachmentUploader from "@/components/AttachmentUploader";
+import type { Followup } from "@/types";
 import {
   Clock,
   AlertTriangle,
@@ -16,8 +15,6 @@ import {
   User,
   Plus,
   RefreshCw,
-  X,
-  FileText,
   Trash2,
 } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
@@ -34,7 +31,6 @@ export default function FollowupsPage() {
   const [activeTab, setActiveTab] = useState<"OVERDUE" | "TODAY" | "UPCOMING">("OVERDUE");
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
-  const [selectedFollowupForUpload, setSelectedFollowupForUpload] = useState<Followup | null>(null);
 
   // Fetch all follow-ups to populate tabs and counts accurately
   const fetchFollowups = async () => {
@@ -159,48 +155,6 @@ export default function FollowupsPage() {
     } finally {
       setDeletingId(null);
     }
-  };
-
-  // Handle new attachment upload success
-  const handleAttachmentSuccess = (newAttachment: Attachment) => {
-    if (!selectedFollowupForUpload) return;
-    setFollowups((prev) =>
-      prev.map((f) => {
-        if (f.id === selectedFollowupForUpload.id) {
-          const currentAttachments = f.attachments || [];
-          return {
-            ...f,
-            attachments: [newAttachment, ...currentAttachments],
-          };
-        }
-        return f;
-      })
-    );
-    setSelectedFollowupForUpload(null);
-    setSuccessMsg("File attachment uploaded successfully!");
-    setTimeout(() => setSuccessMsg(""), 3000);
-  };
-
-  // Handle attachment delete
-  const handleAttachmentDelete = (deletedId: string) => {
-    setFollowups((prev) =>
-      prev.map((f) => ({
-        ...f,
-        attachments: (f.attachments || []).filter((a) => a.id !== deletedId),
-      }))
-    );
-    if (selectedFollowupForUpload) {
-      setSelectedFollowupForUpload((prev) =>
-        prev
-          ? {
-              ...prev,
-              attachments: (prev.attachments || []).filter((a) => a.id !== deletedId),
-            }
-          : null
-      );
-    }
-    setSuccessMsg("Attachment deleted successfully");
-    setTimeout(() => setSuccessMsg(""), 3000);
   };
 
   const getFollowupIcon = (type: string) => {
@@ -439,33 +393,6 @@ export default function FollowupsPage() {
               </div>
             );
           })}
-        </div>
-      )}
-
-      {/* Modal / Dialog for Uploading Attachment to Followup */}
-      {selectedFollowupForUpload && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden p-6 sm:p-7 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <FileText className="h-5 w-5 text-blue-600" />
-                Upload Attachment for Follow-up
-              </h3>
-              <button
-                onClick={() => setSelectedFollowupForUpload(null)}
-                className="p-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <AttachmentUploader
-              followupId={selectedFollowupForUpload.id}
-              attachments={selectedFollowupForUpload.attachments || []}
-              onUploadSuccess={handleAttachmentSuccess}
-              onDeleteAttachment={handleAttachmentDelete}
-            />
-          </div>
         </div>
       )}
     </div>
