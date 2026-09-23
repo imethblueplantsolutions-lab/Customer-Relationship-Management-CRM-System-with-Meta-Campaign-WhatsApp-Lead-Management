@@ -263,7 +263,7 @@ router.post('/merge', authenticate, authorize(['ADMIN', 'TEAM_LEAD']), async (re
       return res.status(404).json({ success: false, error: 'Secondary lead record not found in this organization' });
     }
 
-    // Atomically transfer messages, activities, follow-ups, and attachments, then delete secondary lead
+    // Atomically transfer messages, activities, and follow-ups, then delete secondary lead
     const mergedLead = await prisma.$transaction(async (tx) => {
       // a) Update all Message records where leadId === secondaryLeadId to primaryLeadId
       await tx.message.updateMany({
@@ -279,12 +279,6 @@ router.post('/merge', authenticate, authorize(['ADMIN', 'TEAM_LEAD']), async (re
 
       // c) Update all Followup records where leadId === secondaryLeadId to primaryLeadId
       await tx.followup.updateMany({
-        where: { leadId: secondaryLeadId },
-        data: { leadId: primaryLeadId },
-      });
-
-      // d) Update all Attachment records where leadId === secondaryLeadId to primaryLeadId
-      await tx.attachment.updateMany({
         where: { leadId: secondaryLeadId },
         data: { leadId: primaryLeadId },
       });
@@ -928,16 +922,7 @@ router.delete('/:id/followups/:followupId', async (req, res) => {
       console.warn('[Notification] Failed to delete matching notifications on followup delete:', notifErr.message);
     }
 
-    // 3. Delete attachments linked to this followup
-    try {
-      await prisma.attachment.deleteMany({
-        where: { followupId: req.params.followupId }
-      });
-    } catch (attErr) {
-      console.warn('[Attachment] Failed to delete attachments on followup delete:', attErr.message);
-    }
-
-    // 4. Delete the followup record
+    // 3. Delete the followup record
     await prisma.followup.delete({
       where: { id: req.params.followupId }
     });
