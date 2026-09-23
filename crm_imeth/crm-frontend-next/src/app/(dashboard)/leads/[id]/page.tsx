@@ -6,7 +6,7 @@ import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/hooks/use-auth";
 import { useLeadSocket } from "@/hooks/use-lead-socket";
 import { useAgentList } from "@/hooks/use-agent-list";
-import type { Lead, Message, Followup, Activity, Attachment } from "@/types";
+import type { Lead, Message, Followup, Activity } from "@/types";
 import { Loader2, ArrowLeft } from "lucide-react";
 
 // Subcomponents
@@ -511,7 +511,7 @@ export default function LeadDetailPage() {
           />
         </div>
 
-        {/* Right Column (1 Col): Attribution, Lead Details, Attachments */}
+        {/* Right Column (1 Col): Attribution, Lead Details */}
         <div>
           <LeadInfoCard
             lead={lead}
@@ -520,12 +520,6 @@ export default function LeadDetailPage() {
             assigningLead={assigningLead}
             onAssignLead={handleAssignLead}
             onSaveDetails={handleSaveDetails}
-            onAttachmentUploadSuccess={(newAttachment: Attachment) => {
-              setLead((prev) => (prev ? { ...prev, attachments: [newAttachment, ...(prev.attachments || [])] } : null));
-            }}
-            onAttachmentDelete={(deletedId: string) => {
-              setLead((prev) => (prev ? { ...prev, attachments: (prev.attachments || []).filter((a) => a.id !== deletedId) } : null));
-            }}
           />
         </div>
       </div>
