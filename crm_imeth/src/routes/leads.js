@@ -72,7 +72,7 @@ router.get('/', authenticate, async (req, res) => {
           assignedTo: { select: { id: true, name: true, email: true, role: true } },
           tags: true,
           attribution: true,
-          _count: { select: { followups: true, messages: true, attachments: true } },
+          _count: { select: { followups: true, messages: true } },
         },
         skip,
         take,
@@ -315,7 +315,7 @@ router.post('/merge', authenticate, authorize(['ADMIN', 'TEAM_LEAD']), async (re
         where: { id: primaryLeadId },
         include: {
           assignedTo: { select: { id: true, name: true, email: true, role: true } },
-          _count: { select: { messages: true, activities: true, followups: true, attachments: true } },
+          _count: { select: { messages: true, activities: true, followups: true } },
         },
       });
     });
@@ -400,12 +400,6 @@ router.get('/:id', async (req, res) => {
           orderBy: { occurredAt: 'asc' },
           include: {
             createdBy: { select: { id: true, name: true, email: true, role: true } }
-          }
-        },
-        attachments: {
-          orderBy: { createdAt: 'desc' },
-          include: {
-            createdBy: { select: { id: true, name: true, email: true } }
           }
         }
       }
@@ -690,9 +684,6 @@ router.get('/followups/all', async (req, res) => {
         },
         createdBy: { select: { id: true, name: true, email: true } },
         assignedTo: { select: { id: true, name: true, email: true } },
-        attachments: {
-          select: { id: true, fileName: true, fileUrl: true, fileType: true, fileSize: true, createdAt: true }
-        },
       },
     });
 
