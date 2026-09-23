@@ -171,7 +171,7 @@ export default function MergeLeadsModal({
             <div className="space-y-1">
               <p className="font-bold text-amber-900">Important Merging Notice</p>
               <p className="leading-relaxed text-amber-700">
-                All messages, follow-up tasks, timeline activities, and file attachments from the
+                All messages, follow-up tasks, and timeline activities from the
                 <strong> Secondary Lead</strong> will be transferred to the <strong>Primary Lead</strong>.
                 The secondary lead will then be permanently deleted. This action cannot be reversed.
               </p>
