@@ -10,17 +10,16 @@ import {
   Loader2,
   ExternalLink,
 } from "lucide-react";
-import type { Lead, Attachment } from "@/types";
-import AttachmentUploader from "@/components/AttachmentUploader";
+import type { Lead } from "@/types";
 
 const HIDE_WHATSAPP_MESSAGING = true;
 
 /**
  * Props for the LeadInfoCard component.
- * Displays Meta ad attribution, agent assignment, contact details, and attachments.
+ * Displays Meta ad attribution, agent assignment, and contact details.
  */
 interface LeadInfoCardProps {
-  /** The lead object with full details, attribution, and attachments */
+  /** The lead object with full details and attribution */
   lead: Lead;
   /** Whether the current user can assign or reassign the lead */
   canManageAssignment: boolean;
@@ -38,10 +37,6 @@ interface LeadInfoCardProps {
     email: string;
     notes: string;
   }) => Promise<void>;
-  /** Callback fired upon successful file attachment upload */
-  onAttachmentUploadSuccess: (attachment: Attachment) => void;
-  /** Callback fired upon file attachment deletion */
-  onAttachmentDelete: (attachmentId: string) => void;
 }
 
 export default memo(function LeadInfoCard({
@@ -51,8 +46,6 @@ export default memo(function LeadInfoCard({
   assigningLead,
   onAssignLead,
   onSaveDetails,
-  onAttachmentUploadSuccess,
-  onAttachmentDelete,
 }: LeadInfoCardProps) {
   const [editMode, setEditMode] = useState(false);
   const [editName, setEditName] = useState("");
@@ -399,17 +392,6 @@ export default memo(function LeadInfoCard({
             </div>
           </div>
         )}
-      </div>
-
-      {/* ─── Lead Documents & Attachments Card ─────────────────── */}
-      <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
-        <AttachmentUploader
-          leadId={lead.id}
-          attachments={lead.attachments || []}
-          title="Lead Documents & Attachments"
-          onUploadSuccess={onAttachmentUploadSuccess}
-          onDeleteAttachment={onAttachmentDelete}
-        />
       </div>
     </div>
   );
