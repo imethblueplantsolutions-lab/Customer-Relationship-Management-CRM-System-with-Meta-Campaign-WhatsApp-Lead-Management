@@ -13,3 +13,6 @@ All notable changes to this project are documented in this file.
 ### Changed
 - **Log Activity**: Removed redundant "Title" input field; timeline cards now automatically display the activity type label.
 - **Header Alignment**: Horizontally aligned the back arrow button with the lead title row and neatly indented the contact subtext for mobile and desktop.
+
+### Removed
+- **File Attachments**: Removed the 25MB document upload and attachment feature across leads and follow-ups to optimize serverless payload compatibility and streamline sales agent workflows.

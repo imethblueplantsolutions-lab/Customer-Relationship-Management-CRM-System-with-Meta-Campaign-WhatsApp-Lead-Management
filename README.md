@@ -9,7 +9,6 @@ A modern, production-grade CRM platform featuring Meta Campaign & WhatsApp lead 
 - **Lead Management**: Complete lifecycle tracking with customizable pipeline stages (`NEW`, `CONTACTED`, `QUALIFIED`, `CONVERTED`, `LOST`).
 - **Timeline & Activity Log**: Granular event logging (calls, meetings, notes, system assignments) with real-time socket updates and inline editing.
 - **Follow-ups & Reminders**: Scheduled tasks with 24-hour date/time pickers and custom task type categorization.
-- **File Attachments**: Drag-and-drop file uploads up to 25MB linked directly to leads and follow-ups.
 
 ## 📁 Repository Structure
 
