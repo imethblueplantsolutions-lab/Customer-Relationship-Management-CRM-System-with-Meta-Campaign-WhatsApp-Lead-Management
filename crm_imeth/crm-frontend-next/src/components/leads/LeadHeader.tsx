@@ -13,6 +13,7 @@ import {
   XCircle,
 } from "lucide-react";
 import type { Lead } from "@/types";
+import { useCrmWinCelebration } from "@/hooks/useCrmWinCelebration";
 
 export const PIPELINE_STAGES = [
   { value: "NEW", label: "New Lead", order: 1, color: "bg-blue-500", text: "text-blue-600", activeBg: "bg-blue-600 text-white" },
@@ -41,6 +42,9 @@ export default memo(function LeadHeader({
   onUpdateStatus,
   onDeleteLead,
 }: LeadHeaderProps) {
+  // Gamified celebration hook: fires audio chime and confetti on transition into Converted stage
+  useCrmWinCelebration(lead.status);
+
   // Calculate Stage Duration (relative from updatedAt)
   const durationInfo = useMemo(() => {
     const now = Date.now();
