@@ -49,21 +49,42 @@ router.get('/me', async (req, res) => {
   }
 });
 
-// POST: Admin Provisioning - Create Team Lead or Sales Agent account with auto temp password
-router.post('/', authorize(['ADMIN']), async (req, res) => {
+// POST: User Provisioning - Create Team Lead or Sales Agent account with auto temp password
+// Admins can create TEAM_LEAD and AGENT; Team Leads can ONLY create AGENT
+router.post('/', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
   try {
     const store = tenantStorage.getStore();
     const tenantId = req.user?.tenantId || store?.tenantId;
-    const { name, email, role, customPassword } = req.body;
+    const currentUserRole = req.user?.role;
+    const { name, email, role, password, customPassword } = req.body;
 
     if (!email || !role) {
       return res.status(400).json({ success: false, error: 'Email and role are required' });
     }
 
-    const cleanEmail = email.toLowerCase().trim();
-    if (!['ADMIN', 'TEAM_LEAD', 'AGENT'].includes(role)) {
-      return res.status(400).json({ success: false, error: 'Invalid user role specified' });
+    // Role-Based Access Control (RBAC) Validation
+    if (currentUserRole === 'TEAM_LEAD') {
+      if (role !== 'AGENT') {
+        return res.status(403).json({
+          success: false,
+          error: 'Forbidden: Team Leads can only create Sales Agents',
+        });
+      }
+    } else if (currentUserRole === 'ADMIN') {
+      if (!['TEAM_LEAD', 'AGENT'].includes(role)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid user role specified. Admins can create Team Leads and Sales Agents',
+        });
+      }
+    } else {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: Insufficient privileges to create users',
+      });
     }
+
+    const cleanEmail = email.toLowerCase().trim();
 
     // Check email uniqueness
     const existing = await prisma.user.findUnique({ where: { email: cleanEmail } });
@@ -72,8 +93,9 @@ router.post('/', authorize(['ADMIN']), async (req, res) => {
     }
 
     // Generate secure random temporary password (e.g. 8-char hex string) or use custom provided
-    const tempPassword = customPassword && customPassword.trim() 
-      ? customPassword.trim() 
+    const rawPass = password || customPassword;
+    const tempPassword = rawPass && rawPass.trim() 
+      ? rawPass.trim() 
       : crypto.randomBytes(4).toString('hex') + 'A1!';
 
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
@@ -104,7 +126,11 @@ router.post('/', authorize(['ADMIN']), async (req, res) => {
     });
 
     // Send Welcome Email containing initial temporary credentials
-    await sendWelcomeEmail(cleanEmail, name, tempPassword, role);
+    try {
+      await sendWelcomeEmail(cleanEmail, name, tempPassword, role);
+    } catch (mailErr) {
+      console.warn('[Mailer] Failed to send welcome email:', mailErr.message);
+    }
 
     // Socket.IO broadcast user creation
     try {
@@ -384,9 +410,21 @@ router.get('/', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
   try {
     const store = tenantStorage.getStore();
     const tenantId = req.user?.tenantId || store?.tenantId;
+    const currentUserId = req.user?.userId || req.user?.id;
+    const currentUserRole = req.user?.role;
+
+    const where = { tenantId };
+
+    // Team Leads can ONLY see Sales Agents and their own profile
+    if (currentUserRole === 'TEAM_LEAD') {
+      where.OR = [
+        { role: 'AGENT' },
+        { id: currentUserId },
+      ];
+    }
 
     const users = await prisma.user.findMany({
-      where: { tenantId },
+      where,
       select: {
         id: true,
         name: true,
