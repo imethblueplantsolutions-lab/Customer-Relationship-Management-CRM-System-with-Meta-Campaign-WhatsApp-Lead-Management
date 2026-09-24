@@ -59,6 +59,8 @@ model Lead {
   phoneNumber    String
   name           String?
   displayName    String?
+  companyName    String?
+  designation    String?
   whatsappNumber String?
   email          String?
   notes          String?

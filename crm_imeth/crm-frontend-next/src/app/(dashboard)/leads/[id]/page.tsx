@@ -407,6 +407,8 @@ export default function LeadDetailPage() {
   const handleSaveDetails = async (details: {
     name: string;
     displayName: string;
+    companyName?: string;
+    designation?: string;
     whatsappNumber: string;
     email: string;
     notes: string;

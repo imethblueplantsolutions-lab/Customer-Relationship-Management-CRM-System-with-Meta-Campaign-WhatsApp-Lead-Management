@@ -20,6 +20,8 @@ import {
   FileText,
   MessageCircle,
   GitMerge,
+  Building2,
+  Briefcase,
 } from "lucide-react";
 import Link from "next/link";
 import MergeLeadsModal from "@/components/leads/MergeLeadsModal";
@@ -79,6 +81,8 @@ function LeadsPageContent() {
   const [showMergeModal, setShowMergeModal] = useState(false);
   const [formName, setFormName] = useState("");
   const [formDisplayName, setFormDisplayName] = useState("");
+  const [formCompanyName, setFormCompanyName] = useState("");
+  const [formDesignation, setFormDesignation] = useState("");
   const [formPhone, setFormPhone] = useState("");
   const [formWhatsappNumber, setFormWhatsappNumber] = useState("");
   const [formEmail, setFormEmail] = useState("");
@@ -149,6 +153,8 @@ function LeadsPageContent() {
         body: JSON.stringify({
           name: formName,
           displayName: formDisplayName || undefined,
+          companyName: formCompanyName ? formCompanyName.trim() : undefined,
+          designation: formDesignation ? formDesignation.trim() : undefined,
           phoneNumber: formPhone,
           whatsappNumber: formWhatsappNumber || undefined,
           email: formEmail || undefined,
@@ -161,6 +167,8 @@ function LeadsPageContent() {
       setFormSuccess("Lead added successfully!");
       setFormName("");
       setFormDisplayName("");
+      setFormCompanyName("");
+      setFormDesignation("");
       setFormPhone("");
       setFormWhatsappNumber("");
       setFormEmail("");
@@ -319,6 +327,43 @@ function LeadsPageContent() {
               </div>
             </div>
 
+            {/* Row: Company Name & Designation */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Company Name */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Company Name
+                </label>
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    value={formCompanyName}
+                    onChange={(e) => setFormCompanyName(e.target.value)}
+                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                    placeholder="e.g. Acme Corp"
+                  />
+                </div>
+              </div>
+
+              {/* Designation */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Designation / Role
+                </label>
+                <div className="relative">
+                  <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    value={formDesignation}
+                    onChange={(e) => setFormDesignation(e.target.value)}
+                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                    placeholder="e.g. Procurement Lead"
+                  />
+                </div>
+              </div>
+            </div>
+
             {/* Row 2: Mobile Number & WhatsApp Number */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Mobile Number */}
@@ -446,6 +491,8 @@ function LeadsPageContent() {
                 type="button"
                 onClick={() => {
                   setShowAddForm(false);
+                  setFormCompanyName("");
+                  setFormDesignation("");
                   setFormError("");
                   setFormSuccess("");
                 }}
@@ -499,9 +546,19 @@ function LeadsPageContent() {
                   {(lead.name || lead.phoneNumber).charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-slate-800 truncate">
-                    {lead.name || "Unknown"}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold text-slate-800 truncate">
+                      {lead.name || "Unknown"}
+                    </p>
+                    {(lead.companyName || lead.designation) && (
+                      <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md truncate max-w-[220px]">
+                        <Building2 className="h-3 w-3 text-slate-400 shrink-0" />
+                        {lead.companyName && lead.designation
+                          ? `${lead.designation}, ${lead.companyName}`
+                          : (lead.companyName || lead.designation)}
+                      </span>
+                    )}
+                  </div>
                   <p className="flex items-center gap-1 text-xs text-slate-500 mt-0.5">
                     <Phone className="h-3 w-3" /> {lead.phoneNumber}
                   </p>

@@ -33,6 +33,8 @@ interface LeadInfoCardProps {
   onSaveDetails: (details: {
     name: string;
     displayName: string;
+    companyName?: string;
+    designation?: string;
     whatsappNumber: string;
     email: string;
     notes: string;
@@ -50,6 +52,8 @@ export default memo(function LeadInfoCard({
   const [editMode, setEditMode] = useState(false);
   const [editName, setEditName] = useState("");
   const [editDisplayName, setEditDisplayName] = useState("");
+  const [editCompanyName, setEditCompanyName] = useState("");
+  const [editDesignation, setEditDesignation] = useState("");
   const [editWhatsappNumber, setEditWhatsappNumber] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editNotes, setEditNotes] = useState("");
@@ -58,6 +62,8 @@ export default memo(function LeadInfoCard({
   const enterEditMode = () => {
     setEditName(lead.name || "");
     setEditDisplayName(lead.displayName || "");
+    setEditCompanyName(lead.companyName || "");
+    setEditDesignation(lead.designation || "");
     setEditWhatsappNumber(lead.whatsappNumber || "");
     setEditEmail(lead.email || "");
     setEditNotes(lead.notes || "");
@@ -70,6 +76,8 @@ export default memo(function LeadInfoCard({
       await onSaveDetails({
         name: editName,
         displayName: editDisplayName,
+        companyName: editCompanyName,
+        designation: editDesignation,
         whatsappNumber: editWhatsappNumber,
         email: editEmail,
         notes: editNotes,
@@ -225,6 +233,32 @@ export default memo(function LeadInfoCard({
               <p className="text-[10px] text-slate-400 mt-0.5">Display name is what your clients will see</p>
             </div>
 
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-1">
+                Company Name
+              </label>
+              <input
+                type="text"
+                value={editCompanyName}
+                onChange={(e) => setEditCompanyName(e.target.value)}
+                placeholder="e.g. Acme Corp"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-1">
+                Designation / Job Title
+              </label>
+              <input
+                type="text"
+                value={editDesignation}
+                onChange={(e) => setEditDesignation(e.target.value)}
+                placeholder="e.g. Procurement Lead"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+              />
+            </div>
+
             {!HIDE_WHATSAPP_MESSAGING && (
               <div>
                 <label className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-1">
@@ -281,6 +315,20 @@ export default memo(function LeadInfoCard({
                 Display Name
               </span>
               <p className="font-semibold text-slate-800">{lead.displayName || "—"}</p>
+            </div>
+
+            <div>
+              <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-0.5">
+                Company Name
+              </span>
+              <p className="font-semibold text-slate-800">{lead.companyName || "—"}</p>
+            </div>
+
+            <div>
+              <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-0.5">
+                Designation
+              </span>
+              <p className="font-semibold text-slate-800">{lead.designation || "—"}</p>
             </div>
 
             <div>

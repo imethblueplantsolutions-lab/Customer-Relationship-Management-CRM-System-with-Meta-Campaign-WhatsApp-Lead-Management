@@ -28,6 +28,8 @@ export interface Lead {
   phoneNumber: string;
   name?: string;
   displayName?: string;
+  companyName?: string | null;
+  designation?: string | null;
   whatsappNumber?: string;
   email?: string;
   notes?: string;

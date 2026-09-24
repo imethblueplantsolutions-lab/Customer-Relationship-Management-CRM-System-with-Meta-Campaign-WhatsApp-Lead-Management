@@ -11,6 +11,7 @@ import {
   Clock,
   Sparkles,
   XCircle,
+  Building2,
 } from "lucide-react";
 import type { Lead } from "@/types";
 import { useCrmWinCelebration } from "@/hooks/useCrmWinCelebration";
@@ -103,13 +104,26 @@ export default memo(function LeadHeader({
             )}
           </div>
 
-          {/* Row 2: Phone & Created Date (Indented to align with lead name) */}
-          <p className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 mt-1 ml-12">
-            <Phone className="h-3.5 w-3.5 text-slate-400" />
-            <span>{lead.phoneNumber}</span>
+          {/* Row 2: Company/Designation (if present), Phone & Created Date (Indented to align with lead name) */}
+          <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-slate-500 mt-1 ml-12">
+            {(lead.designation || lead.companyName) && (
+              <>
+                <span className="inline-flex items-center gap-1 font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md text-xs">
+                  <Building2 className="h-3 w-3 text-slate-400" />
+                  {lead.designation && lead.companyName
+                    ? `${lead.designation} at ${lead.companyName}`
+                    : (lead.designation || lead.companyName)}
+                </span>
+                <span className="text-slate-300">•</span>
+              </>
+            )}
+            <span className="inline-flex items-center gap-1">
+              <Phone className="h-3.5 w-3.5 text-slate-400" />
+              <span>{lead.phoneNumber}</span>
+            </span>
             <span className="text-slate-300">•</span>
             <span>Created {new Date(lead.createdAt).toLocaleDateString()}</span>
-          </p>
+          </div>
         </div>
 
         {/* Top Right Quick Actions */}

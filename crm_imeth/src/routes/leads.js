@@ -39,11 +39,14 @@ router.get('/', authenticate, async (req, res) => {
       whereClause.category = category;
     }
 
-    // search: Use OR to match name (contains, mode: 'insensitive') or phoneNumber (contains)
+    // search: Use OR to match name, displayName, companyName, designation (mode: 'insensitive') or phoneNumber
     if (search && search.trim()) {
       const trimmedSearch = search.trim();
       whereClause.OR = [
         { name: { contains: trimmedSearch, mode: 'insensitive' } },
+        { displayName: { contains: trimmedSearch, mode: 'insensitive' } },
+        { companyName: { contains: trimmedSearch, mode: 'insensitive' } },
+        { designation: { contains: trimmedSearch, mode: 'insensitive' } },
         { phoneNumber: { contains: trimmedSearch } },
       ];
     }
@@ -104,7 +107,7 @@ router.get('/', authenticate, async (req, res) => {
 // POST: Manually add a new customer lead (Accessible to Admin, Team Lead & Agent)
 router.post('/', authorize(['ADMIN', 'TEAM_LEAD', 'AGENT']), async (req, res) => {
   try {
-    const { phoneNumber, name, displayName, whatsappNumber, email, notes, category, tags, assignedToId } = req.body;
+    const { phoneNumber, name, displayName, companyName, designation, whatsappNumber, email, notes, category, tags, assignedToId } = req.body;
     const store = tenantStorage.getStore();
     const tenantId = req.user?.tenantId || store?.tenantId;
     const isAgent = req.user?.role === 'AGENT';
@@ -129,6 +132,8 @@ router.post('/', authorize(['ADMIN', 'TEAM_LEAD', 'AGENT']), async (req, res) =>
         phoneNumber,
         name: name || phoneNumber,
         displayName: displayName || null,
+        companyName: companyName ? companyName.trim() : null,
+        designation: designation ? designation.trim() : null,
         whatsappNumber: whatsappNumber || null,
         email: email || null,
         notes: notes || null,
@@ -288,6 +293,19 @@ router.post('/merge', authenticate, authorize(['ADMIN', 'TEAM_LEAD']), async (re
         where: { leadId: secondaryLeadId },
         data: { leadId: primaryLeadId },
       });
+
+      // Preserve any missing metadata on primary lead from secondary lead
+      const metaUpdates = {};
+      if (!primaryLead.companyName && secondaryLead.companyName) metaUpdates.companyName = secondaryLead.companyName;
+      if (!primaryLead.designation && secondaryLead.designation) metaUpdates.designation = secondaryLead.designation;
+      if (!primaryLead.email && secondaryLead.email) metaUpdates.email = secondaryLead.email;
+      if (!primaryLead.whatsappNumber && secondaryLead.whatsappNumber) metaUpdates.whatsappNumber = secondaryLead.whatsappNumber;
+      if (Object.keys(metaUpdates).length > 0) {
+        await tx.lead.update({
+          where: { id: primaryLeadId },
+          data: metaUpdates,
+        });
+      }
 
       // e) Create a new Activity on the primary lead stating: "Merged with duplicate lead record."
       await tx.activity.create({
@@ -479,14 +497,14 @@ router.post('/:id/messages', async (req, res) => {
   }
 });
 
-// PUT: Update lead status, assignee, or metadata (Admin/Team Lead can assign; Agents cannot reassign)
-router.put('/:id', async (req, res) => {
+// PUT & PATCH: Update lead status, assignee, or metadata (Admin/Team Lead can assign; Agents cannot reassign)
+const updateLeadHandler = async (req, res) => {
   try {
     const store = tenantStorage.getStore();
     const tenantId = req.user?.tenantId || store?.tenantId;
     const isAgent = req.user?.role === 'AGENT';
     const currentUserId = req.user?.userId || req.user?.id;
-    const { status, category, assignedToId, tags, name, displayName, whatsappNumber, email, notes } = req.body;
+    const { status, category, assignedToId, tags, name, displayName, companyName, designation, whatsappNumber, email, notes } = req.body;
 
     const existingLead = await prisma.lead.findFirst({
       where: { id: req.params.id, tenantId }
@@ -511,6 +529,8 @@ router.put('/:id', async (req, res) => {
       ...(category !== undefined && { category }),
       ...(name !== undefined && { name }),
       ...(displayName !== undefined && { displayName: displayName || null }),
+      ...(companyName !== undefined && { companyName: companyName ? companyName.trim() : null }),
+      ...(designation !== undefined && { designation: designation ? designation.trim() : null }),
       ...(whatsappNumber !== undefined && { whatsappNumber: whatsappNumber || null }),
       ...(email !== undefined && { email: email || null }),
       ...(notes !== undefined && { notes: notes || null }),
@@ -630,7 +650,10 @@ router.put('/:id', async (req, res) => {
     console.error('Error updating lead:', error);
     res.status(500).json({ success: false, error: 'Failed to update lead' });
   }
-});
+};
+
+router.put('/:id', updateLeadHandler);
+router.patch('/:id', updateLeadHandler);
 // GET: Fetch all follow-up reminders in tenant (for dedicated Follow-ups page)
 router.get('/followups/all', async (req, res) => {
   try {

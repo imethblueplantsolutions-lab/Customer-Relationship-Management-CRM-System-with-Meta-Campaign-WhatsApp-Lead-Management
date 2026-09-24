@@ -201,7 +201,7 @@ export default function MergeLeadsModal({
                     const isSecondary = lead.id === secondaryLeadId;
                     return (
                       <option key={lead.id} value={lead.id} disabled={isSecondary}>
-                        {lead.name || "Unnamed"} ({lead.phoneNumber}) - {lead.status}
+                        {lead.name || "Unnamed"} {lead.companyName ? `[${lead.companyName}] ` : ""}({lead.phoneNumber}) - {lead.status}
                         {isSecondary ? " [Selected as Secondary]" : ""}
                       </option>
                     );
@@ -229,7 +229,7 @@ export default function MergeLeadsModal({
                     const isPrimary = lead.id === primaryLeadId;
                     return (
                       <option key={lead.id} value={lead.id} disabled={isPrimary}>
-                        {lead.name || "Unnamed"} ({lead.phoneNumber}) - {lead.status}
+                        {lead.name || "Unnamed"} {lead.companyName ? `[${lead.companyName}] ` : ""}({lead.phoneNumber}) - {lead.status}
                         {isPrimary ? " [Selected as Primary]" : ""}
                       </option>
                     );
@@ -257,6 +257,13 @@ export default function MergeLeadsModal({
                         Deletes
                       </span>
                     </div>
+                    {(secondaryLead.companyName || secondaryLead.designation) && (
+                      <p className="text-[11px] text-slate-700 font-semibold truncate">
+                        {secondaryLead.designation && secondaryLead.companyName
+                          ? `${secondaryLead.designation} at ${secondaryLead.companyName}`
+                          : (secondaryLead.companyName || secondaryLead.designation)}
+                      </p>
+                    )}
                     <div className="flex items-center gap-1.5 text-[11px] text-slate-600">
                       <Phone className="h-3 w-3 text-slate-400" />
                       <span>{secondaryLead.phoneNumber}</span>
@@ -283,6 +290,13 @@ export default function MergeLeadsModal({
                         Preserved
                       </span>
                     </div>
+                    {(primaryLead.companyName || primaryLead.designation) && (
+                      <p className="text-[11px] text-slate-700 font-semibold truncate">
+                        {primaryLead.designation && primaryLead.companyName
+                          ? `${primaryLead.designation} at ${primaryLead.companyName}`
+                          : (primaryLead.companyName || primaryLead.designation)}
+                      </p>
+                    )}
                     <div className="flex items-center gap-1.5 text-[11px] text-slate-600">
                       <Phone className="h-3 w-3 text-slate-400" />
                       <span>{primaryLead.phoneNumber}</span>
