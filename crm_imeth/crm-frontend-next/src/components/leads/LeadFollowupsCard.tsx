@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, memo } from "react";
+import { useState, useRef, memo } from "react";
 import { Calendar, Check, Trash2 } from "lucide-react";
 import type { Followup } from "@/types";
 import DateTimePicker24h from "@/components/ui/DateTimePicker24h";
@@ -49,28 +49,38 @@ export default memo(function LeadFollowupsCard({
   const [followupNote, setFollowupNote] = useState("");
   const [followupDueAt, setFollowupDueAt] = useState("");
   const [followupAssignee, setFollowupAssignee] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (addingFollowup || !followupNote.trim()) return;
+    if (isSubmittingRef.current || addingFollowup || isSubmitting || !followupNote.trim()) return;
 
-    const finalType =
-      followupType === "OTHER"
-        ? customFollowupType.trim() || "Other"
-        : followupType;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
 
-    await onAddFollowup({
-      type: finalType,
-      note: followupNote.trim(),
-      dueAt: followupDueAt,
-      assignedToId: canManageAssignment && followupAssignee ? followupAssignee : undefined,
-    });
+    try {
+      const finalType =
+        followupType === "OTHER"
+          ? customFollowupType.trim() || "Other"
+          : followupType;
 
-    setFollowupNote("");
-    setCustomFollowupType("");
-    setFollowupDueAt("");
-    setFollowupAssignee("");
-    setShowFollowupForm(false);
+      await onAddFollowup({
+        type: finalType,
+        note: followupNote.trim(),
+        dueAt: followupDueAt,
+        assignedToId: canManageAssignment && followupAssignee ? followupAssignee : undefined,
+      });
+
+      setFollowupNote("");
+      setCustomFollowupType("");
+      setFollowupDueAt("");
+      setFollowupAssignee("");
+      setShowFollowupForm(false);
+    } finally {
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -175,10 +185,10 @@ export default memo(function LeadFollowupsCard({
           <div className="flex justify-end">
             <button
               type="submit"
-              disabled={addingFollowup}
+              disabled={addingFollowup || isSubmitting}
               className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
             >
-              {addingFollowup ? "Saving..." : "Save Reminder"}
+              {addingFollowup || isSubmitting ? "Saving..." : "Save Reminder"}
             </button>
           </div>
         </form>

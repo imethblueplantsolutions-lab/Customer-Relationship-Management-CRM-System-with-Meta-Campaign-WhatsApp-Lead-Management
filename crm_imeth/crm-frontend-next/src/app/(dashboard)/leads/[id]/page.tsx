@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/hooks/use-auth";
@@ -42,6 +42,7 @@ export default function LeadDetailPage() {
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [addingFollowup, setAddingFollowup] = useState(false);
+  const isAddingFollowupRef = useRef(false);
   const [isSubmittingActivity, setIsSubmittingActivity] = useState(false);
 
   // ─── Fetch Lead Details ──────────────────────────────────────
@@ -148,10 +149,11 @@ export default function LeadDetailPage() {
     dueAt: string;
     assignedToId?: string;
   }) => {
-    if (!lead || addingFollowup) return;
+    if (!lead || addingFollowup || isAddingFollowupRef.current) return;
+    isAddingFollowupRef.current = true;
     setAddingFollowup(true);
     try {
-      const res = await apiClient<Followup>(`/leads/${lead.id}/followups`, {
+      const res = await apiClient<Followup & { activity?: Activity }>(`/leads/${lead.id}/followups`, {
         method: "POST",
         body: JSON.stringify({
           type: form.type,
@@ -163,31 +165,25 @@ export default function LeadDetailPage() {
 
       if (res.success && res.data) {
         const newFollowup = res.data;
-        const assigneeUser = newFollowup.assignedTo;
-        const assigneeName = assigneeUser?.name || assigneeUser?.email?.split("@")[0] || "";
-        const dueText = form.dueAt ? ` (Due: ${new Date(form.dueAt).toLocaleString()})` : "";
-        const assignText = assigneeName ? ` [Assigned: ${assigneeName}]` : "";
-
-        const optimisticActivity: Activity = {
-          id: `optimistic_task_${Date.now()}`,
-          leadId: lead.id,
-          createdById: user?.id,
-          createdBy: user ? { id: user.id, name: user.name, email: user.email, role: user.role } : undefined,
-          type: "TASK_SCHEDULED",
-          title: `Follow-up Scheduled: ${form.type}`,
-          description: `Scheduled ${form.type} task: "${form.note || "No notes"}"${dueText}${assignText}`,
-          occurredAt: new Date().toISOString(),
-          createdAt: new Date().toISOString(),
-        };
+        const newActivity = (res as any).activity as Activity | undefined;
 
         setLead((prev) => {
           if (!prev) return prev;
-          const updatedActivities = [...(prev.activities || []), optimisticActivity].sort(
-            (a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
-          );
+          const existingFollowups = prev.followups || [];
+          const updatedFollowups = existingFollowups.some((f) => f.id === newFollowup.id)
+            ? existingFollowups.map((f) => (f.id === newFollowup.id ? newFollowup : f))
+            : [...existingFollowups, newFollowup];
+
+          let updatedActivities = prev.activities || [];
+          if (newActivity && !updatedActivities.some((a) => a.id === newActivity.id)) {
+            updatedActivities = [...updatedActivities, newActivity].sort(
+              (a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
+            );
+          }
+
           return {
             ...prev,
-            followups: [...(prev.followups || []), newFollowup],
+            followups: updatedFollowups,
             activities: updatedActivities,
           };
         });
@@ -195,6 +191,7 @@ export default function LeadDetailPage() {
     } catch (err) {
       console.error("Failed to schedule follow-up:", err);
     } finally {
+      isAddingFollowupRef.current = false;
       setAddingFollowup(false);
     }
   };
@@ -203,12 +200,13 @@ export default function LeadDetailPage() {
   const handleToggleFollowupComplete = async (followupId: string, currentCompleted: boolean) => {
     if (!lead) return;
     try {
-      const res = await apiClient<Followup>(`/leads/${lead.id}/followups/${followupId}`, {
+      const res = await apiClient<Followup & { activity?: Activity }>(`/leads/${lead.id}/followups/${followupId}`, {
         method: "PUT",
         body: JSON.stringify({ completed: !currentCompleted }),
       });
       if (res.success && res.data) {
         const updatedFollowup = res.data;
+        const newActivity = (res as any).activity as Activity | undefined;
         const isNowCompleted = !currentCompleted;
 
         setLead((prev) => {
@@ -216,20 +214,11 @@ export default function LeadDetailPage() {
           let updatedActivities = prev.activities || [];
 
           if (isNowCompleted) {
-            const completedActivity: Activity = {
-              id: `optimistic_done_${Date.now()}`,
-              leadId: lead.id,
-              createdById: user?.id,
-              createdBy: user ? { id: user.id, name: user.name, email: user.email, role: user.role } : undefined,
-              type: "TASK_COMPLETED",
-              title: `Follow-up Completed: ${updatedFollowup.type || "Task"}`,
-              description: `Marked ${updatedFollowup.type || "task"} as done: "${updatedFollowup.note || "Completed task"}"`,
-              occurredAt: new Date().toISOString(),
-              createdAt: new Date().toISOString(),
-            };
-            updatedActivities = [...updatedActivities, completedActivity].sort(
-              (a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
-            );
+            if (newActivity && !updatedActivities.some((a) => a.id === newActivity.id)) {
+              updatedActivities = [...updatedActivities, newActivity].sort(
+                (a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
+              );
+            }
           } else {
             const noteToMatch = updatedFollowup.note || "";
             let removed = false;

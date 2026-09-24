@@ -718,6 +718,37 @@ router.post('/:id/followups', async (req, res) => {
       targetAssigneeId = assignedToId || currentUserId || null;
     }
 
+    // Duplicate submission guard (prevent duplicate task creation within 5 seconds)
+    const fiveSecondsAgo = new Date(Date.now() - 5000);
+    const existingRecentFollowup = await prisma.followup.findFirst({
+      where: {
+        leadId: req.params.id,
+        createdById: currentUserId || null,
+        type: type || 'CALL',
+        note: note || '',
+        createdAt: { gte: fiveSecondsAgo }
+      },
+      include: {
+        createdBy: { select: { id: true, name: true, email: true, role: true, avatar: true } },
+        assignedTo: { select: { id: true, name: true, email: true, role: true, avatar: true } }
+      }
+    });
+
+    if (existingRecentFollowup) {
+      const existingActivity = await prisma.activity.findFirst({
+        where: {
+          leadId: req.params.id,
+          createdById: currentUserId || null,
+          type: 'TASK_SCHEDULED',
+          createdAt: { gte: fiveSecondsAgo }
+        },
+        include: {
+          createdBy: { select: { id: true, name: true, email: true, role: true, avatar: true } }
+        }
+      });
+      return res.status(200).json({ success: true, data: existingRecentFollowup, activity: existingActivity });
+    }
+
     const followup = await prisma.followup.create({
       data: {
         leadId: req.params.id,
@@ -741,6 +772,7 @@ router.post('/:id/followups', async (req, res) => {
     await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
 
     // Automatically record TASK_SCHEDULED activity on the timeline
+    let scheduledActivity = null;
     try {
       const dueText = dueAt ? ` (Due: ${new Date(dueAt).toLocaleString()})` : '';
       const assigneeUser = followup.assignedTo || (targetAssigneeId ? await prisma.user.findUnique({
@@ -750,7 +782,7 @@ router.post('/:id/followups', async (req, res) => {
       const assigneeName = assigneeUser?.name || assigneeUser?.email?.split('@')[0] || '';
       const assignText = assigneeName ? ` [Assigned: ${assigneeName}]` : '';
 
-      const scheduledActivity = await prisma.activity.create({
+      scheduledActivity = await prisma.activity.create({
         data: {
           leadId: req.params.id,
           createdById: currentUserId || null,
@@ -791,7 +823,7 @@ router.post('/:id/followups', async (req, res) => {
       }
     }
 
-    res.status(201).json({ success: true, data: followup });
+    res.status(201).json({ success: true, data: followup, activity: scheduledActivity });
   } catch (error) {
     console.error('Error creating followup:', error);
     res.status(500).json({ success: false, error: 'Failed to schedule follow-up' });
@@ -839,9 +871,10 @@ router.put('/:id/followups/:followupId', async (req, res) => {
     await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
 
     // Automatically record TASK_COMPLETED activity on timeline when completed/done
+    let completedActivity = null;
     if (isNowCompleted) {
       try {
-        const completedActivity = await prisma.activity.create({
+        completedActivity = await prisma.activity.create({
           data: {
             leadId: req.params.id,
             createdById: currentUserId || null,
@@ -864,7 +897,7 @@ router.put('/:id/followups/:followupId', async (req, res) => {
       }
     }
 
-    res.status(200).json({ success: true, data: updated });
+    res.status(200).json({ success: true, data: updated, activity: completedActivity });
   } catch (error) {
     console.error('Error updating followup:', error);
     res.status(500).json({ success: false, error: 'Failed to update follow-up' });
