@@ -100,7 +100,7 @@ interface LeadActivityTimelineProps {
   /** Whether the current user can reassign or manage assignments */
   canManageAssignment: boolean;
   /** List of available agents in the tenant */
-  agents: { id: string; name?: string; email: string; role: string }[];
+  agents: { id: string; name?: string; email: string; role: string; avatar?: string }[];
   /** Current logged-in user ID */
   currentUserId?: string;
   /** Current user display name */
@@ -220,7 +220,7 @@ export default memo(function LeadActivityTimeline({
     }
   };
 
-  const getAuthorDisplayName = (createdBy?: { name?: string; email?: string; role?: string }) => {
+  const getAuthorDisplayName = (createdBy?: { name?: string; email?: string; role?: string; avatar?: string }) => {
     if (!createdBy) return "Sales Agent";
     if (createdBy.name && createdBy.name.trim()) return createdBy.name;
     if (createdBy.email) {
@@ -346,8 +346,16 @@ export default memo(function LeadActivityTimeline({
                     <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap">
                       {activity.createdBy && (
                         <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center gap-1.5 rounded-lg border border-blue-500/40 bg-[#BBE1FA]/30 px-2.5 py-1 text-xs font-bold text-[#0F4C75] shadow-xs">
-                            <UserIcon className="h-3.5 w-3.5 text-black stroke-[2.5]" />
+                          <span className="inline-flex items-center gap-1.5 rounded-lg border border-blue-500/40 bg-[#BBE1FA]/30 px-2 py-1 text-xs font-bold text-[#0F4C75] shadow-xs">
+                            {activity.createdBy.avatar ? (
+                              <img
+                                src={activity.createdBy.avatar}
+                                alt={authorName}
+                                className="h-4 w-4 rounded-full object-cover ring-1 ring-white shrink-0"
+                              />
+                            ) : (
+                              <UserIcon className="h-3.5 w-3.5 text-black stroke-[2.5] shrink-0" />
+                            )}
                             By {authorName}
                           </span>
                           {activity.createdBy.role && (

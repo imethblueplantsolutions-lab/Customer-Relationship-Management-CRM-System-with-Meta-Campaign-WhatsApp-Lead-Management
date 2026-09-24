@@ -15,7 +15,7 @@ interface LeadFollowupsCardProps {
   /** Whether the current user can assign reminders to other agents */
   canManageAssignment: boolean;
   /** List of agents available for assignment */
-  agents: { id: string; name?: string; email: string; role: string }[];
+  agents: { id: string; name?: string; email: string; role: string; avatar?: string }[];
   /** Current user's email */
   userEmail?: string;
   /** Handler to schedule a new follow-up */
@@ -249,7 +249,14 @@ export default memo(function LeadFollowupsCard({
                       {item.assignedTo && (
                         <>
                           <span>•</span>
-                          <span className="text-emerald-700 font-medium">
+                          <span className="inline-flex items-center gap-1 text-emerald-700 font-medium">
+                            {item.assignedTo.avatar ? (
+                              <img
+                                src={item.assignedTo.avatar}
+                                alt={item.assignedTo.name || "Assignee"}
+                                className="h-3.5 w-3.5 rounded-full object-cover ring-1 ring-white shrink-0"
+                              />
+                            ) : null}
                             Assigned: {item.assignedTo.name || item.assignedTo.email}
                           </span>
                         </>
@@ -257,7 +264,16 @@ export default memo(function LeadFollowupsCard({
                       {item.createdBy && item.createdBy.id !== item.assignedTo?.id && (
                         <>
                           <span>•</span>
-                          <span>By: {item.createdBy.name || item.createdBy.email}</span>
+                          <span className="inline-flex items-center gap-1">
+                            {item.createdBy.avatar ? (
+                              <img
+                                src={item.createdBy.avatar}
+                                alt={item.createdBy.name || "Creator"}
+                                className="h-3.5 w-3.5 rounded-full object-cover ring-1 ring-white shrink-0"
+                              />
+                            ) : null}
+                            By: {item.createdBy.name || item.createdBy.email}
+                          </span>
                         </>
                       )}
                     </div>

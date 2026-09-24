@@ -31,7 +31,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/flows", label: "Automation Flows", icon: Workflow, hidden: true },
   { href: "/users", label: "Users", icon: UserCheck },
   { href: "/admin/dead-letters", label: "Dead Leads", icon: AlertOctagon, adminOnly: true },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/settings", label: "Account Settings", icon: Settings },
 ];
 
 interface SidebarNavProps {
@@ -51,7 +51,7 @@ export default function SidebarNav({ user, isCollapsed, onNavigate }: SidebarNav
       return false;
     }
     if (user?.role === "AGENT") {
-      return item.href !== "/settings" && item.href !== "/users";
+      return item.href !== "/users";
     }
     return true;
   });

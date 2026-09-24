@@ -89,11 +89,11 @@ function LeadsPageContent() {
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
 
-  const [agents, setAgents] = useState<{ id: string; email: string; role: string }[]>([]);
+  const [agents, setAgents] = useState<{ id: string; name?: string; email: string; role: string; avatar?: string }[]>([]);
 
   useEffect(() => {
     if (canAssign) {
-      apiClient<{ id: string; email: string; role: string }[]>("/users")
+      apiClient<{ id: string; name?: string; email: string; role: string; avatar?: string }[]>("/users")
         .then((res) => {
           if (res.success && res.data) setAgents(res.data);
         })

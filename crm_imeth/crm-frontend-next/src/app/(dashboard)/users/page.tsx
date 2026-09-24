@@ -20,7 +20,9 @@ import {
   UserCheck,
   Clock,
   ShieldCheck,
+  Phone,
 } from "lucide-react";
+import { useSocket } from "@/hooks/use-socket";
 
 export default function UserManagementPage() {
   const { user } = useAuth();
@@ -74,6 +76,29 @@ export default function UserManagementPage() {
       setLoading(false);
     }
   }, [isPrivileged]);
+
+  // Live Socket synchronization for real-time user updates across the tenant
+  const { socket } = useSocket();
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleUserUpdated = (updatedUser: User) => {
+      setUsersList((prev) =>
+        prev.map((u) => (u.id === updatedUser.id ? { ...u, ...updatedUser } : u))
+      );
+    };
+
+    const handleUserCreated = (newUser: User) => {
+      setUsersList((prev) => [newUser, ...prev.filter((u) => u.id !== newUser.id)]);
+    };
+
+    socket.on("user_updated", handleUserUpdated);
+    socket.on("user_created", handleUserCreated);
+    return () => {
+      socket.off("user_updated", handleUserUpdated);
+      socket.off("user_created", handleUserCreated);
+    };
+  }, [socket]);
 
   // Handle User Provisioning Submission
   const handleProvisionUser = async (e: React.FormEvent) => {
@@ -151,7 +176,8 @@ export default function UserManagementPage() {
   const filteredUsers = usersList.filter((u) => {
     const matchesSearch =
       u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (u.name && u.name.toLowerCase().includes(searchTerm.toLowerCase()));
+      (u.name && u.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (u.phone && u.phone.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesRole = roleFilter === "ALL" || u.role === roleFilter;
     return matchesSearch && matchesRole;
   });
@@ -317,6 +343,7 @@ export default function UserManagementPage() {
               <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                   <th className="py-4 px-6">User Account</th>
+                  <th className="py-4 px-6">Phone</th>
                   <th className="py-4 px-6">Role</th>
                   <th className="py-4 px-6">Status</th>
                   <th className="py-4 px-6">Security Verification</th>
@@ -332,19 +359,44 @@ export default function UserManagementPage() {
                   return (
                     <tr key={u.id} className="hover:bg-slate-50/50 transition-colors">
                       
-                      {/* Name & Email */}
+                      {/* Name, Email, Avatar & Bio */}
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
-                          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-[#0F4C75] to-[#3282B8] text-white text-xs font-bold flex items-center justify-center shadow-xs shrink-0">
-                            {initial}
-                          </div>
-                          <div>
-                            <p className="font-bold text-slate-900 leading-snug">
+                          {u.avatar ? (
+                            <img
+                              src={u.avatar}
+                              alt={u.name || "Avatar"}
+                              className="h-10 w-10 rounded-xl object-cover ring-2 ring-slate-100 shadow-xs shrink-0"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#0F4C75] to-[#3282B8] text-white text-xs font-bold flex items-center justify-center shadow-xs shrink-0">
+                              {initial}
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <p className="font-bold text-slate-900 leading-snug truncate">
                               {u.name || "Unnamed User"}
                             </p>
-                            <p className="font-mono text-[11px] text-slate-500 mt-0.5">{u.email}</p>
+                            <p className="font-mono text-[11px] text-slate-500 mt-0.5 truncate">{u.email}</p>
+                            {u.bio && (
+                              <p className="text-[11px] text-slate-400 mt-0.5 max-w-xs truncate" title={u.bio}>
+                                {u.bio}
+                              </p>
+                            )}
                           </div>
                         </div>
+                      </td>
+
+                      {/* Phone Number */}
+                      <td className="py-4 px-6">
+                        {u.phone ? (
+                          <span className="inline-flex items-center gap-1.5 text-xs text-slate-700 font-mono font-medium">
+                            <Phone className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                            {u.phone}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 text-xs italic">—</span>
+                        )}
                       </td>
 
                       {/* Role Badge */}

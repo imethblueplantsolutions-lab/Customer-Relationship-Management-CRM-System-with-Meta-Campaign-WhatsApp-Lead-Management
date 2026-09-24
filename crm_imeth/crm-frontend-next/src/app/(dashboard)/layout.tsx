@@ -144,7 +144,7 @@ export default function DashboardLayout({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <span
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
                 isConnected
@@ -159,6 +159,25 @@ export default function DashboardLayout({
               />
               {isConnected ? "Live" : "Offline"}
             </span>
+
+            <button
+              type="button"
+              onClick={() => router.push("/settings")}
+              className="shrink-0 cursor-pointer active:scale-95 transition-transform"
+              title="View Profile Settings"
+            >
+              {user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.name || "Avatar"}
+                  className="h-8 w-8 rounded-lg object-cover ring-1 ring-slate-200 shadow-xs"
+                />
+              ) : (
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#0F4C75] to-[#3282B8] text-[11px] font-bold text-white shadow-xs">
+                  {user?.name ? user.name.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || "A"}
+                </div>
+              )}
+            </button>
           </div>
         </header>
 

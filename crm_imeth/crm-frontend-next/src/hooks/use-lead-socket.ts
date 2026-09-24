@@ -55,7 +55,7 @@ export function useLeadSocket({ leadId, setLead, setAgents }: UseLeadSocketProps
       }
     };
 
-    const handleUserUpdated = (updatedUser: { id: string; name?: string; email: string; role: string }) => {
+    const handleUserUpdated = (updatedUser: { id: string; name?: string; email: string; role: string; avatar?: string }) => {
       setAgents((prev) =>
         prev.map((a) => (a.id === updatedUser.id ? { ...a, ...updatedUser } : a))
       );
@@ -71,6 +71,7 @@ export function useLeadSocket({ leadId, setLead, setAgents }: UseLeadSocketProps
                 name: updatedUser.name,
                 email: updatedUser.email,
                 role: updatedUser.role,
+                avatar: updatedUser.avatar,
               },
             };
           }
@@ -79,7 +80,7 @@ export function useLeadSocket({ leadId, setLead, setAgents }: UseLeadSocketProps
 
         const updatedAssignedTo =
           prev.assignedTo?.id === updatedUser.id
-            ? { ...prev.assignedTo, name: updatedUser.name, email: updatedUser.email, role: updatedUser.role }
+            ? { ...prev.assignedTo, name: updatedUser.name, email: updatedUser.email, role: updatedUser.role, avatar: updatedUser.avatar }
             : prev.assignedTo;
 
         return { ...prev, activities: updatedActivities, assignedTo: updatedAssignedTo };

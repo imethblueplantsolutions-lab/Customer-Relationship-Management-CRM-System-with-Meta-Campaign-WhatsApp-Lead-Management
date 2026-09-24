@@ -2,6 +2,9 @@
 export interface User {
   id: string;
   name?: string;
+  phone?: string;
+  bio?: string;
+  avatar?: string;
   email: string;
   role: string;
   tenantId: string;
@@ -33,7 +36,7 @@ export interface Lead {
   tags?: (Tag | string)[];
   tenantId: string;
   assignedToId?: string;
-  assignedTo?: { id: string; name?: string; email: string; role: string };
+  assignedTo?: { id: string; name?: string; email: string; role: string; avatar?: string };
   attribution?: CampaignAttribution;
   messages?: Message[];
   followups?: Followup[];
@@ -74,9 +77,9 @@ export interface Followup {
   id: string;
   leadId: string;
   createdById?: string;
-  createdBy?: { id: string; name?: string; email: string; role?: string };
+  createdBy?: { id: string; name?: string; email: string; role?: string; avatar?: string };
   assignedToId?: string;
-  assignedTo?: { id: string; name?: string; email: string; role?: string };
+  assignedTo?: { id: string; name?: string; email: string; role?: string; avatar?: string };
   type: string;
   dueAt?: string;
   note?: string;
@@ -94,7 +97,7 @@ export interface Activity {
   id: string;
   leadId: string;
   createdById?: string;
-  createdBy?: { id: string; name?: string; email: string; role?: string };
+  createdBy?: { id: string; name?: string; email: string; role?: string; avatar?: string };
   type: string;
   title?: string;
   description?: string;

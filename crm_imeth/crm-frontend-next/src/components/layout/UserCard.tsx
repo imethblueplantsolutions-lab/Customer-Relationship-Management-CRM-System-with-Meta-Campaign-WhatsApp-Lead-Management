@@ -27,9 +27,17 @@ export default function UserCard({ user, isCollapsed, onLogout }: UserCardProps)
         isCollapsed ? "justify-center flex-col gap-4" : ""
       }`}
     >
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#0F4C75] to-[#3282B8] text-xs font-bold text-white shadow-sm">
-        {userInitial}
-      </div>
+      {user?.avatar ? (
+        <img
+          src={user.avatar}
+          alt={user.name || "Avatar"}
+          className="h-9 w-9 shrink-0 rounded-xl object-cover shadow-sm"
+        />
+      ) : (
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#0F4C75] to-[#3282B8] text-xs font-bold text-white shadow-sm">
+          {userInitial}
+        </div>
+      )}
       {!isCollapsed && (
         <div className="flex-1 min-w-0">
           <p className="truncate text-fluid-title font-semibold text-white leading-tight">

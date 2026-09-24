@@ -24,7 +24,7 @@ interface LeadInfoCardProps {
   /** Whether the current user can assign or reassign the lead */
   canManageAssignment: boolean;
   /** List of agents available for assignment */
-  agents: { id: string; name?: string; email: string; role: string }[];
+  agents: { id: string; name?: string; email: string; role: string; avatar?: string }[];
   /** Loading indicator when reassigning */
   assigningLead: boolean;
   /** Handler to assign or reassign the lead to an agent */
@@ -332,11 +332,26 @@ export default memo(function LeadInfoCard({
                   )}
                 </div>
               ) : (
-                <p className="font-semibold text-slate-800">
-                  {lead.assignedTo?.name
-                    ? `${lead.assignedTo.name} (${lead.assignedTo.role === "ADMIN" ? "Admin" : lead.assignedTo.role === "TEAM_LEAD" ? "Team Lead" : "Sales Agent"})`
-                    : lead.assignedTo?.email || "Unassigned"}
-                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  {lead.assignedTo?.avatar ? (
+                    <img
+                      src={lead.assignedTo.avatar}
+                      alt={lead.assignedTo.name || "Agent"}
+                      className="h-7 w-7 rounded-lg object-cover ring-1 ring-slate-200 shadow-xs shrink-0"
+                    />
+                  ) : (
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#0F4C75] to-[#3282B8] text-white text-[10px] font-bold shrink-0">
+                      {lead.assignedTo?.name
+                        ? lead.assignedTo.name.charAt(0).toUpperCase()
+                        : lead.assignedTo?.email?.charAt(0).toUpperCase() || "?"}
+                    </div>
+                  )}
+                  <p className="font-semibold text-slate-800 text-xs">
+                    {lead.assignedTo?.name
+                      ? `${lead.assignedTo.name} (${lead.assignedTo.role === "ADMIN" ? "Admin" : lead.assignedTo.role === "TEAM_LEAD" ? "Team Lead" : "Sales Agent"})`
+                      : lead.assignedTo?.email || "Unassigned"}
+                  </p>
+                </div>
               )}
             </div>
 

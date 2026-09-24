@@ -69,7 +69,7 @@ router.get('/', authenticate, async (req, res) => {
         where: whereClause,
         orderBy: { updatedAt: 'desc' },
         include: {
-          assignedTo: { select: { id: true, name: true, email: true, role: true } },
+          assignedTo: { select: { id: true, name: true, email: true, role: true, avatar: true } },
           tags: true,
           attribution: true,
           _count: { select: { followups: true, messages: true } },
@@ -153,7 +153,7 @@ router.post('/', authorize(['ADMIN', 'TEAM_LEAD', 'AGENT']), async (req, res) =>
           : {}),
       },
       include: {
-        assignedTo: { select: { id: true, email: true, role: true } },
+        assignedTo: { select: { id: true, name: true, email: true, role: true, avatar: true } },
         tags: true,
       }
     });
@@ -178,7 +178,7 @@ router.post('/', authorize(['ADMIN', 'TEAM_LEAD', 'AGENT']), async (req, res) =>
             occurredAt: new Date()
           },
           include: {
-            createdBy: { select: { id: true, name: true, email: true, role: true } }
+            createdBy: { select: { id: true, name: true, email: true, role: true, avatar: true } }
           }
         });
 
@@ -308,7 +308,7 @@ router.post('/merge', authenticate, authorize(['ADMIN', 'TEAM_LEAD']), async (re
       return tx.lead.findUnique({
         where: { id: primaryLeadId },
         include: {
-          assignedTo: { select: { id: true, name: true, email: true, role: true } },
+          assignedTo: { select: { id: true, name: true, email: true, role: true, avatar: true } },
           _count: { select: { messages: true, activities: true, followups: true } },
         },
       });
@@ -379,21 +379,21 @@ router.get('/:id', async (req, res) => {
     const lead = await prisma.lead.findFirst({
       where,
       include: {
-        assignedTo: { select: { id: true, name: true, email: true, role: true } },
+        assignedTo: { select: { id: true, name: true, email: true, role: true, avatar: true } },
         tags: true,
         attribution: true,
         messages: { orderBy: { createdAt: 'asc' } },
         followups: {
           orderBy: { dueAt: 'asc' },
           include: {
-            createdBy: { select: { id: true, name: true, email: true, role: true } },
-            assignedTo: { select: { id: true, name: true, email: true, role: true } }
+            createdBy: { select: { id: true, name: true, email: true, role: true, avatar: true } },
+            assignedTo: { select: { id: true, name: true, email: true, role: true, avatar: true } }
           }
         },
         activities: {
           orderBy: { occurredAt: 'asc' },
           include: {
-            createdBy: { select: { id: true, name: true, email: true, role: true } }
+            createdBy: { select: { id: true, name: true, email: true, role: true, avatar: true } }
           }
         }
       }
@@ -543,7 +543,7 @@ router.put('/:id', async (req, res) => {
       where: { id: req.params.id },
       data: updateData,
       include: {
-        assignedTo: { select: { id: true, name: true, email: true, role: true } },
+        assignedTo: { select: { id: true, name: true, email: true, role: true, avatar: true } },
         tags: true,
       }
     });
@@ -576,7 +576,7 @@ router.put('/:id', async (req, res) => {
             occurredAt: new Date()
           },
           include: {
-            createdBy: { select: { id: true, name: true, email: true, role: true } }
+            createdBy: { select: { id: true, name: true, email: true, role: true, avatar: true } }
           }
         });
 
@@ -676,8 +676,8 @@ router.get('/followups/all', async (req, res) => {
         lead: {
           select: { id: true, name: true, phoneNumber: true, status: true, category: true }
         },
-        createdBy: { select: { id: true, name: true, email: true } },
-        assignedTo: { select: { id: true, name: true, email: true } },
+        createdBy: { select: { id: true, name: true, email: true, avatar: true } },
+        assignedTo: { select: { id: true, name: true, email: true, avatar: true } },
       },
     });
 
@@ -728,8 +728,8 @@ router.post('/:id/followups', async (req, res) => {
         dueAt: dueAt ? new Date(dueAt) : null,
       },
       include: {
-        createdBy: { select: { id: true, name: true, email: true, role: true } },
-        assignedTo: { select: { id: true, name: true, email: true, role: true } }
+        createdBy: { select: { id: true, name: true, email: true, role: true, avatar: true } },
+        assignedTo: { select: { id: true, name: true, email: true, role: true, avatar: true } }
       }
     });
 
@@ -760,7 +760,7 @@ router.post('/:id/followups', async (req, res) => {
           occurredAt: new Date()
         },
         include: {
-          createdBy: { select: { id: true, name: true, email: true, role: true } }
+          createdBy: { select: { id: true, name: true, email: true, role: true, avatar: true } }
         }
       });
 
@@ -831,8 +831,8 @@ router.put('/:id/followups/:followupId', async (req, res) => {
         ...(type !== undefined && { type })
       },
       include: {
-        createdBy: { select: { id: true, name: true, email: true, role: true } },
-        assignedTo: { select: { id: true, name: true, email: true, role: true } }
+        createdBy: { select: { id: true, name: true, email: true, role: true, avatar: true } },
+        assignedTo: { select: { id: true, name: true, email: true, role: true, avatar: true } }
       }
     });
 
@@ -851,7 +851,7 @@ router.put('/:id/followups/:followupId', async (req, res) => {
             occurredAt: new Date()
           },
           include: {
-            createdBy: { select: { id: true, name: true, email: true, role: true } }
+            createdBy: { select: { id: true, name: true, email: true, role: true, avatar: true } }
           }
         });
 
@@ -978,7 +978,7 @@ router.post('/:id/activities', async (req, res) => {
         occurredAt: occurredAt ? new Date(occurredAt) : new Date(),
       },
       include: {
-        createdBy: { select: { id: true, name: true, email: true, role: true } }
+        createdBy: { select: { id: true, name: true, email: true, role: true, avatar: true } }
       }
     });
 
@@ -1039,7 +1039,7 @@ router.put('/:id/activities/:activityId', async (req, res) => {
         ...(occurredAt !== undefined && { occurredAt: new Date(occurredAt) }),
       },
       include: {
-        createdBy: { select: { id: true, name: true, email: true, role: true } }
+        createdBy: { select: { id: true, name: true, email: true, role: true, avatar: true } }
       }
     });
 

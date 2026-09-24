@@ -26,6 +26,9 @@ router.get('/me', async (req, res) => {
       select: {
         id: true,
         name: true,
+        phone: true,
+        bio: true,
+        avatar: true,
         email: true,
         role: true,
         tenantId: true,
@@ -88,6 +91,9 @@ router.post('/', authorize(['ADMIN']), async (req, res) => {
       select: {
         id: true,
         name: true,
+        phone: true,
+        bio: true,
+        avatar: true,
         email: true,
         role: true,
         tenantId: true,
@@ -323,7 +329,7 @@ router.put('/profile/security', async (req, res) => {
   }
 });
 
-// PUT: Update current authenticated user profile (name) with real-time broadcast
+// PUT: Update current authenticated user profile (name, phone, bio, avatar) with real-time broadcast
 router.put('/profile', async (req, res) => {
   try {
     const currentUserId = req.user?.userId || req.user?.id;
@@ -331,15 +337,27 @@ router.put('/profile', async (req, res) => {
       return res.status(401).json({ success: false, error: 'Unauthorized: No user session found' });
     }
 
-    const { name } = req.body;
-    if (!name || !name.trim()) {
-      return res.status(400).json({ success: false, error: 'Name is required' });
+    const { name, phone, bio, avatar } = req.body;
+
+    // Require at least one field to update
+    if (name === undefined && phone === undefined && bio === undefined && avatar === undefined) {
+      return res.status(400).json({ success: false, error: 'At least one profile field is required' });
+    }
+
+    // Enforce 100KB limit on avatar base64 payload to prevent database bloat
+    if (avatar && typeof avatar === 'string' && avatar.length > 100 * 1024) {
+      return res.status(400).json({ success: false, error: 'Avatar image exceeds 100KB limit. Please use a smaller image.' });
     }
 
     const updatedUser = await prisma.user.update({
       where: { id: currentUserId },
-      data: { name: name.trim() },
-      select: { id: true, name: true, email: true, role: true, tenantId: true, isActive: true, isFirstLogin: true }
+      data: {
+        ...(name !== undefined && { name: name ? name.trim() : null }),
+        ...(phone !== undefined && { phone: phone ? phone.trim() : null }),
+        ...(bio !== undefined && { bio: bio ? bio.trim() : null }),
+        ...(avatar !== undefined && { avatar: avatar || null }),
+      },
+      select: { id: true, name: true, phone: true, bio: true, avatar: true, email: true, role: true, tenantId: true, isActive: true, isFirstLogin: true }
     });
 
     // Real-time broadcast to all connected clients in the tenant
@@ -372,8 +390,12 @@ router.get('/', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
       select: {
         id: true,
         name: true,
+        phone: true,
+        bio: true,
+        avatar: true,
         email: true,
         role: true,
+        tenantId: true,
         isActive: true,
         isFirstLogin: true,
         createdAt: true,
@@ -412,6 +434,9 @@ router.put('/:id', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
       select: {
         id: true,
         name: true,
+        phone: true,
+        bio: true,
+        avatar: true,
         email: true,
         role: true,
         tenantId: true,

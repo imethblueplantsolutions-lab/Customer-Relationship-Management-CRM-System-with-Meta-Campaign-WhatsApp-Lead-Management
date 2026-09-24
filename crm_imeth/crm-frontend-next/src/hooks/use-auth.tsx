@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
 import { apiClient } from "@/lib/api-client";
+import { useSocket } from "@/hooks/use-socket";
 import type { User } from "@/types";
 
 interface AuthContextType {
@@ -21,6 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { socket } = useSocket();
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -49,6 +51,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // Live Socket synchronization for current authenticated user
+  useEffect(() => {
+    if (!socket || !user?.id) return;
+
+    const handleUserUpdated = (updatedUser: Partial<User> & { id: string }) => {
+      if (updatedUser.id === user.id) {
+        setUser((prev) => {
+          if (!prev) return null;
+          const next = { ...prev, ...updatedUser };
+          localStorage.setItem("user", JSON.stringify(next));
+          return next;
+        });
+      }
+    };
+
+    socket.on("user_updated", handleUserUpdated);
+    return () => {
+      socket.off("user_updated", handleUserUpdated);
+    };
+  }, [socket, user?.id]);
+
   const setSession = useCallback((newToken: string, newUser: User) => {
     localStorage.setItem("token", newToken);
     localStorage.setItem("user", JSON.stringify(newUser));
@@ -57,6 +80,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setToken(newToken);
     setUser(newUser);
+
+    // Immediately fetch full profile (/users/me) so avatar, phone, and bio are hydrated
+    apiClient<User>("/users/me")
+      .then((res) => {
+        if (res.success && res.data) {
+          setUser(res.data);
+          localStorage.setItem("user", JSON.stringify(res.data));
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
