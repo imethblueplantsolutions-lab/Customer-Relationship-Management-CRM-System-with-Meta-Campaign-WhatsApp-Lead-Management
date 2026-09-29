@@ -52,8 +52,8 @@ export default function UserManagementPage() {
   } | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const isAdmin = user?.role === "ADMIN";
-  const isPrivileged = ["ADMIN", "TEAM_LEAD"].includes(user?.role || "");
+  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+  const isPrivileged = ["SUPER_ADMIN", "ADMIN", "TEAM_LEAD"].includes(user?.role || "");
 
   // Load Users
   const fetchUsers = async () => {
@@ -553,8 +553,11 @@ export default function UserManagementPage() {
                   className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all cursor-pointer"
                 >
                   <option value="AGENT">Sales Agent</option>
-                  {user?.role === "ADMIN" && (
+                  {(user?.role === "ADMIN" || user?.role === "SUPER_ADMIN") && (
                     <option value="TEAM_LEAD">Team Lead</option>
+                  )}
+                  {user?.role === "SUPER_ADMIN" && (
+                    <option value="ADMIN">Administrator</option>
                   )}
                 </select>
               </div>

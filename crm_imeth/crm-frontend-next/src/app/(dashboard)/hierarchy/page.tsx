@@ -47,6 +47,8 @@ import {
   Layers,
   Check,
   Trash2,
+  UserPlus,
+  Copy,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -137,6 +139,21 @@ export default function UserHierarchyPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [deletingUser, setDeletingUser] = useState(false);
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [newUserForm, setNewUserForm] = useState({
+    name: "",
+    email: "",
+    role: "AGENT",
+    reportsToId: "",
+    password: "",
+  });
+  const [creatingUser, setCreatingUser] = useState(false);
+  const [createdTempModal, setCreatedTempModal] = useState<{
+    email: string;
+    role: string;
+    tempPasswordPreview: string;
+  } | null>(null);
+  const [copiedTempPass, setCopiedTempPass] = useState(false);
 
   // Security barrier
   useEffect(() => {
@@ -267,6 +284,73 @@ export default function UserHierarchyPage() {
     }
   };
 
+  // Copy temporary credentials helper
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedTempPass(true);
+      toast.success("Temporary password copied to clipboard!");
+      setTimeout(() => setCopiedTempPass(false), 2000);
+    } catch {
+      toast.error("Failed to copy to clipboard");
+    }
+  };
+
+  // Provision new user into the hierarchy
+  const handleCreateMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newUserForm.email.trim()) {
+      toast.error("Email address is required");
+      return;
+    }
+    setCreatingUser(true);
+    try {
+      const res = await apiClient<{
+        user: User;
+        tempPasswordPreview?: string;
+      }>("/users", {
+        method: "POST",
+        body: JSON.stringify({
+          name: newUserForm.name.trim() || undefined,
+          email: newUserForm.email.trim(),
+          role: newUserForm.role,
+          reportsToId: newUserForm.reportsToId.trim() || undefined,
+          password: newUserForm.password.trim() || undefined,
+        }),
+      });
+
+      if (res.success && res.data) {
+        toast.success(`User ${newUserForm.name || newUserForm.email} provisioned successfully!`);
+        setIsAddUserModalOpen(false);
+        const tempPass = res.data.tempPasswordPreview;
+        const createdRole = newUserForm.role;
+        const createdEmail = newUserForm.email.trim();
+        setNewUserForm({
+          name: "",
+          email: "",
+          role: "AGENT",
+          reportsToId: "",
+          password: "",
+        });
+        await fetchHierarchy(true);
+
+        if (tempPass) {
+          setCreatedTempModal({
+            email: createdEmail,
+            role: createdRole,
+            tempPasswordPreview: tempPass,
+          });
+        }
+      } else {
+        toast.error(res.error || "Failed to create user");
+      }
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Error creating user");
+    } finally {
+      setCreatingUser(false);
+    }
+  };
+
   // Filtered users for Matrix Table
   const filteredUsers = useMemo(() => {
     if (!hierarchyData?.users) return [];
@@ -339,13 +423,21 @@ export default function UserHierarchyPage() {
         {/* Global Matrix Actions */}
         <div className="flex flex-wrap items-center gap-2.5">
           <button
+            onClick={() => setIsAddUserModalOpen(true)}
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm shadow-purple-600/20 hover:from-purple-700 hover:to-indigo-700 transition-all cursor-pointer active:scale-95"
+          >
+            <UserPlus className="h-4 w-4" />
+            <span>+ Add Member</span>
+          </button>
+
+          <button
             onClick={() => setConfirmAutoLinkOpen(true)}
             disabled={autoLinking || loading}
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm shadow-blue-500/20 hover:from-blue-700 hover:to-indigo-700 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700/60 transition-all cursor-pointer active:scale-95 disabled:opacity-50 shadow-xs"
             title="Auto-link Super Admin -> Admin -> Team Lead -> Sales Agent"
           >
             <Sparkles className="h-4 w-4" />
-            <span>Auto-Link Standard Hierarchy</span>
+            <span>Auto-Link Hierarchy</span>
           </button>
 
           <button
@@ -1168,6 +1260,238 @@ export default function UserHierarchyPage() {
                 <span>{deletingUser ? "Deleting..." : "Delete User"}</span>
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL: ADD NEW TEAM MEMBER ================= */}
+      {isAddUserModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 text-purple-600 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                  <UserPlus className="h-5 w-5" />
+                </span>
+                <div>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-base">
+                    Provision Team Member
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Create an Admin, Team Lead, or Sales Agent in the hierarchy
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddUserModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleCreateMember} className="py-4 space-y-4">
+              {/* Full Name */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  value={newUserForm.name}
+                  onChange={(e) => setNewUserForm({ ...newUserForm, name: e.target.value })}
+                  placeholder="e.g. Sarah Jenkins"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-800 placeholder-slate-400 focus:border-purple-500 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                />
+              </div>
+
+              {/* Email Address */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={newUserForm.email}
+                  onChange={(e) => setNewUserForm({ ...newUserForm, email: e.target.value })}
+                  placeholder="e.g. sarah@organization.com"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-800 placeholder-slate-400 focus:border-purple-500 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                />
+              </div>
+
+              {/* Role Selection */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Hierarchy Role Tier *
+                </label>
+                <div className="grid grid-cols-3 gap-2.5">
+                  {[
+                    {
+                      role: "ADMIN",
+                      label: "Admin",
+                      tier: "Tier 2",
+                      icon: Shield,
+                    },
+                    {
+                      role: "TEAM_LEAD",
+                      label: "Team Lead",
+                      tier: "Tier 3",
+                      icon: Zap,
+                    },
+                    {
+                      role: "AGENT",
+                      label: "Sales Agent",
+                      tier: "Tier 4",
+                      icon: Briefcase,
+                    },
+                  ].map((item) => {
+                    const ItemIcon = item.icon;
+                    const isSelected = newUserForm.role === item.role;
+                    return (
+                      <button
+                        type="button"
+                        key={item.role}
+                        onClick={() => setNewUserForm({ ...newUserForm, role: item.role })}
+                        className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all text-center cursor-pointer ${
+                          isSelected
+                            ? "border-purple-600 bg-purple-50 text-purple-700 dark:border-purple-500 dark:bg-purple-950/40 dark:text-purple-300 shadow-xs"
+                            : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                        }`}
+                      >
+                        <ItemIcon className="h-4 w-4 mb-1" />
+                        <span className="text-xs font-bold">{item.label}</span>
+                        <span className="text-[10px] text-slate-400 mt-0.5">{item.tier}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Direct Reporting Manager (reportsToId) */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Direct Reporting Manager (Superior)
+                </label>
+                <select
+                  value={newUserForm.reportsToId}
+                  onChange={(e) => setNewUserForm({ ...newUserForm, reportsToId: e.target.value })}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:border-purple-500 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 cursor-pointer"
+                >
+                  <option value="">No Superior (Executive Root / Unassigned)</option>
+                  {hierarchyData?.users?.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.name || u.email} — {u.role}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Assigning a manager automatically places this user directly underneath them in the organizational chart.
+                </p>
+              </div>
+
+              {/* Optional Custom Password */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Custom Password (Optional)
+                </label>
+                <input
+                  type="password"
+                  value={newUserForm.password}
+                  onChange={(e) => setNewUserForm({ ...newUserForm, password: e.target.value })}
+                  placeholder="Leave empty to auto-generate secure password"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-800 placeholder-slate-400 focus:border-purple-500 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                />
+                <p className="text-[11px] text-slate-400 mt-1">
+                  If left empty, a secure temporary password will be generated and shown immediately on screen.
+                </p>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  disabled={creatingUser}
+                  onClick={() => setIsAddUserModalOpen(false)}
+                  className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={creatingUser}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:from-purple-700 hover:to-indigo-700 transition-all cursor-pointer shadow-sm disabled:opacity-50"
+                >
+                  {creatingUser ? (
+                    <>
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                      <span>Provisioning...</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="h-3.5 w-3.5" />
+                      <span>Provision Member</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL: TEMPORARY CREDENTIALS PREVIEW ================= */}
+      {createdTempModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900 p-6 text-center space-y-4">
+            <div className="w-12 h-12 mx-auto rounded-2xl bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-300 flex items-center justify-center border border-emerald-200 dark:border-emerald-800 shadow-inner">
+              <CheckCircle2 className="h-6 w-6" />
+            </div>
+
+            <div>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                Member Provisioned Successfully!
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Account created for <strong>{createdTempModal.email}</strong> ({createdTempModal.role})
+              </p>
+            </div>
+
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2 text-left">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Initial Temporary Password
+              </p>
+              <div className="flex items-center justify-between bg-white dark:bg-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 font-mono text-sm font-bold text-purple-600 dark:text-purple-400">
+                <span>{createdTempModal.tempPasswordPreview}</span>
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(createdTempModal.tempPasswordPreview)}
+                  className="p-1 text-slate-400 hover:text-purple-600 transition-colors cursor-pointer"
+                  title="Copy password"
+                >
+                  {copiedTempPass ? (
+                    <Check className="h-4 w-4 text-emerald-600" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              A welcome email has been dispatched with login instructions. You can also copy and provide the temporary password above directly.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setCreatedTempModal(null)}
+              className="w-full h-10 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-purple-600 dark:hover:bg-purple-700 text-white font-bold text-xs transition-all cursor-pointer shadow-xs"
+            >
+              Done & View Hierarchy
+            </button>
           </div>
         </div>
       )}

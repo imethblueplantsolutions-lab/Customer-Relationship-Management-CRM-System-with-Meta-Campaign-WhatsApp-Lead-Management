@@ -108,13 +108,17 @@ router.post('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, r
 
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
+    const reportsToId = req.body.reportsToId && typeof req.body.reportsToId === 'string' && req.body.reportsToId.trim()
+      ? req.body.reportsToId.trim()
+      : null;
+
     const newUser = await prisma.user.create({
       data: {
         name: name ? name.trim() : null,
         email: cleanEmail,
         password: hashedPassword,
         role,
-      reportsToId: req.body.reportsToId,
+        reportsToId,
         tenantId,
         isActive: true,
         isFirstLogin: true,
@@ -146,6 +150,7 @@ router.post('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, r
       const { io } = require('../index');
       if (io) {
         io.to(`tenant:${tenantId}`).emit('user_created', newUser);
+        io.to(`tenant:${tenantId}`).emit('hierarchy_updated', { message: 'New member added to hierarchy' });
       }
     } catch (socketErr) {
       console.warn('[Socket] Failed to broadcast user_created:', socketErr.message);
