@@ -14,18 +14,19 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@xyflow/react": "^12.11.5",
+    "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.38.0",
     "next": "16.3.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "react-organizational-chart": "^2.2.1",
     "recharts": "^3.10.1",
     "socket.io-client": "^4.8.3",
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
-    "use-sound": "^4.0.3",
-    "canvas-confetti": "^1.9.4"
+    "use-sound": "^4.0.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

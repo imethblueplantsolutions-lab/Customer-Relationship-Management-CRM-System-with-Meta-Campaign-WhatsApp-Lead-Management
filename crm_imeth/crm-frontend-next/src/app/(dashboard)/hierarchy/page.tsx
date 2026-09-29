@@ -1,11 +1,24 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { useSocket } from "@/hooks/use-socket";
 import { apiClient } from "@/lib/api-client";
 import type { User, HierarchyResponse, HierarchyStats } from "@/types";
+
+const OrgChartTree = dynamic(() => import("@/components/hierarchy/OrgChartTree"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200 bg-white p-8 dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+        <p className="text-xs text-slate-500">Loading Organizational Chart...</p>
+      </div>
+    </div>
+  ),
+});
 import {
   Network,
   Users,
@@ -113,7 +126,7 @@ export default function UserHierarchyPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [activeView, setActiveView] = useState<"matrix" | "tree" | "grid">("matrix");
+  const [activeView, setActiveView] = useState<"matrix" | "chart" | "tree" | "grid">("matrix");
 
   // Modals
   const [reassignModalUser, setReassignModalUser] = useState<User | null>(null);
@@ -476,6 +489,18 @@ export default function UserHierarchyPage() {
           </button>
 
           <button
+            onClick={() => setActiveView("chart")}
+            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+              activeView === "chart"
+                ? "bg-white text-blue-600 shadow-xs dark:bg-slate-700 dark:text-white"
+                : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+            }`}
+          >
+            <GitGraph className="h-3.5 w-3.5" />
+            <span>Org Chart</span>
+          </button>
+
+          <button
             onClick={() => setActiveView("tree")}
             className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
               activeView === "tree"
@@ -483,8 +508,8 @@ export default function UserHierarchyPage() {
                 : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
             }`}
           >
-            <GitGraph className="h-3.5 w-3.5" />
-            <span>Org Tree</span>
+            <Layers className="h-3.5 w-3.5" />
+            <span>Tree List</span>
           </button>
 
           <button
@@ -736,7 +761,38 @@ export default function UserHierarchyPage() {
         </div>
       )}
 
-      {/* ================= VIEW 2: ORG TREE CHART ================= */}
+      {/* ================= VIEW 2: VISUAL TOP-DOWN ORG FLOWCHART ================= */}
+      {activeView === "chart" && (
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+                Top-Down Organizational Chart
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Connected visual flowchart mapping supervisory reporting lines across all tiers.
+              </p>
+            </div>
+            <button
+              onClick={() => setConfirmAutoLinkOpen(true)}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:underline cursor-pointer"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>Restructure with Auto-Link</span>
+            </button>
+          </div>
+
+          <OrgChartTree
+            data={hierarchyData?.tree || []}
+            onAssignManager={(user) => {
+              setReassignModalUser(user);
+              setTargetManagerId(user.reportsToId || "");
+            }}
+          />
+        </div>
+      )}
+
+      {/* ================= VIEW 3: ORG TREE LIST ================= */}
       {activeView === "tree" && (
         <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
           <div className="mb-6 flex items-center justify-between">
@@ -779,7 +835,7 @@ export default function UserHierarchyPage() {
         </div>
       )}
 
-      {/* ================= VIEW 3: ROLE X MANAGER MATRIX GRID ================= */}
+      {/* ================= VIEW 4: ROLE X MANAGER MATRIX GRID ================= */}
       {activeView === "grid" && (
         <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
           <div className="mb-6">
