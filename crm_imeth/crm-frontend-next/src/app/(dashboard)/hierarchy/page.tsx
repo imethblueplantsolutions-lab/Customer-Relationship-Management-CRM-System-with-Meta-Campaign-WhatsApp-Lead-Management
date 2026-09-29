@@ -46,6 +46,7 @@ import {
   X,
   Layers,
   Check,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -133,6 +134,9 @@ export default function UserHierarchyPage() {
   const [targetManagerId, setTargetManagerId] = useState<string>("");
   const [savingReassignment, setSavingReassignment] = useState(false);
   const [confirmAutoLinkOpen, setConfirmAutoLinkOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [deletingUser, setDeletingUser] = useState(false);
 
   // Security barrier
   useEffect(() => {
@@ -177,13 +181,18 @@ export default function UserHierarchyPage() {
     const handleUserUpdated = () => {
       fetchHierarchy(true);
     };
+    const handleUserDeleted = () => {
+      fetchHierarchy(true);
+    };
 
     socket.on("hierarchy_updated", handleHierarchyUpdated);
     socket.on("user_updated", handleUserUpdated);
+    socket.on("user_deleted", handleUserDeleted);
 
     return () => {
       socket.off("hierarchy_updated", handleHierarchyUpdated);
       socket.off("user_updated", handleUserUpdated);
+      socket.off("user_deleted", handleUserDeleted);
     };
   }, [socket, fetchHierarchy]);
 
@@ -231,6 +240,30 @@ export default function UserHierarchyPage() {
     } finally {
       setUpdatingUserId(null);
       setSavingReassignment(false);
+    }
+  };
+
+  // Delete user permanently (Super Admin only)
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+    setDeletingUser(true);
+    try {
+      const res = await apiClient<{ success: boolean; message: string }>(`/users/${userToDelete.id}`, {
+        method: "DELETE",
+      });
+
+      if (res.success) {
+        toast.success(res.message || "User deleted successfully");
+        setIsDeleteModalOpen(false);
+        setUserToDelete(null);
+        await fetchHierarchy(true);
+      } else {
+        toast.error(res.error || "Failed to delete user");
+      }
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete user");
+    } finally {
+      setDeletingUser(false);
     }
   };
 
@@ -606,10 +639,7 @@ export default function UserHierarchyPage() {
                           <span
                             className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-bold border ${meta.badgeClass}`}
                           >
-                            <span className="font-mono">T{meta.tier}</span>
-                            <span className="text-[10px] uppercase tracking-wider font-semibold">
-                              L{meta.tier}
-                            </span>
+                            <span className="font-mono">Tier {meta.tier}</span>
                           </span>
                         </td>
 
@@ -739,16 +769,29 @@ export default function UserHierarchyPage() {
                         {/* 7. Actions */}
                         <td className="py-4 px-4 align-middle text-right">
                           {!isSuper && (
-                            <button
-                              onClick={() => {
-                                setReassignModalUser(u);
-                                setTargetManagerId(u.reportsToId || "");
-                              }}
-                              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700/60 cursor-pointer shadow-xs"
-                            >
-                              <span>Manage</span>
-                              <ChevronRight className="h-3 w-3 text-slate-400" />
-                            </button>
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => {
+                                  setReassignModalUser(u);
+                                  setTargetManagerId(u.reportsToId || "");
+                                }}
+                                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700/60 cursor-pointer shadow-xs"
+                              >
+                                <span>Manage</span>
+                                <ChevronRight className="h-3 w-3 text-slate-400" />
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  setUserToDelete(u);
+                                  setIsDeleteModalOpen(true);
+                                }}
+                                title={`Delete ${u.name || u.email}`}
+                                className="flex h-7 w-7 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:border-red-300 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-400 dark:hover:bg-red-900/60 cursor-pointer transition-colors shadow-xs"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
                           )}
                         </td>
                       </tr>
@@ -788,6 +831,10 @@ export default function UserHierarchyPage() {
               setReassignModalUser(user);
               setTargetManagerId(user.reportsToId || "");
             }}
+            onDeleteUser={(user) => {
+              setUserToDelete(user);
+              setIsDeleteModalOpen(true);
+            }}
           />
         </div>
       )}
@@ -823,6 +870,10 @@ export default function UserHierarchyPage() {
                   onAssignManager={(user) => {
                     setReassignModalUser(user);
                     setTargetManagerId(user.reportsToId || "");
+                  }}
+                  onDeleteUser={(user) => {
+                    setUserToDelete(user);
+                    setIsDeleteModalOpen(true);
                   }}
                 />
               ))
@@ -1050,6 +1101,76 @@ export default function UserHierarchyPage() {
           </div>
         </div>
       )}
+
+      {/* ================= MODAL: CONFIRM USER DELETION ================= */}
+      {isDeleteModalOpen && userToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+            {/* Modal Header */}
+            <div className="flex items-center gap-3 mb-4">
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-100 text-red-600 dark:bg-red-950/60 dark:text-red-400 shrink-0 border border-red-200 dark:border-red-900">
+                <Trash2 className="h-5 w-5" />
+              </span>
+              <div>
+                <h3 className="font-bold text-slate-900 dark:text-white text-base">
+                  Delete User Account
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Permanent removal from tenant organizational hierarchy
+                </p>
+              </div>
+            </div>
+
+            {/* Target User Info */}
+            <div className="rounded-xl bg-slate-50 p-3.5 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700 mb-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-slate-900 dark:text-white text-xs">
+                    {userToDelete.name || userToDelete.email.split("@")[0]}
+                  </p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    {userToDelete.email}
+                  </p>
+                </div>
+                <span className="rounded-md bg-slate-200/80 px-2 py-0.5 text-[10px] font-bold text-slate-700 dark:bg-slate-700 dark:text-slate-200">
+                  {userToDelete.role}
+                </span>
+              </div>
+            </div>
+
+            {/* Warning Message per User Prompt */}
+            <div className="rounded-xl border border-red-200/80 bg-red-50/60 p-4 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300 mb-5 leading-relaxed">
+              <p>
+                Are you sure you want to delete <strong>{userToDelete.name || userToDelete.email}</strong>? This action cannot be undone. Any agents reporting to them will lose their manager, and any leads assigned to them will be returned to the unassigned pool.
+              </p>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                disabled={deletingUser}
+                onClick={() => {
+                  setIsDeleteModalOpen(false);
+                  setUserToDelete(null);
+                }}
+                className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deletingUser}
+                onClick={handleDeleteUser}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-red-600 px-4 py-2 text-xs font-semibold text-white hover:bg-red-700 transition-all cursor-pointer shadow-sm disabled:opacity-50"
+              >
+                {deletingUser && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
+                <span>{deletingUser ? "Deleting..." : "Delete User"}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1058,9 +1179,11 @@ export default function UserHierarchyPage() {
 function OrgTreeNode({
   node,
   onAssignManager,
+  onDeleteUser,
 }: {
   node: User;
   onAssignManager: (user: User) => void;
+  onDeleteUser?: (user: User) => void;
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const meta = getRoleMeta(node.role);
@@ -1122,12 +1245,23 @@ function OrgTreeNode({
               </span>
             )}
             {node.role !== "SUPER_ADMIN" && (
-              <button
-                onClick={() => onAssignManager(node)}
-                className="rounded-lg border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 cursor-pointer"
-              >
-                Reassign
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => onAssignManager(node)}
+                  className="rounded-lg border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 cursor-pointer"
+                >
+                  Reassign
+                </button>
+                {onDeleteUser && (
+                  <button
+                    onClick={() => onDeleteUser(node)}
+                    title={`Delete ${node.name || node.email}`}
+                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:border-red-300 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-400 dark:hover:bg-red-900/60 cursor-pointer transition-colors shadow-xs"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -1141,6 +1275,7 @@ function OrgTreeNode({
               key={sub.id}
               node={sub}
               onAssignManager={onAssignManager}
+              onDeleteUser={onDeleteUser}
             />
           ))}
         </div>

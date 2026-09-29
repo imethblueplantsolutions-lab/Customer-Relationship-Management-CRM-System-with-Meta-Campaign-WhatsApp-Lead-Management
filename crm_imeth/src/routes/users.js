@@ -729,4 +729,105 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
   }
 });
 
+// DELETE: Delete user with relational cleanup in transaction (Super Admin only)
+router.delete('/:id', authorize(['SUPER_ADMIN']), async (req, res) => {
+  try {
+    const store = tenantStorage.getStore();
+    const tenantId = req.user?.tenantId || store?.tenantId;
+    const targetUserId = req.params.id;
+
+    if (req.user?.role !== 'SUPER_ADMIN') {
+      return res.status(403).json({ success: false, error: 'Forbidden: Super Admins only' });
+    }
+
+    if (req.user?.id === targetUserId) {
+      return res.status(400).json({ success: false, error: 'You cannot delete your own account' });
+    }
+
+    const targetUser = await prisma.user.findFirst({
+      where: { id: targetUserId, tenantId },
+    });
+
+    if (!targetUser) {
+      return res.status(404).json({ success: false, error: 'User not found in this tenant' });
+    }
+
+    if (targetUser.role === 'SUPER_ADMIN') {
+      return res.status(400).json({ success: false, error: 'Cannot delete a Super Admin root user' });
+    }
+
+    // Pre-Deletion Cleanup in Prisma $transaction
+    await prisma.$transaction(async (tx) => {
+      // 1. Subordinates: Reassign to targetUser's manager or set to null
+      await tx.user.updateMany({
+        where: { reportsToId: targetUserId },
+        data: { reportsToId: targetUser.reportsToId || null },
+      });
+
+      // 2. Leads: Return assigned leads to unassigned pool
+      await tx.lead.updateMany({
+        where: { assignedToId: targetUserId },
+        data: { assignedToId: null },
+      });
+
+      // 3. Deals: Clear assigned agent
+      await tx.deal.updateMany({
+        where: { assignedToId: targetUserId },
+        data: { assignedToId: null },
+      });
+
+      // 4. Followups: Clear assignedTo and createdBy
+      await tx.followup.updateMany({
+        where: { assignedToId: targetUserId },
+        data: { assignedToId: null },
+      });
+      await tx.followup.updateMany({
+        where: { createdById: targetUserId },
+        data: { createdById: null },
+      });
+
+      // 5. Activities: Clear createdBy
+      await tx.activity.updateMany({
+        where: { createdById: targetUserId },
+        data: { createdById: null },
+      });
+
+      // 6. Attachments: Reassign creator to the requesting Super Admin (field is non-nullable)
+      await tx.attachment.updateMany({
+        where: { createdById: targetUserId },
+        data: { createdById: req.user.id },
+      });
+
+      // 7. Notifications: Remove any user notifications
+      await tx.notification.deleteMany({
+        where: { userId: targetUserId },
+      });
+
+      // 8. Delete the user
+      await tx.user.delete({
+        where: { id: targetUserId },
+      });
+    });
+
+    // Broadcast real-time deletion events
+    try {
+      const { io } = require('../index');
+      if (io) {
+        io.to(`tenant:${tenantId}`).emit('user_deleted', { userId: targetUserId });
+        io.to(`tenant:${tenantId}`).emit('hierarchy_updated', { userId: targetUserId, action: 'deleted' });
+      }
+    } catch (socketErr) {
+      console.warn('[Socket] Failed to broadcast user_deleted:', socketErr.message);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `User ${targetUser.name || targetUser.email} deleted successfully`,
+    });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete user' });
+  }
+});
+
 module.exports = router;

@@ -16,6 +16,7 @@ import {
   Sparkles,
   Building2,
   Maximize2,
+  Trash2,
 } from 'lucide-react';
 
 // Role styling and metadata
@@ -76,9 +77,10 @@ function getRoleMeta(role?: string) {
 interface OrgNodeCardProps {
   node: User;
   onAssign?: (user: User) => void;
+  onDelete?: (user: User) => void;
 }
 
-export const OrgNodeCard: React.FC<OrgNodeCardProps> = ({ node, onAssign }) => {
+export const OrgNodeCard: React.FC<OrgNodeCardProps> = ({ node, onAssign, onDelete }) => {
   const meta = getRoleMeta(node.role);
   const RoleIcon = meta.icon;
   const directReportsCount = node.teamMembers?.length || 0;
@@ -88,7 +90,7 @@ export const OrgNodeCard: React.FC<OrgNodeCardProps> = ({ node, onAssign }) => {
     <div
       className={`inline-block text-left rounded-2xl border-2 p-3.5 min-w-[200px] max-w-[250px] shadow-sm hover:shadow-md transition-all duration-200 select-none group relative bg-white dark:bg-slate-900 ${meta.cardBorder} ${meta.cardBg}`}
     >
-      {/* Top Header: Role Badge & Level */}
+      {/* Top Header: Role Badge & Delete Icon / Level */}
       <div className="flex items-center justify-between gap-1 mb-2.5">
         <span
           className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold border tracking-wide uppercase ${meta.badgeClass}`}
@@ -96,9 +98,25 @@ export const OrgNodeCard: React.FC<OrgNodeCardProps> = ({ node, onAssign }) => {
           <RoleIcon className="h-3 w-3 shrink-0" />
           <span>{meta.label}</span>
         </span>
-        <span className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500">
-          L{meta.tier}
-        </span>
+
+        {/* Delete Icon Action replacing the Level */}
+        {!isSuper && onDelete ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(node);
+            }}
+            title={`Delete ${node.name || node.email}`}
+            className="flex h-6 w-6 items-center justify-center rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/60 dark:hover:text-red-400 transition-colors cursor-pointer border border-transparent hover:border-red-200 dark:hover:border-red-800"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        ) : (
+          <span className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500">
+            L{meta.tier}
+          </span>
+        )}
       </div>
 
       {/* User Info with Avatar */}
@@ -167,9 +185,10 @@ export const OrgNodeCard: React.FC<OrgNodeCardProps> = ({ node, onAssign }) => {
 interface OrgChartTreeProps {
   data: User[] | User;
   onAssignManager?: (user: User) => void;
+  onDeleteUser?: (user: User) => void;
 }
 
-export default function OrgChartTree({ data, onAssignManager }: OrgChartTreeProps) {
+export default function OrgChartTree({ data, onAssignManager, onDeleteUser }: OrgChartTreeProps) {
   const [zoom, setZoom] = useState(1);
 
   // Normalize data into array of roots
@@ -185,7 +204,7 @@ export default function OrgChartTree({ data, onAssignManager }: OrgChartTreeProp
     return nodes.map((node) => (
       <TreeNode
         key={node.id}
-        label={<OrgNodeCard node={node} onAssign={onAssignManager} />}
+        label={<OrgNodeCard node={node} onAssign={onAssignManager} onDelete={onDeleteUser} />}
       >
         {renderTreeNodes(node.teamMembers)}
       </TreeNode>
@@ -255,7 +274,7 @@ export default function OrgChartTree({ data, onAssignManager }: OrgChartTreeProp
               lineColor="#cbd5e1"
               lineBorderRadius="4px"
               nodePadding="16px"
-              label={<OrgNodeCard node={roots[0]} onAssign={onAssignManager} />}
+              label={<OrgNodeCard node={roots[0]} onAssign={onAssignManager} onDelete={onDeleteUser} />}
             >
               {renderTreeNodes(roots[0].teamMembers)}
             </Tree>
@@ -283,7 +302,7 @@ export default function OrgChartTree({ data, onAssignManager }: OrgChartTreeProp
               {roots.map((root) => (
                 <TreeNode
                   key={root.id}
-                  label={<OrgNodeCard node={root} onAssign={onAssignManager} />}
+                  label={<OrgNodeCard node={root} onAssign={onAssignManager} onDelete={onDeleteUser} />}
                 >
                   {renderTreeNodes(root.teamMembers)}
                 </TreeNode>
