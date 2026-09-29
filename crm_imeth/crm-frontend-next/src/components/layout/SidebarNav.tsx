@@ -50,10 +50,16 @@ export default function SidebarNav({ user, isCollapsed, onNavigate }: SidebarNav
     if (item.hidden) {
       return false;
     }
+    // SUPER_ADMIN only sees items explicitly allowed for them + Account Settings
+    if (user?.role === "SUPER_ADMIN") {
+      if (item.allowedRoles?.includes("SUPER_ADMIN")) return true;
+      if (item.href === "/settings") return true;
+      return false;
+    }
     if (item.allowedRoles && (!user?.role || !item.allowedRoles.includes(user.role))) {
       return false;
     }
-    if (item.adminOnly && user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN") {
+    if (item.adminOnly && user?.role !== "ADMIN") {
       return false;
     }
     if (user?.role === "AGENT") {

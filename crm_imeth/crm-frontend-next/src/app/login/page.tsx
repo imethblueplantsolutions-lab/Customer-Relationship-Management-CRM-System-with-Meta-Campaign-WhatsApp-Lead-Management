@@ -70,7 +70,10 @@ export default function LoginPage() {
         setShowOtpModal(true);
         setSuccessMsg(res.message || "OTP code dispatched to your email. Please verify to proceed.");
       } else {
-        router.push("/dashboard");
+        // Redirect based on role — Super Admin goes to hierarchy, others to dashboard
+        const storedUser = localStorage.getItem("user");
+        const parsed = storedUser ? JSON.parse(storedUser) : null;
+        router.push(parsed?.role === "SUPER_ADMIN" ? "/hierarchy" : "/dashboard");
       }
     } catch (err: unknown) {
       setError(
@@ -89,8 +92,11 @@ export default function LoginPage() {
     router.push("/dashboard");
   };
 
-  const handleQuickFill = (role: "ADMIN" | "TEAM_LEAD" | "AGENT" = "ADMIN") => {
-    if (role === "ADMIN") {
+  const handleQuickFill = (role: "SUPER_ADMIN" | "ADMIN" | "TEAM_LEAD" | "AGENT" = "ADMIN") => {
+    if (role === "SUPER_ADMIN") {
+      setEmail("superadmin123@crm.com");
+      setPassword("superadmin123");
+    } else if (role === "ADMIN") {
       setEmail("admin@crm.com");
       setPassword("admin123");
     } else if (role === "TEAM_LEAD") {
@@ -184,7 +190,19 @@ export default function LoginPage() {
                 </p>
                 <span className="text-[10px] text-slate-400 font-medium">Click role to auto-fill</span>
               </div>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-4 gap-2">
+                <button
+                  suppressHydrationWarning
+                  type="button"
+                  onClick={() => handleQuickFill("SUPER_ADMIN")}
+                  className={`py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer text-center border ${
+                    email === "superadmin123@crm.com"
+                      ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                      : "bg-white hover:bg-sky-50 text-slate-700 border-slate-200"
+                  }`}
+                >
+                  Super Admin
+                </button>
                 <button
                   suppressHydrationWarning
                   type="button"

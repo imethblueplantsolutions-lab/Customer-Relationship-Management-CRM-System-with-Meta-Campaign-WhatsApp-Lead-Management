@@ -15,7 +15,9 @@ export default function UserCard({ user, isCollapsed, onLogout }: UserCardProps)
     : user?.email?.charAt(0).toUpperCase() || "A";
 
   const roleLabel =
-    user?.role === "ADMIN"
+    user?.role === "SUPER_ADMIN"
+      ? "Super Admin"
+      : user?.role === "ADMIN"
       ? "Admin"
       : user?.role === "TEAM_LEAD"
       ? "Team Lead"

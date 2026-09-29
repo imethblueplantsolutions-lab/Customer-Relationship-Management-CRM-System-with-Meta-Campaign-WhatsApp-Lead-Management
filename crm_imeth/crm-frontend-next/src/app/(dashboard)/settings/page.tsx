@@ -188,7 +188,9 @@ function ProfileTab({
     : user?.email?.charAt(0).toUpperCase() || "U";
 
   const roleLabel =
-    user?.role === "ADMIN"
+    user?.role === "SUPER_ADMIN"
+      ? "Super Administrator"
+      : user?.role === "ADMIN"
       ? "Administrator"
       : user?.role === "TEAM_LEAD"
       ? "Team Leader"
