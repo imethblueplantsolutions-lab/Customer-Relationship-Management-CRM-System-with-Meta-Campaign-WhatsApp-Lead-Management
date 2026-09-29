@@ -811,7 +811,7 @@ export default function UserHierarchyPage() {
                                   ?.filter((cand) => cand.id !== u.id)
                                   .map((cand) => (
                                     <option key={cand.id} value={cand.id}>
-                                      {cand.name || cand.email} ({cand.role})
+                                      {cand.name ? `${cand.name} (${cand.email})` : cand.email} — {cand.role}
                                     </option>
                                   ))}
                               </select>
@@ -1024,7 +1024,10 @@ export default function UserHierarchyPage() {
                                 {u.name || u.email.split("@")[0]}
                               </p>
                               <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                                Reports to: {u.manager?.name || u.manager?.email || (u.role === "SUPER_ADMIN" ? "Root" : "⚠️ None")}
+                                {u.email}
+                              </p>
+                              <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">
+                                Reports to: {u.manager?.name ? `${u.manager.name} (${u.manager.email})` : (u.manager?.email || (u.role === "SUPER_ADMIN" ? "Root" : "⚠️ None"))}
                               </p>
                             </div>
                             <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300 shrink-0">
@@ -1099,7 +1102,7 @@ export default function UserHierarchyPage() {
                   <option value="">No Manager (Root Level / Unassigned)</option>
                   {potentialManagers.map((m) => (
                     <option key={m.id} value={m.id}>
-                      {m.name || m.email} — {m.role}
+                      {m.name ? `${m.name} (${m.email})` : m.email} — {m.role}
                     </option>
                   ))}
                 </select>
@@ -1321,6 +1324,9 @@ export default function UserHierarchyPage() {
                   placeholder="e.g. sarah@organization.com"
                   className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-800 placeholder-slate-400 focus:border-purple-500 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                 />
+                <p className="text-[11px] text-slate-400 mt-1">
+                  This email is the user&apos;s login username and where account credentials will be sent.
+                </p>
               </div>
 
               {/* Role Selection */}
@@ -1384,7 +1390,7 @@ export default function UserHierarchyPage() {
                   <option value="">No Superior (Executive Root / Unassigned)</option>
                   {hierarchyData?.users?.map((u) => (
                     <option key={u.id} value={u.id}>
-                      {u.name || u.email} — {u.role}
+                      {u.name ? `${u.name} (${u.email})` : u.email} — {u.role}
                     </option>
                   ))}
                 </select>
