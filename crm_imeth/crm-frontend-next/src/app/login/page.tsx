@@ -21,8 +21,8 @@ import {
 } from "lucide-react";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("admin@crm.com");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -92,23 +92,6 @@ export default function LoginPage() {
     router.push("/dashboard");
   };
 
-  const handleQuickFill = (role: "SUPER_ADMIN" | "ADMIN" | "TEAM_LEAD" | "AGENT" = "ADMIN") => {
-    if (role === "SUPER_ADMIN") {
-      setEmail("superadmin123@crm.com");
-      setPassword("superadmin123");
-    } else if (role === "ADMIN") {
-      setEmail("admin@crm.com");
-      setPassword("admin123");
-    } else if (role === "TEAM_LEAD") {
-      setEmail("teamlead@crm.com");
-      setPassword("teamlead123");
-    } else if (role === "AGENT") {
-      setEmail("agent@crm.com");
-      setPassword("agent123");
-    }
-    setError("");
-  };
-
   const handleSeedDatabase = async () => {
     setSeeding(true);
     setError("");
@@ -120,8 +103,6 @@ export default function LoginPage() {
       setSuccessMsg(
         res.message || "Admin account & demo organization created successfully!"
       );
-      setEmail("admin@crm.com");
-      setPassword("admin123");
     } catch (err: unknown) {
       setError(
         err instanceof Error
@@ -180,66 +161,6 @@ export default function LoginPage() {
               <p className="mt-2 text-sm text-slate-500 max-w-sm text-center leading-relaxed">
                 Log in to your account to manage your WhatsApp leads, pipelines & automations.
               </p>
-            </div>
-
-            {/* Quick Demo Credentials Autofill Pills */}
-            <div className="w-full p-3.5 rounded-xl bg-[#BBE1FA]/20 border border-[#BBE1FA]/60 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <p className="text-[#0F4C75] font-bold text-xs flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-blue-600 shrink-0" /> Quick Test Accounts
-                </p>
-                <span className="text-[10px] text-slate-400 font-medium">Click role to auto-fill</span>
-              </div>
-              <div className="grid grid-cols-4 gap-2">
-                <button
-                  suppressHydrationWarning
-                  type="button"
-                  onClick={() => handleQuickFill("SUPER_ADMIN")}
-                  className={`py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer text-center border ${
-                    email === "superadmin123@crm.com"
-                      ? "bg-blue-600 text-white border-blue-600 shadow-xs"
-                      : "bg-white hover:bg-sky-50 text-slate-700 border-slate-200"
-                  }`}
-                >
-                  Super Admin
-                </button>
-                <button
-                  suppressHydrationWarning
-                  type="button"
-                  onClick={() => handleQuickFill("ADMIN")}
-                  className={`py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer text-center border ${
-                    email === "admin@crm.com"
-                      ? "bg-blue-600 text-white border-blue-600 shadow-xs"
-                      : "bg-white hover:bg-sky-50 text-slate-700 border-slate-200"
-                  }`}
-                >
-                  Admin
-                </button>
-                <button
-                  suppressHydrationWarning
-                  type="button"
-                  onClick={() => handleQuickFill("TEAM_LEAD")}
-                  className={`py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer text-center border ${
-                    email === "teamlead@crm.com"
-                      ? "bg-blue-600 text-white border-blue-600 shadow-xs"
-                      : "bg-white hover:bg-sky-50 text-slate-700 border-slate-200"
-                  }`}
-                >
-                  Team Lead
-                </button>
-                <button
-                  suppressHydrationWarning
-                  type="button"
-                  onClick={() => handleQuickFill("AGENT")}
-                  className={`py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer text-center border ${
-                    email === "agent@crm.com"
-                      ? "bg-blue-600 text-white border-blue-600 shadow-xs"
-                      : "bg-white hover:bg-sky-50 text-slate-700 border-slate-200"
-                  }`}
-                >
-                  Sales Agent
-                </button>
-              </div>
             </div>
 
             {/* Error & Success Alerts */}
@@ -301,14 +222,12 @@ export default function LoginPage() {
               {/* Role Auth / Reset Link */}
               <div className="flex items-center justify-between text-xs px-1">
                 <span className="text-slate-400">Protected by Role Auth</span>
-                <button
-                  suppressHydrationWarning
-                  type="button"
-                  onClick={() => handleQuickFill("ADMIN")}
-                  className="text-blue-600 hover:text-[#0F4C75] font-semibold hover:underline cursor-pointer"
+                <a
+                  href="mailto:support@metacrm.io?subject=Password%20Reset%20Request"
+                  className="text-blue-600 hover:text-[#0F4C75] font-semibold hover:underline"
                 >
                   Need password reset?
-                </button>
+                </a>
               </div>
 
               {/* Submit Button */}
