@@ -11,6 +11,7 @@ import {
   UserCheck,
   AlertOctagon,
   Settings,
+  Network,
   type LucideIcon,
 } from "lucide-react";
 import type { User } from "@/types";
@@ -20,6 +21,7 @@ interface NavItem {
   label: string;
   icon: LucideIcon;
   adminOnly?: boolean;
+  allowedRoles?: string[];
   hidden?: boolean;
 }
 
@@ -30,6 +32,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/pipelines", label: "Pipelines", icon: GitBranch, hidden: true },
   { href: "/flows", label: "Automation Flows", icon: Workflow, hidden: true },
   { href: "/users", label: "Users", icon: UserCheck },
+  { href: "/hierarchy", label: "User Hierarchy", icon: Network, allowedRoles: ["SUPER_ADMIN"] },
   { href: "/admin/dead-letters", label: "Dead Leads", icon: AlertOctagon, adminOnly: true },
   { href: "/settings", label: "Account Settings", icon: Settings },
 ];
@@ -47,7 +50,10 @@ export default function SidebarNav({ user, isCollapsed, onNavigate }: SidebarNav
     if (item.hidden) {
       return false;
     }
-    if (item.adminOnly && user?.role !== "ADMIN") {
+    if (item.allowedRoles && (!user?.role || !item.allowedRoles.includes(user.role))) {
+      return false;
+    }
+    if (item.adminOnly && user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN") {
       return false;
     }
     if (user?.role === "AGENT") {

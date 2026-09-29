@@ -10,6 +10,9 @@ export interface User {
   tenantId: string;
   isActive?: boolean;
   isFirstLogin?: boolean;
+  reportsToId?: string | null;
+  manager?: User | null;
+  teamMembers?: User[];
   createdAt?: string;
 }
 
