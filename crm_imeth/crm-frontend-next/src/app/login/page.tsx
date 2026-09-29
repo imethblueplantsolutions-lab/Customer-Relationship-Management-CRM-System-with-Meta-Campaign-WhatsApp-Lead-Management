@@ -223,7 +223,7 @@ export default function LoginPage() {
               <div className="flex items-center justify-between text-xs px-1">
                 <span className="text-slate-400">Protected by Role Auth</span>
                 <a
-                  href="mailto:support@metacrm.io?subject=Password%20Reset%20Request"
+                  href="mailto:imethblueplantsolutions@gmail.com?subject=Password%20Reset%20Request"
                   className="text-blue-600 hover:text-[#0F4C75] font-semibold hover:underline"
                 >
                   Need password reset?
@@ -273,12 +273,12 @@ export default function LoginPage() {
           <div className="mt-6 pt-4 text-center border-t border-slate-100">
             <p className="text-xs text-slate-400">
               Need assistance?{" "}
-              <a href="mailto:support@metacrm.io" className="text-blue-600 font-semibold hover:underline">
-                support@metacrm.io
+              <a href="mailto:imethblueplantsolutions@gmail.com" className="text-blue-600 font-semibold hover:underline">
+                imethblueplantsolutions@gmail.com
               </a>
             </p>
             <p className="text-[11px] text-slate-300 mt-1">
-              All rights reserved MyCRM Platform 2026
+              All rights reserved blueplantsolutions.PVT Ltd
             </p>
           </div>
         </div>
