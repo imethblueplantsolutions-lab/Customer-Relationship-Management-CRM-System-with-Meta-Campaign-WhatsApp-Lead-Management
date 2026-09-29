@@ -16,6 +16,22 @@ export interface User {
   createdAt?: string;
 }
 
+export interface HierarchyStats {
+  totalUsers: number;
+  superAdmins: number;
+  admins: number;
+  teamLeads: number;
+  agents: number;
+  assignedCount: number;
+  unassignedCount: number;
+}
+
+export interface HierarchyResponse {
+  users: User[];
+  tree: User[];
+  stats: HierarchyStats;
+}
+
 export interface Tag {
   id: string;
   name: string;

@@ -446,6 +446,25 @@ router.get('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, re
         isActive: true,
         isFirstLogin: true,
         createdAt: true,
+        reportsToId: true,
+        manager: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            avatar: true,
+          },
+        },
+        teamMembers: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            avatar: true,
+          },
+        },
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -456,36 +475,179 @@ router.get('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, re
   }
 });
 
-// GET: Super Admin hierarchy tree (Super Admin only)
+// GET: Super Admin hierarchy tree & matrix data (Super Admin only)
 router.get('/hierarchy', authenticate, async (req, res) => {
   try {
     if (req.user?.role !== 'SUPER_ADMIN') {
       return res.status(403).json({ success: false, error: 'Forbidden: Super Admins only' });
     }
     const tenantId = req.user?.tenantId;
-    const hierarchy = await prisma.user.findMany({
-      where: { tenantId, reportsToId: null },
-      include: {
+
+    const allUsers = await prisma.user.findMany({
+      where: { tenantId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        phone: true,
+        bio: true,
+        avatar: true,
+        isActive: true,
+        isFirstLogin: true,
+        reportsToId: true,
+        tenantId: true,
+        createdAt: true,
+        manager: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            avatar: true,
+          },
+        },
         teamMembers: {
-          include: {
-            teamMembers: true,
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            avatar: true,
           },
         },
       },
+      orderBy: [
+        { role: 'asc' },
+        { createdAt: 'asc' }
+      ]
     });
-    res.status(200).json({ success: true, data: hierarchy });
+
+    const stats = {
+      totalUsers: allUsers.length,
+      superAdmins: allUsers.filter(u => u.role === 'SUPER_ADMIN').length,
+      admins: allUsers.filter(u => u.role === 'ADMIN').length,
+      teamLeads: allUsers.filter(u => u.role === 'TEAM_LEAD').length,
+      agents: allUsers.filter(u => u.role === 'AGENT').length,
+      assignedCount: allUsers.filter(u => u.reportsToId).length,
+      unassignedCount: allUsers.filter(u => !u.reportsToId && u.role !== 'SUPER_ADMIN').length,
+    };
+
+    // Build hierarchical tree
+    const userMap = new Map();
+    allUsers.forEach(u => {
+      userMap.set(u.id, { ...u, teamMembers: [] });
+    });
+    const tree = [];
+    allUsers.forEach(u => {
+      const node = userMap.get(u.id);
+      if (u.reportsToId && userMap.has(u.reportsToId)) {
+        userMap.get(u.reportsToId).teamMembers.push(node);
+      } else {
+        tree.push(node);
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        users: allUsers,
+        tree,
+        stats,
+      }
+    });
   } catch (error) {
     console.error('Error fetching hierarchy:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch hierarchy' });
   }
 });
 
-// PUT: Update any user in the tenant (Admins & Team Leads only)
+// POST: Auto-link standard enterprise hierarchy (Super Admin only)
+router.post('/hierarchy/auto-link', authenticate, async (req, res) => {
+  try {
+    if (req.user?.role !== 'SUPER_ADMIN') {
+      return res.status(403).json({ success: false, error: 'Forbidden: Super Admins only' });
+    }
+    const tenantId = req.user?.tenantId;
+
+    const users = await prisma.user.findMany({
+      where: { tenantId }
+    });
+
+    const superAdmin = users.find(u => u.role === 'SUPER_ADMIN');
+    const primaryAdmin = users.find(u => u.role === 'ADMIN');
+    const primaryTeamLead = users.find(u => u.role === 'TEAM_LEAD');
+    const agents = users.filter(u => u.role === 'AGENT');
+
+    const updates = [];
+
+    // Admins report to Super Admin
+    if (superAdmin) {
+      users.filter(u => u.role === 'ADMIN').forEach(a => {
+        updates.push(prisma.user.update({
+          where: { id: a.id },
+          data: { reportsToId: superAdmin.id }
+        }));
+      });
+    }
+
+    // Team Leads report to Admin (or Super Admin if no Admin)
+    const tlTarget = primaryAdmin?.id || superAdmin?.id;
+    if (tlTarget) {
+      users.filter(u => u.role === 'TEAM_LEAD').forEach(tl => {
+        updates.push(prisma.user.update({
+          where: { id: tl.id },
+          data: { reportsToId: tlTarget }
+        }));
+      });
+    }
+
+    // Sales Agents report to Team Lead (or Admin, or Super Admin)
+    const agentTarget = primaryTeamLead?.id || primaryAdmin?.id || superAdmin?.id;
+    if (agentTarget) {
+      agents.forEach(ag => {
+        updates.push(prisma.user.update({
+          where: { id: ag.id },
+          data: { reportsToId: agentTarget }
+        }));
+      });
+    }
+
+    // Super Admin is Root (reportsToId = null)
+    if (superAdmin) {
+      updates.push(prisma.user.update({
+        where: { id: superAdmin.id },
+        data: { reportsToId: null }
+      }));
+    }
+
+    if (updates.length > 0) {
+      await prisma.$transaction(updates);
+    }
+
+    try {
+      const { io } = require('../index');
+      if (io) {
+        io.to(`tenant:${tenantId}`).emit('hierarchy_updated', { message: 'Standard hierarchy auto-linked' });
+      }
+    } catch (_) {}
+
+    res.status(200).json({
+      success: true,
+      message: 'Standard organizational hierarchy auto-linked successfully'
+    });
+  } catch (error) {
+    console.error('Error auto-linking hierarchy:', error);
+    res.status(500).json({ success: false, error: 'Failed to auto-link hierarchy' });
+  }
+});
+
+// PUT: Update any user in the tenant (Admins & Team Leads & Super Admins)
 router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, res) => {
   try {
     const store = tenantStorage.getStore();
     const tenantId = req.user?.tenantId || store?.tenantId;
-    const { name, role, isActive } = req.body;
+    const { name, role, isActive, reportsToId } = req.body;
 
     const existingUser = await prisma.user.findFirst({
       where: { id: req.params.id, tenantId }
@@ -495,12 +657,26 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
       return res.status(404).json({ success: false, error: 'User not found in this tenant' });
     }
 
+    // Validate reportsToId if provided
+    if (reportsToId !== undefined && reportsToId !== null && reportsToId !== '') {
+      if (reportsToId === req.params.id) {
+        return res.status(400).json({ success: false, error: 'A user cannot report to themselves' });
+      }
+      const managerUser = await prisma.user.findFirst({
+        where: { id: reportsToId, tenantId }
+      });
+      if (!managerUser) {
+        return res.status(400).json({ success: false, error: 'Reporting manager not found in this tenant' });
+      }
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: req.params.id },
       data: {
         ...(name !== undefined && { name: name ? name.trim() : null }),
         ...(role !== undefined && { role }),
         ...(isActive !== undefined && { isActive }),
+        ...(reportsToId !== undefined && { reportsToId: reportsToId ? reportsToId : null }),
       },
       select: {
         id: true,
@@ -514,6 +690,25 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
         isActive: true,
         isFirstLogin: true,
         createdAt: true,
+        reportsToId: true,
+        manager: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            avatar: true,
+          },
+        },
+        teamMembers: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            avatar: true,
+          },
+        },
       }
     });
 
@@ -522,6 +717,7 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
       const { io } = require('../index');
       if (io) {
         io.to(`tenant:${tenantId}`).emit('user_updated', updatedUser);
+        io.to(`tenant:${tenantId}`).emit('hierarchy_updated', { userId: updatedUser.id });
       }
     } catch (socketErr) {
       console.warn('[Socket] Failed to broadcast user_updated:', socketErr.message);
