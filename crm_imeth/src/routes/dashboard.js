@@ -3,18 +3,24 @@ const router = express.Router();
 const prisma = require('../config/db');
 const CacheService = require('../services/cacheService');
 const { tenantStorage } = require('../middleware/tenant');
+const { getHierarchyScopedUserIds, getLeadScopeCondition } = require('../utils/hierarchy');
 
-// GET: Fetch dashboard analytics and lead statistics (Role-aware)
+// GET: Fetch dashboard analytics and lead statistics (Role-aware & Hierarchy-scoped)
 router.get('/stats', async (req, res) => {
   try {
     const store = tenantStorage.getStore();
     const tenantId = req.user?.tenantId || store?.tenantId;
-    const isAgent = req.user?.role === 'AGENT';
+    const role = req.user?.role || 'AGENT';
     const currentUserId = req.user?.userId || req.user?.id;
 
-    const cacheKey = isAgent && currentUserId
-      ? `tenant:${tenantId}:dashboard:stats:agent:${currentUserId}`
-      : `tenant:${tenantId}:dashboard:stats`;
+    let cacheKey;
+    if (role === 'AGENT' && currentUserId) {
+      cacheKey = `tenant:${tenantId}:dashboard:stats:agent:${currentUserId}`;
+    } else if (role === 'TEAM_LEAD' && currentUserId) {
+      cacheKey = `tenant:${tenantId}:dashboard:stats:teamlead:${currentUserId}`;
+    } else {
+      cacheKey = `tenant:${tenantId}:dashboard:stats:admin`;
+    }
 
     // Check Redis cache first
     const cachedData = await CacheService.get(cacheKey);
@@ -22,17 +28,16 @@ router.get('/stats', async (req, res) => {
       return res.status(200).json({ success: true, data: cachedData, cached: true });
     }
 
-    const leadWhere = { tenantId };
-    if (isAgent && currentUserId) {
-      leadWhere.assignedToId = currentUserId;
-    }
+    const leadScope = await getLeadScopeCondition(req.user);
+    const leadWhere = { tenantId, ...leadScope };
 
+    const scopedUserIds = await getHierarchyScopedUserIds(req.user);
     const followupWhere = {
       completed: false,
       lead: { tenantId }
     };
-    if (isAgent && currentUserId) {
-      followupWhere.assignedToId = currentUserId;
+    if (scopedUserIds) {
+      followupWhere.assignedToId = { in: scopedUserIds };
     }
 
     const [totalLeads, leadsByStatus, recentLeads, pendingFollowups] = await Promise.all([

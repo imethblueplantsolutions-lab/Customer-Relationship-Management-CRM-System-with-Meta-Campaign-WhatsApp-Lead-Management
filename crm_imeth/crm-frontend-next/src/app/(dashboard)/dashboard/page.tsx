@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { apiClient } from "@/lib/api-client";
+import { useAuth } from "@/hooks/use-auth";
 import type { DashboardStats } from "@/types";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
-import { LayoutDashboard, ArrowRight, Plus, CheckCircle2, Users } from "lucide-react";
+import { LayoutDashboard, ArrowRight, Plus, CheckCircle2, Users, Shield, Zap, Briefcase } from "lucide-react";
 
 const DashboardCharts = dynamic(() => import("./DashboardCharts"), {
   ssr: false,
@@ -31,6 +32,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -99,10 +101,30 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
-          <LayoutDashboard className="h-6 w-6 text-blue-600" />
-          Dashboard
-        </h2>
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <LayoutDashboard className="h-6 w-6 text-blue-600" />
+            Dashboard
+          </h2>
+          {user?.role === "TEAM_LEAD" && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800 border border-amber-200">
+              <Zap className="h-3.5 w-3.5 text-amber-600" />
+              Squad Scoped Pipeline
+            </span>
+          )}
+          {user?.role === "AGENT" && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 border border-emerald-200">
+              <Briefcase className="h-3.5 w-3.5 text-emerald-600" />
+              My Assigned Leads
+            </span>
+          )}
+          {(user?.role === "ADMIN" || user?.role === "SUPER_ADMIN") && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800 border border-blue-200">
+              <Shield className="h-3.5 w-3.5 text-blue-600" />
+              Tenant-Wide Analytics
+            </span>
+          )}
+        </div>
         <p className="text-sm text-slate-500 mt-1">Campaign & Lead Analytics Overview</p>
       </div>
 

@@ -4,6 +4,7 @@ const prisma = require('../config/db');
 const CacheService = require('../services/cacheService');
 const { tenantStorage } = require('../middleware/tenant');
 const { authenticate, authorize } = require('../middleware/auth');
+const { getHierarchyScopedUserIds, getLeadScopeCondition } = require('../utils/hierarchy');
 
 // GET /: Fetch leads for current tenant with RBAC, advanced filters & tags
 router.get('/', authenticate, async (req, res) => {
@@ -23,10 +24,12 @@ router.get('/', authenticate, async (req, res) => {
     // 2. Initialize a Prisma whereClause object with { tenantId }
     const whereClause = { tenantId };
 
-    // 3. Inject the RBAC logic: standard AGENT users only see leads explicitly assigned to them
-    if (role === 'AGENT') {
-      whereClause.assignedToId = userId;
-    }
+    // 3. Inject Downstream Hierarchical RBAC:
+    // - SUPER_ADMIN & ADMIN: All tenant leads
+    // - TEAM_LEAD: Leads assigned to self, any downstream subordinates, or unassigned leads
+    // - AGENT: Only leads explicitly assigned to themselves
+    const scopeCondition = await getLeadScopeCondition(req.user);
+    Object.assign(whereClause, scopeCondition);
 
     // 4. Append filtering logic:
     // status: Exact match
@@ -389,10 +392,8 @@ router.get('/:id', async (req, res) => {
     const isAgent = req.user?.role === 'AGENT';
     const currentUserId = req.user?.userId || req.user?.id;
 
-    const where = { id: req.params.id, tenantId };
-    if (isAgent && currentUserId) {
-      where.assignedToId = currentUserId;
-    }
+    const scopeCondition = await getLeadScopeCondition(req.user);
+    const where = { id: req.params.id, tenantId, ...scopeCondition };
 
     const lead = await prisma.lead.findFirst({
       where,
@@ -682,17 +683,20 @@ router.get('/followups/all', async (req, res) => {
       ];
     }
 
+    const scopedUserIds = await getHierarchyScopedUserIds(req.user);
+    const followupWhere = {
+      lead: { tenantId },
+      ...filterClause,
+      ...(scopedUserIds && {
+        OR: [
+          { assignedToId: { in: scopedUserIds } },
+          { createdById: { in: scopedUserIds } },
+        ],
+      }),
+    };
+
     const followups = await prisma.followup.findMany({
-      where: {
-        lead: { tenantId },
-        ...filterClause,
-        ...(isAgent && {
-          OR: [
-            { assignedToId: currentUserId },
-            { createdById: currentUserId },
-          ],
-        }),
-      },
+      where: followupWhere,
       orderBy: { dueAt: 'asc' },
       take: 200, // Server-side limit to prevent unbounded result sets
       include: {

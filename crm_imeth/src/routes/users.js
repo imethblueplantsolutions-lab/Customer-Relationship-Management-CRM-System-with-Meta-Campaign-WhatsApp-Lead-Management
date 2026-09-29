@@ -424,12 +424,11 @@ router.get('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, re
 
     const where = { tenantId };
 
-    // Team Leads can ONLY see Sales Agents and their own profile
+    // Team Leads can ONLY see their downstream squad members and their own profile
     if (currentUserRole === 'TEAM_LEAD') {
-      where.OR = [
-        { role: 'AGENT' },
-        { id: currentUserId },
-      ];
+      const { getDownstreamUserIds } = require('../utils/hierarchy');
+      const squadIds = await getDownstreamUserIds(currentUserId, tenantId);
+      where.id = { in: squadIds };
     }
 
     const users = await prisma.user.findMany({
