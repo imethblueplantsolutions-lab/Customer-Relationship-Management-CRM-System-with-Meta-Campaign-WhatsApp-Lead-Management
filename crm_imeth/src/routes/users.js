@@ -51,7 +51,7 @@ router.get('/me', async (req, res) => {
 
 // POST: User Provisioning - Create Team Lead or Sales Agent account with auto temp password
 // Admins can create TEAM_LEAD and AGENT; Team Leads can ONLY create AGENT
-router.post('/', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
+router.post('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, res) => {
   try {
     const store = tenantStorage.getStore();
     const tenantId = req.user?.tenantId || store?.tenantId;
@@ -75,6 +75,14 @@ router.post('/', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
         return res.status(400).json({
           success: false,
           error: 'Invalid user role specified. Admins can create Team Leads and Sales Agents',
+        });
+      }
+    } else if (currentUserRole === 'SUPER_ADMIN') {
+      // Super Admins can create any role
+      if (!['ADMIN', 'TEAM_LEAD', 'AGENT'].includes(role)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid user role specified',
         });
       }
     } else {
@@ -407,7 +415,7 @@ router.put('/profile', async (req, res) => {
 });
 
 // GET: Fetch all active users/agents in the current tenant (Admins & Team Leads only)
-router.get('/', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
+router.get('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, res) => {
   try {
     const store = tenantStorage.getStore();
     const tenantId = req.user?.tenantId || store?.tenantId;
@@ -473,7 +481,7 @@ router.get('/hierarchy', authenticate, async (req, res) => {
 });
 
 // PUT: Update any user in the tenant (Admins & Team Leads only)
-router.put('/:id', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
+router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, res) => {
   try {
     const store = tenantStorage.getStore();
     const tenantId = req.user?.tenantId || store?.tenantId;

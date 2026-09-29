@@ -278,6 +278,28 @@ router.post('/seed', async (req, res) => {
       });
     }
 
+    // Super Admin - top of the hierarchy
+    const superAdminPassword = await bcrypt.hash('superadmin123', 10);
+    const superAdminUser = await prisma.user.upsert({
+      where: { email: 'superadmin123@crm.com' },
+      update: {
+        password: superAdminPassword,
+        tenantId: tenant.id,
+        role: 'SUPER_ADMIN',
+        isActive: true,
+        isFirstLogin: false,
+      },
+      create: {
+        email: 'superadmin123@crm.com',
+        name: 'Super Admin',
+        password: superAdminPassword,
+        role: 'SUPER_ADMIN',
+        tenantId: tenant.id,
+        isActive: true,
+        isFirstLogin: false,
+      },
+    });
+
     const adminUser = await prisma.user.upsert({
       where: { email: 'admin@crm.com' },
       update: {
@@ -340,10 +362,11 @@ router.post('/seed', async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Admin, Team Lead, and Sales Agent seeded successfully',
+      message: 'Super Admin, Admin, Team Lead, and Sales Agent seeded successfully',
       data: {
         tenant,
         users: [
+          { email: superAdminUser.email, role: superAdminUser.role },
           { email: adminUser.email, role: adminUser.role },
           { email: teamLeadUser.email, role: teamLeadUser.role },
           { email: agentUser.email, role: agentUser.role },
