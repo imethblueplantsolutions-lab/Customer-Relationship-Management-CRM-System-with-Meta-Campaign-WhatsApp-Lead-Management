@@ -39,19 +39,19 @@ export default function LoginPage() {
 
   const slides = [
     {
-      title: "Smart Meta Ads & WhatsApp Lead Automation",
+      title: "Lead Management with Role-Based System",
       description:
-        "Capture instant leads from Meta campaigns, trigger automated qualification flows, and close deals faster.",
-      tag: "Lead Automation",
+        "Comprehensive lead tracking with multi-tier role-based hierarchy, scheduled follow-ups, smart reminders, and pipeline supervision.",
+      tag: "Lead Management",
     },
     {
-      title: "Real-time Omnichannel WhatsApp Inbox",
+      title: "Real-time Omnichannel WhatsApp Inbox (Coming Soon)",
       description:
         "Manage two-way customer conversations with live socket synchronization and instant webhook responses.",
       tag: "Live Inbox",
     },
     {
-      title: "Enterprise Multi-Tenant & Node Flow Engine",
+      title: "Enterprise Multi-Tenant & Node Flow Engine (Coming Soon)",
       description:
         "Drag-and-drop visual workflow builders, conditional branching, and role-based permissions for teams.",
       tag: "Flow Engine",
