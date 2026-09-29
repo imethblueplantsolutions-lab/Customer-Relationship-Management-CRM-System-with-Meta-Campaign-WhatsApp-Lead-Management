@@ -32,6 +32,9 @@ model User {
   email             String         @unique
   password          String
   role              String         @default("AGENT")
+  reportsToId  String?
+  manager      User?    @relation("UserHierarchy", fields: [reportsToId], references: [id])
+  teamMembers  User[]   @relation("UserHierarchy")
   isActive          Boolean        @default(true)
   isFirstLogin      Boolean        @default(true)
   otpHash           String?

@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const prisma = require('../config/db');
 const { tenantStorage } = require('../middleware/tenant');
-const { authorize } = require('../middleware/auth');
+const { authorize, authenticate } = require('../middleware/auth');
 const { sendWelcomeEmail, sendOtpEmail } = require('../services/mailer');
 const router = express.Router();
 
@@ -106,6 +106,7 @@ router.post('/', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
         email: cleanEmail,
         password: hashedPassword,
         role,
+      reportsToId: req.body.reportsToId,
         tenantId,
         isActive: true,
         isFirstLogin: true,
@@ -444,6 +445,30 @@ router.get('/', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
   } catch (error) {
     console.error('Error fetching users:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch users' });
+  }
+});
+
+// GET: Super Admin hierarchy tree (Super Admin only)
+router.get('/hierarchy', authenticate, async (req, res) => {
+  try {
+    if (req.user?.role !== 'SUPER_ADMIN') {
+      return res.status(403).json({ success: false, error: 'Forbidden: Super Admins only' });
+    }
+    const tenantId = req.user?.tenantId;
+    const hierarchy = await prisma.user.findMany({
+      where: { tenantId, reportsToId: null },
+      include: {
+        teamMembers: {
+          include: {
+            teamMembers: true,
+          },
+        },
+      },
+    });
+    res.status(200).json({ success: true, data: hierarchy });
+  } catch (error) {
+    console.error('Error fetching hierarchy:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch hierarchy' });
   }
 });
 
