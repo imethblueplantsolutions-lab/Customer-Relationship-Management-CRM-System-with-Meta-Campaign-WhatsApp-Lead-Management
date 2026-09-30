@@ -48,12 +48,21 @@ router.post('/login', async (req, res) => {
       // Send OTP via Mailer
       await sendOtpEmail(user.email, otpCode, 'First-Time Account Login Verification');
 
+      const otpPreview = !process.env.EMAIL_USER ? otpCode : undefined;
+
       return res.status(200).json({
         success: true,
         requireOtp: true,
         isFirstLogin: true,
         email: user.email,
         message: 'First-time login detected. A 6-digit OTP code has been sent to your email.',
+        data: {
+          requireOtp: true,
+          isFirstLogin: true,
+          email: user.email,
+          message: 'First-time login detected. A 6-digit OTP code has been sent to your email.',
+          otpPreview,
+        },
       });
     }
 
@@ -250,9 +259,15 @@ router.post('/resend-otp', async (req, res) => {
 
     await sendOtpEmail(cleanEmail, otpCode, 'Resent Security Verification Code');
 
+    const otpPreview = !process.env.EMAIL_USER ? otpCode : undefined;
+
     res.status(200).json({
       success: true,
       message: 'A fresh OTP verification code has been dispatched to your email.',
+      data: {
+        message: 'A fresh OTP verification code has been dispatched to your email.',
+        otpPreview,
+      },
     });
   } catch (error) {
     console.error('[Auth Route] Resend OTP error:', error);

@@ -14,12 +14,14 @@ import {
   X,
   AlertCircle,
   CheckCircle2,
+  Sparkles,
 } from "lucide-react";
 
 interface OtpLoginModalProps {
   email: string;
   isFirstLogin: boolean;
   isOpen: boolean;
+  otpPreview?: string;
   onSuccess: (data: { token: string; user: User }) => void;
   onCancel: () => void;
 }
@@ -28,6 +30,7 @@ export default function OtpLoginModal({
   email,
   isFirstLogin,
   isOpen,
+  otpPreview,
   onSuccess,
   onCancel,
 }: OtpLoginModalProps) {
@@ -40,6 +43,23 @@ export default function OtpLoginModal({
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [currentOtpPreview, setCurrentOtpPreview] = useState<string | undefined>(otpPreview);
+
+  useEffect(() => {
+    if (otpPreview) {
+      setCurrentOtpPreview(otpPreview);
+    }
+  }, [otpPreview]);
+
+  const handleAutofillDevOtp = (code: string) => {
+    const digits = code.split("").slice(0, 6);
+    const nextDigits = ["", "", "", "", "", ""];
+    for (let i = 0; i < digits.length; i++) {
+      nextDigits[i] = digits[i];
+    }
+    setOtpDigits(nextDigits);
+    inputRefs.current[5]?.focus();
+  };
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -110,13 +130,16 @@ export default function OtpLoginModal({
     setSuccessMsg("");
 
     try {
-      const res = await apiClient<{ message?: string }>("/auth/resend-otp", {
+      const res = await apiClient<{ message?: string; otpPreview?: string }>("/auth/resend-otp", {
         method: "POST",
         body: JSON.stringify({ email }),
       });
 
       if (res.success) {
-        setSuccessMsg(res.data?.message || "A fresh 6-digit OTP code has been sent!");
+        setSuccessMsg(res.data?.message || res.message || "A fresh 6-digit OTP code has been sent!");
+        if (res.data?.otpPreview) {
+          setCurrentOtpPreview(res.data.otpPreview);
+        }
         setResendCooldown(60); // 60s rate-limit cooldown
         setTimeout(() => setSuccessMsg(""), 5000);
       } else {
@@ -217,6 +240,20 @@ export default function OtpLoginModal({
               </span>
             )}
           </div>
+
+          {/* Dev Mode OTP Banner (When SMTP is not configured) */}
+          {currentOtpPreview && (
+            <div
+              onClick={() => handleAutofillDevOtp(currentOtpPreview)}
+              className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-center cursor-pointer hover:bg-amber-100 transition-colors shadow-xs"
+            >
+              <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-amber-800">
+                <Sparkles className="h-3.5 w-3.5 text-amber-600 animate-pulse" />
+                <span>Dev OTP: <span className="font-mono tracking-widest text-amber-950 font-black">{currentOtpPreview}</span></span>
+              </div>
+              <p className="text-[10px] text-amber-700/80 mt-0.5">Click here to automatically fill this verification code</p>
+            </div>
+          )}
 
           {/* Error & Success Alerts */}
           {error && (

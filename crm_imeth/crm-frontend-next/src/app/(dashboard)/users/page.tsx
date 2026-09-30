@@ -21,6 +21,7 @@ import {
   Clock,
   ShieldCheck,
   Phone,
+  Crown,
 } from "lucide-react";
 import { useSocket } from "@/hooks/use-socket";
 import { toast } from "sonner";
@@ -40,6 +41,7 @@ export default function UserManagementPage() {
     name: "",
     email: "",
     role: "AGENT",
+    reportsToId: "",
     password: "",
   });
   const [submitting, setSubmitting] = useState(false);
@@ -54,6 +56,21 @@ export default function UserManagementPage() {
 
   const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
   const isPrivileged = ["SUPER_ADMIN", "ADMIN", "TEAM_LEAD"].includes(user?.role || "");
+
+  // Role hierarchy levels for action permissions
+  const ROLE_LEVELS: Record<string, number> = {
+    SUPER_ADMIN: 4,
+    ADMIN: 3,
+    TEAM_LEAD: 2,
+    AGENT: 1,
+  };
+
+  const getRoleLabel = (role: string) => {
+    if (role === "SUPER_ADMIN") return "Super Administrator";
+    if (role === "ADMIN") return "Administrator";
+    if (role === "TEAM_LEAD") return "Team Lead";
+    return "Sales Agent";
+  };
 
   // Load Users
   const fetchUsers = async () => {
@@ -84,21 +101,19 @@ export default function UserManagementPage() {
   useEffect(() => {
     if (!socket) return;
 
-    const handleUserUpdated = (updatedUser: User) => {
-      setUsersList((prev) =>
-        prev.map((u) => (u.id === updatedUser.id ? { ...u, ...updatedUser } : u))
-      );
+    const handleRefresh = () => {
+      fetchUsers();
     };
 
-    const handleUserCreated = (newUser: User) => {
-      setUsersList((prev) => [newUser, ...prev.filter((u) => u.id !== newUser.id)]);
-    };
-
-    socket.on("user_updated", handleUserUpdated);
-    socket.on("user_created", handleUserCreated);
+    socket.on("user_updated", handleRefresh);
+    socket.on("user_created", handleRefresh);
+    socket.on("hierarchy_updated", handleRefresh);
+    socket.on("user_deleted", handleRefresh);
     return () => {
-      socket.off("user_updated", handleUserUpdated);
-      socket.off("user_created", handleUserCreated);
+      socket.off("user_updated", handleRefresh);
+      socket.off("user_created", handleRefresh);
+      socket.off("hierarchy_updated", handleRefresh);
+      socket.off("user_deleted", handleRefresh);
     };
   }, [socket]);
 
@@ -124,6 +139,7 @@ export default function UserManagementPage() {
           name: formData.name.trim() || undefined,
           email: formData.email.trim(),
           role: formData.role,
+          reportsToId: formData.reportsToId.trim() || undefined,
           password: formData.password.trim() || undefined,
         }),
       });
@@ -131,7 +147,7 @@ export default function UserManagementPage() {
       if (res.success && res.data) {
         setIsModalOpen(false);
         toast.success(res.message || "User created successfully!");
-        setFormData({ name: "", email: "", role: "AGENT", password: "" });
+        setFormData({ name: "", email: "", role: "AGENT", reportsToId: "", password: "" });
         await fetchUsers();
 
         if (res.data.tempPasswordPreview) {
@@ -323,7 +339,8 @@ export default function UserManagementPage() {
             className="h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:border-blue-500 focus:outline-none cursor-pointer"
           >
             <option value="ALL">All Roles ({usersList.length})</option>
-            <option value="ADMIN">Admins</option>
+            {user?.role === "SUPER_ADMIN" && <option value="SUPER_ADMIN">Super Admins</option>}
+            {user?.role === "SUPER_ADMIN" && <option value="ADMIN">Admins</option>}
             <option value="TEAM_LEAD">Team Leads</option>
             <option value="AGENT">Sales Agents</option>
           </select>
@@ -349,6 +366,7 @@ export default function UserManagementPage() {
               <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                   <th className="py-4 px-6">User Account</th>
+                  <th className="py-4 px-6">Reporting Manager</th>
                   <th className="py-4 px-6">Phone</th>
                   <th className="py-4 px-6">Role</th>
                   <th className="py-4 px-6">Status</th>
@@ -393,6 +411,41 @@ export default function UserManagementPage() {
                         </div>
                       </td>
 
+                      {/* Reporting Manager (Superior) */}
+                      <td className="py-4 px-6">
+                        {u.manager ? (
+                          <div className="flex items-center gap-2">
+                            {u.manager.avatar ? (
+                              <img
+                                src={u.manager.avatar}
+                                alt={u.manager.name || "Manager"}
+                                className="h-7 w-7 rounded-lg object-cover ring-1 ring-slate-200 shrink-0"
+                              />
+                            ) : (
+                              <div className="h-7 w-7 rounded-lg bg-slate-100 text-slate-700 text-[10px] font-bold flex items-center justify-center shrink-0 border border-slate-200">
+                                {(u.manager.name || u.manager.email).charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                            <div className="min-w-0">
+                              <p className="font-semibold text-slate-900 text-xs truncate max-w-[130px]">
+                                {u.manager.name || u.manager.email.split("@")[0]}
+                              </p>
+                              <span className="text-[10px] text-slate-400 block truncate">
+                                {u.manager.role === "SUPER_ADMIN" ? "Super Admin" : u.manager.role === "ADMIN" ? "Administrator" : "Team Lead"}
+                              </span>
+                            </div>
+                          </div>
+                        ) : u.role === "SUPER_ADMIN" ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                            Root Superior
+                          </span>
+                        ) : (
+                          <span className="text-[11px] text-slate-400 italic">
+                            Unassigned
+                          </span>
+                        )}
+                      </td>
+
                       {/* Phone Number */}
                       <td className="py-4 px-6">
                         {u.phone ? (
@@ -407,7 +460,12 @@ export default function UserManagementPage() {
 
                       {/* Role Badge */}
                       <td className="py-4 px-6">
-                        {isUserAdmin ? (
+                        {u.role === "SUPER_ADMIN" ? (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-300 font-bold text-[11px] shadow-xs">
+                            <Crown className="h-3.5 w-3.5 text-amber-600" />
+                            Super Administrator
+                          </span>
+                        ) : isUserAdmin ? (
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200 font-bold text-[11px]">
                             <ShieldCheck className="h-3.5 w-3.5" />
                             Administrator
@@ -460,7 +518,9 @@ export default function UserManagementPage() {
 
                       {/* Actions */}
                       <td className="py-4 px-6 text-right">
-                        {isAdmin && u.id !== user?.id ? (
+                        {u.id === user?.id ? (
+                          <span className="text-[11px] text-slate-400 italic">Self Account</span>
+                        ) : (ROLE_LEVELS[user?.role || ""] || 0) > (ROLE_LEVELS[u.role] || 0) ? (
                           <button
                             type="button"
                             onClick={() => handleToggleActive(u)}
@@ -473,7 +533,10 @@ export default function UserManagementPage() {
                             {u.isActive ? "Deactivate" : "Activate"}
                           </button>
                         ) : (
-                          <span className="text-[11px] text-slate-400 italic">Self Account</span>
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-100 text-[10px] font-semibold text-slate-400 border border-slate-200">
+                            <ShieldCheck className="h-3 w-3 text-slate-400" />
+                            Protected
+                          </span>
                         )}
                       </td>
                     </tr>
@@ -560,6 +623,30 @@ export default function UserManagementPage() {
                     <option value="ADMIN">Administrator</option>
                   )}
                 </select>
+              </div>
+
+              {/* Direct Reporting Manager */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Direct Reporting Manager (Superior)
+                </label>
+                <select
+                  value={formData.reportsToId}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, reportsToId: e.target.value }))}
+                  className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all cursor-pointer"
+                >
+                  <option value="">No Superior (Executive Root / Unassigned)</option>
+                  {usersList
+                    .filter((m) => m.role === "SUPER_ADMIN" || m.role === "ADMIN" || m.role === "TEAM_LEAD")
+                    .map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name ? `${m.name} (${m.email})` : m.email} — {m.role === "SUPER_ADMIN" ? "Super Admin" : m.role === "ADMIN" ? "Admin" : "Team Lead"}
+                      </option>
+                    ))}
+                </select>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  Places this user directly under this manager in their reporting branch.
+                </p>
               </div>
 
               {/* Temporary Password */}

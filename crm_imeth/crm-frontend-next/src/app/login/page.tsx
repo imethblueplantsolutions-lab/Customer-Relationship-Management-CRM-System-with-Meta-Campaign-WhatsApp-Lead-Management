@@ -33,6 +33,7 @@ export default function LoginPage() {
   // OTP Modal state
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [isFirstLogin, setIsFirstLogin] = useState(false);
+  const [otpPreview, setOtpPreview] = useState<string | undefined>(undefined);
 
   const { login, setSession } = useAuth();
   const router = useRouter();
@@ -67,6 +68,7 @@ export default function LoginPage() {
       const res = await login(email, password);
       if (res?.requireOtp) {
         setIsFirstLogin(!!res.isFirstLogin);
+        setOtpPreview(res.otpPreview);
         setShowOtpModal(true);
         setSuccessMsg(res.message || "OTP code dispatched to your email. Please verify to proceed.");
       } else {
@@ -89,7 +91,7 @@ export default function LoginPage() {
   const handleOtpSuccess = (data: { token: string; user: User }) => {
     setShowOtpModal(false);
     setSession(data.token, data.user);
-    router.push("/dashboard");
+    router.push(data.user?.role === "SUPER_ADMIN" ? "/hierarchy" : "/dashboard");
   };
 
   const handleSeedDatabase = async () => {
@@ -344,6 +346,7 @@ export default function LoginPage() {
         isOpen={showOtpModal}
         email={email}
         isFirstLogin={isFirstLogin}
+        otpPreview={otpPreview}
         onSuccess={handleOtpSuccess}
         onCancel={() => setShowOtpModal(false)}
       />

@@ -102,15 +102,27 @@ router.post('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, r
 
     // Generate secure random temporary password (e.g. 8-char hex string) or use custom provided
     const rawPass = password || customPassword;
-    const tempPassword = rawPass && rawPass.trim() 
+    const hasCustomPassword = !!(rawPass && rawPass.trim());
+    const tempPassword = hasCustomPassword 
       ? rawPass.trim() 
       : crypto.randomBytes(4).toString('hex') + 'A1!';
 
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
-    const reportsToId = req.body.reportsToId && typeof req.body.reportsToId === 'string' && req.body.reportsToId.trim()
+    // If a custom password was explicitly provided, allow direct login immediately.
+    // If the password was auto-generated, require first-time OTP verification & password setup.
+    const isFirstLogin = !hasCustomPassword;
+
+    let reportsToId = req.body.reportsToId && typeof req.body.reportsToId === 'string' && req.body.reportsToId.trim()
       ? req.body.reportsToId.trim()
       : null;
+
+    // Default reportsToId if not explicitly provided:
+    // If an Admin or Team Lead creates a user and does not provide reportsToId, bind the new user to creator
+    const currentUserId = req.user?.userId || req.user?.id;
+    if (!reportsToId && (currentUserRole === 'ADMIN' || currentUserRole === 'TEAM_LEAD')) {
+      reportsToId = currentUserId;
+    }
 
     const newUser = await prisma.user.create({
       data: {
@@ -121,7 +133,7 @@ router.post('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, r
         reportsToId,
         tenantId,
         isActive: true,
-        isFirstLogin: true,
+        isFirstLogin,
       },
       select: {
         id: true,
@@ -429,8 +441,20 @@ router.get('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, re
 
     const where = { tenantId };
 
-    // Team Leads can ONLY see their downstream squad members and their own profile
-    if (currentUserRole === 'TEAM_LEAD') {
+    // Strict Hierarchy-Branch Scoping:
+    // - Admin is determinant for Team Leads and Sales Agents only.
+    // - Admins can see self, their downstream branch (Team Leads & Sales Agents), and unassigned Team Leads/Sales Agents.
+    // - Admins can NEVER see peer Admins or Super Admins.
+    if (currentUserRole === 'ADMIN') {
+      const { getDownstreamUserIds } = require('../utils/hierarchy');
+      const subordinateIds = await getDownstreamUserIds(currentUserId, tenantId);
+      where.OR = [
+        { id: currentUserId }, // Self
+        { id: { in: subordinateIds }, role: { in: ['TEAM_LEAD', 'AGENT'] } }, // Downstream branch
+        { reportsToId: null, role: { in: ['TEAM_LEAD', 'AGENT'] } } // Unassigned pool
+      ];
+    } else if (currentUserRole === 'TEAM_LEAD') {
+      // Team Leads can ONLY see their downstream squad members and their own profile
       const { getDownstreamUserIds } = require('../utils/hierarchy');
       const squadIds = await getDownstreamUserIds(currentUserId, tenantId);
       where.id = { in: squadIds };
@@ -762,6 +786,39 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
 
     if (!existingUser) {
       return res.status(404).json({ success: false, error: 'User not found in this tenant' });
+    }
+
+    const currentUserRole = req.user?.role;
+
+    // Strict Role Ceiling Guard:
+    // - ADMIN cannot modify SUPER_ADMIN or peer ADMIN
+    // - TEAM_LEAD cannot modify anyone except AGENT
+    if (currentUserRole === 'ADMIN') {
+      if (['SUPER_ADMIN', 'ADMIN'].includes(existingUser.role)) {
+        return res.status(403).json({
+          success: false,
+          error: 'Forbidden: Administrators cannot modify peer Admins or Super Admins'
+        });
+      }
+      if (role !== undefined && !['TEAM_LEAD', 'AGENT'].includes(role)) {
+        return res.status(403).json({
+          success: false,
+          error: 'Forbidden: Administrators can only assign Team Lead or Sales Agent roles'
+        });
+      }
+    } else if (currentUserRole === 'TEAM_LEAD') {
+      if (existingUser.role !== 'AGENT') {
+        return res.status(403).json({
+          success: false,
+          error: 'Forbidden: Team Leads can only modify Sales Agents'
+        });
+      }
+      if (role !== undefined && role !== 'AGENT') {
+        return res.status(403).json({
+          success: false,
+          error: 'Forbidden: Team Leads can only assign Sales Agent role'
+        });
+      }
     }
 
     // Validate reportsToId if provided

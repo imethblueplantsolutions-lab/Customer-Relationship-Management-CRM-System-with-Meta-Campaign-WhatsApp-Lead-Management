@@ -5,12 +5,19 @@ import { apiClient } from "@/lib/api-client";
 import { useSocket } from "@/hooks/use-socket";
 import type { User } from "@/types";
 
+export interface LoginResult {
+  requireOtp?: boolean;
+  isFirstLogin?: boolean;
+  message?: string;
+  otpPreview?: string;
+}
+
 interface AuthContextType {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<{ requireOtp?: boolean; isFirstLogin?: boolean; message?: string }>;
+  login: (email: string, password: string) => Promise<LoginResult>;
   logout: () => void;
   updateUser: (updatedData: Partial<User>) => void;
   setSession: (token: string, user: User) => void;
@@ -92,18 +99,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .catch(() => {});
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const res = await apiClient<{ token?: string; user?: User; requireOtp?: boolean; isFirstLogin?: boolean; message?: string }>("/auth/login", {
+  const login = useCallback(async (email: string, password: string): Promise<LoginResult> => {
+    const res = await apiClient<{
+      token?: string;
+      user?: User;
+      requireOtp?: boolean;
+      isFirstLogin?: boolean;
+      message?: string;
+      otpPreview?: string;
+    }>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
 
     if (res.success) {
-      if (res.data?.requireOtp) {
+      const rawRes = res as unknown as Record<string, unknown>;
+      const requireOtp = res.data?.requireOtp ?? rawRes.requireOtp;
+      const isFirstLogin = res.data?.isFirstLogin ?? rawRes.isFirstLogin;
+      const otpPreview = (res.data?.otpPreview ?? rawRes.otpPreview) as string | undefined;
+
+      if (requireOtp) {
         return {
           requireOtp: true,
-          isFirstLogin: res.data.isFirstLogin,
-          message: res.data.message,
+          isFirstLogin: !!isFirstLogin,
+          message: res.message || res.data?.message,
+          otpPreview,
         };
       }
       if (res.data?.token && res.data?.user) {
