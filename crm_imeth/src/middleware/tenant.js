@@ -9,21 +9,26 @@ const extractTenantMiddleware = (req, res, next) => {
     return next();
   }
 
-  let tenantId = req.headers['x-tenant-id'] || req.user?.organizationId;
+  let tenantId = null;
 
-  // Extract from JWT Authorization header if present
+  // Extract from JWT Authorization header first (Cryptographically signed source of truth)
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.split(' ')[1];
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'development_jwt_secret_key');
       req.user = decoded;
-      if (!tenantId && decoded.tenantId) {
-        tenantId = decoded.tenantId;
+      if (decoded.tenantId) {
+        tenantId = decoded.tenantId; // Authenticated JWT is immutable and authoritative
       }
     } catch (err) {
       console.warn('[Tenant Middleware] Invalid or expired JWT token:', err.message);
     }
+  }
+
+  // Fallback to x-tenant-id header only for unauthenticated/machine requests
+  if (!tenantId) {
+    tenantId = req.headers['x-tenant-id'] || req.user?.organizationId;
   }
 
   // Attempt to resolve tenant via Meta Webhook WABA ID
