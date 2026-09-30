@@ -646,6 +646,109 @@ router.post('/hierarchy/auto-link', authenticate, async (req, res) => {
   }
 });
 
+// PUT: Bulk reassign reporting managers for multiple users (Super Admin only)
+router.put('/hierarchy/bulk-reassign', authenticate, async (req, res) => {
+  try {
+    if (req.user?.role !== 'SUPER_ADMIN') {
+      return res.status(403).json({ success: false, error: 'Forbidden: Super Admins only' });
+    }
+
+    const tenantId = req.user?.tenantId;
+    const { userIds, reportsToId } = req.body;
+
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({ success: false, error: 'userIds array is required and cannot be empty' });
+    }
+
+    if (userIds.length > 100) {
+      return res.status(400).json({ success: false, error: 'Cannot bulk reassign more than 100 users at once' });
+    }
+
+    // Validate all target users exist in this tenant
+    const targetUsers = await prisma.user.findMany({
+      where: { id: { in: userIds }, tenantId },
+      select: { id: true, name: true, email: true, role: true }
+    });
+
+    if (targetUsers.length !== userIds.length) {
+      return res.status(400).json({ success: false, error: 'One or more users not found in this tenant' });
+    }
+
+    // Prevent reassigning Super Admin root
+    const superAdminInBatch = targetUsers.find(u => u.role === 'SUPER_ADMIN');
+    if (superAdminInBatch) {
+      return res.status(400).json({
+        success: false,
+        error: 'Cannot reassign the Super Admin root user in a bulk operation'
+      });
+    }
+
+    // Validate target manager exists if not null
+    if (reportsToId) {
+      const managerExists = await prisma.user.findFirst({
+        where: { id: reportsToId, tenantId }
+      });
+      if (!managerExists) {
+        return res.status(400).json({ success: false, error: 'Target manager not found in this tenant' });
+      }
+    }
+
+    // Circular hierarchy detection for each user in the batch
+    const { getDownstreamUserIds } = require('../utils/hierarchy');
+
+    for (const userId of userIds) {
+      if (reportsToId && reportsToId === userId) {
+        const user = targetUsers.find(u => u.id === userId);
+        return res.status(400).json({
+          success: false,
+          error: `Circular hierarchy: ${user?.name || user?.email || userId} cannot report to themselves`
+        });
+      }
+
+      if (reportsToId) {
+        const subordinateIds = await getDownstreamUserIds(userId, tenantId);
+        if (subordinateIds.includes(reportsToId)) {
+          const user = targetUsers.find(u => u.id === userId);
+          return res.status(400).json({
+            success: false,
+            error: `Circular hierarchy detected: the selected manager is already a subordinate of ${user?.name || user?.email || userId}`
+          });
+        }
+      }
+    }
+
+    // Execute atomic bulk update in a single transaction
+    await prisma.$transaction(
+      userIds.map(userId =>
+        prisma.user.update({
+          where: { id: userId },
+          data: { reportsToId: reportsToId || null }
+        })
+      )
+    );
+
+    // Broadcast real-time hierarchy update
+    try {
+      const { io } = require('../index');
+      if (io) {
+        io.to(`tenant:${tenantId}`).emit('hierarchy_updated', {
+          message: `Bulk reassignment: ${userIds.length} users updated`,
+          userIds,
+          reportsToId
+        });
+      }
+    } catch (_) {}
+
+    res.status(200).json({
+      success: true,
+      message: `Successfully reassigned ${userIds.length} user(s) to their new reporting manager`
+    });
+  } catch (error) {
+    console.error('Error in bulk reassignment:', error);
+    res.status(500).json({ success: false, error: 'Failed to perform bulk reassignment' });
+  }
+});
+
 // PUT: Update any user in the tenant (Admins & Team Leads & Super Admins)
 router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, res) => {
   try {
@@ -671,6 +774,16 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
       });
       if (!managerUser) {
         return res.status(400).json({ success: false, error: 'Reporting manager not found in this tenant' });
+      }
+
+      // Circular hierarchy detection: ensure the proposed manager is NOT a downstream subordinate
+      const { getDownstreamUserIds } = require('../utils/hierarchy');
+      const subordinateIds = await getDownstreamUserIds(req.params.id, tenantId);
+      if (subordinateIds.includes(reportsToId)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Circular hierarchy detected: the selected manager is already a subordinate of this user'
+        });
       }
     }
 

@@ -155,6 +155,12 @@ export default function UserHierarchyPage() {
   } | null>(null);
   const [copiedTempPass, setCopiedTempPass] = useState(false);
 
+  // Bulk Actions
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [isBulkReassignModalOpen, setIsBulkReassignModalOpen] = useState(false);
+  const [bulkTargetManagerId, setBulkTargetManagerId] = useState<string>("");
+  const [bulkReassigning, setBulkReassigning] = useState(false);
+
   // Security barrier
   useEffect(() => {
     if (!authLoading && currentUser?.role !== "SUPER_ADMIN") {
@@ -351,7 +357,7 @@ export default function UserHierarchyPage() {
     }
   };
 
-  // Filtered users for Matrix Table
+  // Filtered users for Matrix Table (declared before bulk helpers that depend on it)
   const filteredUsers = useMemo(() => {
     if (!hierarchyData?.users) return [];
     return hierarchyData.users.filter((u) => {
@@ -375,11 +381,112 @@ export default function UserHierarchyPage() {
     });
   }, [hierarchyData?.users, roleFilter, statusFilter, searchTerm]);
 
+  // ─── Bulk Selection Helpers ──────────────────────────────────────────────────
+  const toggleSelection = useCallback((id: string) => {
+    setSelectedUserIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const toggleAll = useCallback(() => {
+    // Only toggle non-SUPER_ADMIN users from the filtered list
+    const selectable = filteredUsers.filter((u) => u.role !== "SUPER_ADMIN");
+    const allSelected = selectable.every((u) => selectedUserIds.has(u.id));
+    if (allSelected) {
+      setSelectedUserIds(new Set());
+    } else {
+      setSelectedUserIds(new Set(selectable.map((u) => u.id)));
+    }
+  }, [filteredUsers, selectedUserIds]);
+
+  const clearSelection = useCallback(() => {
+    setSelectedUserIds(new Set());
+  }, []);
+
+  // Bulk reassign all selected users to a new manager
+  const handleBulkReassign = async () => {
+    if (selectedUserIds.size === 0) return;
+    setBulkReassigning(true);
+    try {
+      const res = await apiClient<{ success: boolean; message: string }>("/users/hierarchy/bulk-reassign", {
+        method: "PUT",
+        body: JSON.stringify({
+          userIds: Array.from(selectedUserIds),
+          reportsToId: bulkTargetManagerId || null,
+        }),
+      });
+
+      if (res.success) {
+        toast.success(res.message || `${selectedUserIds.size} users reassigned successfully!`);
+        setIsBulkReassignModalOpen(false);
+        setBulkTargetManagerId("");
+        setSelectedUserIds(new Set());
+        // Socket.IO listener will auto-refetch, but also do an explicit silent refresh
+        await fetchHierarchy(true);
+      } else {
+        toast.error(res.error || "Bulk reassignment failed");
+      }
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to perform bulk reassignment");
+    } finally {
+      setBulkReassigning(false);
+    }
+  };
+
   // Potential managers for the reassign modal (cannot report to oneself)
+  // Recursively collect all downstream subordinate IDs to prevent circular hierarchy assignment
   const potentialManagers = useMemo(() => {
     if (!hierarchyData?.users || !reassignModalUser) return [];
-    return hierarchyData.users.filter((u) => u.id !== reassignModalUser.id);
+
+    const getSubordinateIds = (user: User): Set<string> => {
+      const ids = new Set<string>();
+      const traverse = (node: User) => {
+        if (node.teamMembers) {
+          for (const sub of node.teamMembers) {
+            ids.add(sub.id);
+            const fullSub = hierarchyData!.users.find((u) => u.id === sub.id);
+            if (fullSub) traverse(fullSub);
+          }
+        }
+      };
+      traverse(user);
+      return ids;
+    };
+
+    const subordinateIds = getSubordinateIds(reassignModalUser);
+    return hierarchyData.users.filter(
+      (u) => u.id !== reassignModalUser.id && !subordinateIds.has(u.id)
+    );
   }, [hierarchyData?.users, reassignModalUser]);
+
+  // Potential managers for the BULK reassign modal — exclude all selected users & their downstream subordinates
+  const bulkPotentialManagers = useMemo(() => {
+    if (!hierarchyData?.users || selectedUserIds.size === 0) return [];
+
+    const excludeIds = new Set<string>(selectedUserIds);
+
+    // For each selected user, collect their downstream subordinates
+    for (const selectedId of selectedUserIds) {
+      const selectedUser = hierarchyData.users.find((u) => u.id === selectedId);
+      if (selectedUser) {
+        const traverse = (node: User) => {
+          if (node.teamMembers) {
+            for (const sub of node.teamMembers) {
+              excludeIds.add(sub.id);
+              const fullSub = hierarchyData!.users.find((u) => u.id === sub.id);
+              if (fullSub) traverse(fullSub);
+            }
+          }
+        };
+        traverse(selectedUser);
+      }
+    }
+
+    return hierarchyData.users.filter((u) => !excludeIds.has(u.id));
+  }, [hierarchyData?.users, selectedUserIds]);
 
   if (authLoading || currentUser?.role !== "SUPER_ADMIN") {
     return (
@@ -651,6 +758,48 @@ export default function UserHierarchyPage() {
         </div>
       </div>
 
+      {/* ================= BULK ACTION BAR (Sticky) ================= */}
+      {selectedUserIds.size > 0 && activeView === "matrix" && (
+        <div className="sticky top-0 z-30 animate-in slide-in-from-top-2 duration-300">
+          <div className="flex items-center justify-between rounded-2xl border border-blue-200 bg-blue-50/90 px-5 py-3 shadow-md backdrop-blur-sm dark:border-blue-800 dark:bg-blue-950/80">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white font-bold text-xs shadow-sm">
+                {selectedUserIds.size}
+              </div>
+              <div>
+                <span className="text-xs font-bold text-blue-900 dark:text-blue-100">
+                  {selectedUserIds.size} {selectedUserIds.size === 1 ? "user" : "users"} selected
+                </span>
+                <p className="text-[10px] text-blue-600 dark:text-blue-300">
+                  Use bulk actions to reassign all selected users at once
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setBulkTargetManagerId("");
+                  setIsBulkReassignModalOpen(true);
+                }}
+                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition-all cursor-pointer active:scale-95"
+              >
+                <ArrowRight className="h-3.5 w-3.5" />
+                <span>Bulk Reassign Manager</span>
+              </button>
+              <button
+                type="button"
+                onClick={clearSelection}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-white px-3.5 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:bg-blue-900/40 dark:text-blue-200 cursor-pointer transition-all"
+              >
+                <X className="h-3.5 w-3.5" />
+                <span>Clear</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ================= VIEW 1: MATRIX TABLE ================= */}
       {activeView === "matrix" && (
         <div className="rounded-2xl border border-slate-200/80 bg-white shadow-xs overflow-hidden dark:border-slate-800 dark:bg-slate-900">
@@ -658,6 +807,18 @@ export default function UserHierarchyPage() {
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50/80 font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-300">
+                  <th className="py-3.5 px-3 w-10">
+                    <input
+                      type="checkbox"
+                      checked={
+                        filteredUsers.filter((u) => u.role !== "SUPER_ADMIN").length > 0 &&
+                        filteredUsers.filter((u) => u.role !== "SUPER_ADMIN").every((u) => selectedUserIds.has(u.id))
+                      }
+                      onChange={toggleAll}
+                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
+                      aria-label="Select all users"
+                    />
+                  </th>
                   <th className="py-3.5 px-4 w-28">Tier Level</th>
                   <th className="py-3.5 px-4 min-w-[200px]">User Profile</th>
                   <th className="py-3.5 px-4 min-w-[140px]">Designated Role</th>
@@ -703,7 +864,7 @@ export default function UserHierarchyPage() {
                   ))
                 ) : filteredUsers.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-slate-500 dark:text-slate-400">
+                    <td colSpan={8} className="py-12 text-center text-slate-500 dark:text-slate-400">
                       <div className="flex flex-col items-center justify-center gap-2">
                         <UserX className="h-8 w-8 text-slate-300 dark:text-slate-600" />
                         <p className="text-sm font-semibold">No team members match the current filter.</p>
@@ -718,14 +879,29 @@ export default function UserHierarchyPage() {
                     const isSelf = u.id === currentUser?.id;
                     const isSuper = u.role === "SUPER_ADMIN";
                     const directReportsCount = u.teamMembers?.length || 0;
+                    const isSelected = selectedUserIds.has(u.id);
 
                     return (
                       <tr
                         key={u.id}
                         className={`hover:bg-slate-50/70 transition-colors dark:hover:bg-slate-800/40 ${
                           isSuper ? "bg-purple-50/20 dark:bg-purple-950/10" : ""
-                        }`}
+                        } ${isSelected ? "bg-blue-50/60 dark:bg-blue-950/20" : ""}`}
                       >
+                        {/* 0. Selection Checkbox */}
+                        <td className="py-4 px-3 align-middle">
+                          {!isSuper ? (
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleSelection(u.id)}
+                              className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
+                              aria-label={`Select ${u.name || u.email}`}
+                            />
+                          ) : (
+                            <span className="block h-4 w-4" />
+                          )}
+                        </td>
                         {/* 1. Tier Level */}
                         <td className="py-4 px-4 align-middle">
                           <span
@@ -798,7 +974,18 @@ export default function UserHierarchyPage() {
                               <select
                                 value={u.reportsToId || ""}
                                 disabled={updatingUserId === u.id}
-                                onChange={(e) => handleAssignManager(u.id, e.target.value || null)}
+                                onChange={(e) => {
+                                  const newManagerId = e.target.value || null;
+                                  const managerUser = hierarchyData?.users?.find((m) => m.id === newManagerId);
+                                  const managerLabel = managerUser
+                                    ? (managerUser.name || managerUser.email)
+                                    : "None (Unassigned)";
+                                  if (window.confirm(`Reassign ${u.name || u.email} to report to ${managerLabel}?`)) {
+                                    handleAssignManager(u.id, newManagerId);
+                                  } else {
+                                    e.target.value = u.reportsToId || "";
+                                  }
+                                }}
                                 aria-label={`Select manager for ${u.name || u.email}`}
                                 className={`rounded-xl border px-2.5 py-1.5 text-xs font-semibold transition-all cursor-pointer max-w-[200px] truncate ${
                                   u.reportsToId
@@ -1498,6 +1685,108 @@ export default function UserHierarchyPage() {
             >
               Done & View Hierarchy
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL: BULK REASSIGN MANAGER ================= */}
+      {isBulkReassignModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/60 dark:text-blue-300">
+                  <Users className="h-4.5 w-4.5" />
+                </span>
+                <div>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+                    Bulk Reassign Manager
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Reassign {selectedUserIds.size} selected {selectedUserIds.size === 1 ? "user" : "users"} to a new reporting manager
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsBulkReassignModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="py-4 space-y-4">
+              {/* Selected Users Summary */}
+              <div className="rounded-xl bg-slate-50 p-3.5 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700">
+                <span className="text-[11px] font-semibold text-slate-400 block mb-2">Selected Users</span>
+                <div className="flex flex-wrap gap-1.5 max-h-[120px] overflow-y-auto">
+                  {Array.from(selectedUserIds).map((id) => {
+                    const user = hierarchyData?.users?.find((u) => u.id === id);
+                    if (!user) return null;
+                    return (
+                      <span
+                        key={id}
+                        className="inline-flex items-center gap-1 rounded-lg bg-blue-100 px-2 py-1 text-[10px] font-semibold text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
+                      >
+                        <span className="truncate max-w-[100px]">{user.name || user.email.split("@")[0]}</span>
+                        <button
+                          type="button"
+                          onClick={() => toggleSelection(id)}
+                          className="text-blue-500 hover:text-blue-800 cursor-pointer ml-0.5"
+                        >
+                          <X className="h-2.5 w-2.5" />
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Select New Manager */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  New Reporting Manager for All Selected Users
+                </label>
+                <select
+                  value={bulkTargetManagerId}
+                  onChange={(e) => setBulkTargetManagerId(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:border-blue-500 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 cursor-pointer"
+                >
+                  <option value="">No Manager (Unassigned / Root Level)</option>
+                  {bulkPotentialManagers.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name ? `${m.name} (${m.email})` : m.email} — {m.role}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  All {selectedUserIds.size} selected users will be moved under this manager simultaneously.
+                  Circular hierarchy assignments are automatically blocked.
+                </p>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-200 dark:border-slate-800">
+              <button
+                type="button"
+                disabled={bulkReassigning}
+                onClick={() => setIsBulkReassignModalOpen(false)}
+                className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={bulkReassigning}
+                onClick={handleBulkReassign}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition-all cursor-pointer shadow-sm disabled:opacity-50"
+              >
+                {bulkReassigning && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
+                <span>{bulkReassigning ? "Reassigning..." : `Reassign ${selectedUserIds.size} Users`}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
