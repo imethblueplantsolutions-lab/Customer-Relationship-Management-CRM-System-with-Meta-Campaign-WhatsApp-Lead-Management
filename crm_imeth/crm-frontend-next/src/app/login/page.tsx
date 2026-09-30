@@ -226,14 +226,9 @@ export default function LoginPage() {
     setError("");
     setSuccessMsg("");
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    if (!clientId) {
-      setError(
-        "Google Single Sign-On (SSO): OAuth client ID is not configured yet in NEXT_PUBLIC_GOOGLE_CLIENT_ID."
-      );
-      return;
-    }
 
-    if (window.google?.accounts?.id) {
+    // If client ID is set and Google GSI is loaded, trigger Google prompt
+    if (clientId && window.google?.accounts?.id) {
       window.google.accounts.id.prompt((notification: unknown) => {
         const notif = notification as { isNotDisplayed?: () => boolean; isSkippedMoment?: () => boolean };
         if (notif?.isNotDisplayed?.() || notif?.isSkippedMoment?.()) {
@@ -241,7 +236,13 @@ export default function LoginPage() {
           if (btn) btn.click();
         }
       });
+      return;
     }
+
+    // Friendly UI notice (Google Cloud credentials can be configured later)
+    setSuccessMsg(
+      "Google Sign-In button is live on your UI! Live OAuth authentication will activate when your Google Cloud Client ID is added."
+    );
   };
 
   return (
