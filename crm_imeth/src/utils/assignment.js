@@ -18,6 +18,14 @@ async function getRoundRobinAgent(tenantId) {
         tenantId,
         role: 'AGENT',
         isActive: true,
+        OR: [
+          { reportsToId: null },
+          {
+            manager: {
+              isActive: true,
+            },
+          },
+        ],
       },
       orderBy: {
         createdAt: 'asc',

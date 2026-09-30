@@ -844,47 +844,87 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
       }
     }
 
-    const updatedUser = await prisma.user.update({
-      where: { id: req.params.id },
-      data: {
-        ...(name !== undefined && { name: name ? name.trim() : null }),
-        ...(role !== undefined && { role }),
-        ...(isActive !== undefined && { isActive }),
-        ...(reportsToId !== undefined && { reportsToId: reportsToId ? reportsToId : null }),
+    const userSelectFields = {
+      id: true,
+      name: true,
+      phone: true,
+      bio: true,
+      avatar: true,
+      email: true,
+      role: true,
+      tenantId: true,
+      isActive: true,
+      isFirstLogin: true,
+      createdAt: true,
+      reportsToId: true,
+      manager: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          avatar: true,
+        },
       },
-      select: {
-        id: true,
-        name: true,
-        phone: true,
-        bio: true,
-        avatar: true,
-        email: true,
-        role: true,
-        tenantId: true,
-        isActive: true,
-        isFirstLogin: true,
-        createdAt: true,
-        reportsToId: true,
-        manager: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
-            avatar: true,
-          },
+      teamMembers: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          avatar: true,
         },
-        teamMembers: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
-            avatar: true,
+      },
+    };
+
+    let updatedUser;
+    const isDeactivating = isActive === false && existingUser.isActive === true;
+
+    if (isDeactivating) {
+      // Patch 3: Atomic Tree-Healing on User Deactivation ("Zombie Manager" Prevention)
+      updatedUser = await prisma.$transaction(async (tx) => {
+        // 1. Query for all users where reportsToId === targetUser.id in this tenant
+        const directSubordinates = await tx.user.findMany({
+          where: { reportsToId: existingUser.id, tenantId },
+          select: { id: true, name: true, email: true },
+        });
+
+        if (directSubordinates.length > 0) {
+          // 2. Reassign subordinates to deactivated user's manager, or requesting user
+          const fallbackManagerId = existingUser.reportsToId || req.user?.id || req.user?.userId;
+
+          await tx.user.updateMany({
+            where: { reportsToId: existingUser.id, tenantId },
+            data: { reportsToId: fallbackManagerId },
+          });
+
+          console.log(`[Zombie Manager Patch] Reassigned ${directSubordinates.length} subordinates of deactivated user ${existingUser.id} to fallback manager ${fallbackManagerId}`);
+        }
+
+        // 3. Mark target user as inactive
+        return tx.user.update({
+          where: { id: req.params.id },
+          data: {
+            ...(name !== undefined && { name: name ? name.trim() : null }),
+            ...(role !== undefined && { role }),
+            isActive: false,
+            ...(reportsToId !== undefined && { reportsToId: reportsToId ? reportsToId : null }),
           },
+          select: userSelectFields,
+        });
+      });
+    } else {
+      updatedUser = await prisma.user.update({
+        where: { id: req.params.id },
+        data: {
+          ...(name !== undefined && { name: name ? name.trim() : null }),
+          ...(role !== undefined && { role }),
+          ...(isActive !== undefined && { isActive }),
+          ...(reportsToId !== undefined && { reportsToId: reportsToId ? reportsToId : null }),
         },
-      }
-    });
+        select: userSelectFields,
+      });
+    }
 
     // Broadcast user update
     try {

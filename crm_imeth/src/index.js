@@ -14,8 +14,7 @@ const app = express();
 const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 
-// Serve static uploads directory for local file attachments
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Public uploads directory is protected against IDOR via /api/attachments route
 
 // Initialize Socket.IO (Redis adapter attached only when Redis is available)
 const io = new Server(server, {
@@ -118,6 +117,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use(extractTenantMiddleware);
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/leads', require('./routes/leads'));
+app.use('/api/attachments', require('./routes/attachments'));
 app.use('/api/pipelines', require('./routes/pipelines'));
 app.use('/api/deals', require('./routes/deals'));
 app.use('/api/flows', require('./routes/flows'));

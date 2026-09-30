@@ -5,6 +5,7 @@ const CacheService = require('../services/cacheService');
 const { tenantStorage } = require('../middleware/tenant');
 const { authenticate, authorize } = require('../middleware/auth');
 const { getHierarchyScopedUserIds, getLeadScopeCondition } = require('../utils/hierarchy');
+const { assertUserBelongsToTenant } = require('../utils/security');
 
 // GET /: Fetch leads for current tenant with RBAC, advanced filters & tags
 router.get('/', authenticate, async (req, res) => {
@@ -130,6 +131,11 @@ router.post('/', authorize(['ADMIN', 'TEAM_LEAD', 'AGENT']), async (req, res) =>
     // Agents automatically assign the lead to themselves; Admins/Team Leads can assign to any user
     const finalAssignedToId = isAgent ? currentUserId : (assignedToId || null);
 
+    // Cross-Tenant UUID Injection Guard: Verify assigned user strictly belongs to this tenant and is active
+    if (finalAssignedToId) {
+      await assertUserBelongsToTenant(finalAssignedToId, tenantId);
+    }
+
     const newLead = await prisma.lead.create({
       data: {
         phoneNumber,
@@ -227,11 +233,14 @@ router.post('/', authorize(['ADMIN', 'TEAM_LEAD', 'AGENT']), async (req, res) =>
 
     res.status(201).json({ success: true, data: newLead });
   } catch (error) {
+    if (error.statusCode === 403 || error.status === 403) {
+      return res.status(403).json({ success: false, error: error.message });
+    }
     if (error.code === 'P2002') {
       return res.status(409).json({ success: false, error: 'This phone number already exists in your organization' });
     }
     console.error('Add lead error:', error);
-    res.status(500).json({ success: false, error: 'Failed to add customer lead' });
+    res.status(500).json({ success: false, error: error.message || 'Failed to add customer lead' });
   }
 });
 
@@ -557,6 +566,10 @@ const updateLeadHandler = async (req, res) => {
     const isAssignmentChanged = assignedToId !== undefined && targetAssignedToId !== existingLead.assignedToId;
 
     if (assignedToId !== undefined) {
+      if (targetAssignedToId) {
+        // Cross-Tenant UUID Injection Guard: Verify assignee belongs to this tenant and is active
+        await assertUserBelongsToTenant(targetAssignedToId, tenantId);
+      }
       updateData.assignedToId = targetAssignedToId;
     }
 
@@ -648,8 +661,11 @@ const updateLeadHandler = async (req, res) => {
 
     res.status(200).json({ success: true, data: updatedLead });
   } catch (error) {
+    if (error.statusCode === 403 || error.status === 403) {
+      return res.status(403).json({ success: false, error: error.message });
+    }
     console.error('Error updating lead:', error);
-    res.status(500).json({ success: false, error: 'Failed to update lead' });
+    res.status(500).json({ success: false, error: error.message || 'Failed to update lead' });
   }
 };
 
@@ -743,6 +759,10 @@ router.post('/:id/followups', async (req, res) => {
       targetAssigneeId = currentUserId;
     } else {
       targetAssigneeId = assignedToId || currentUserId || null;
+    }
+
+    if (targetAssigneeId) {
+      await assertUserBelongsToTenant(targetAssigneeId, tenantId);
     }
 
     // Duplicate submission guard (prevent duplicate task creation within 5 seconds)
@@ -852,8 +872,11 @@ router.post('/:id/followups', async (req, res) => {
 
     res.status(201).json({ success: true, data: followup, activity: scheduledActivity });
   } catch (error) {
+    if (error.statusCode === 403 || error.status === 403) {
+      return res.status(403).json({ success: false, error: error.message });
+    }
     console.error('Error creating followup:', error);
-    res.status(500).json({ success: false, error: 'Failed to schedule follow-up' });
+    res.status(500).json({ success: false, error: error.message || 'Failed to schedule follow-up' });
   }
 });
 
