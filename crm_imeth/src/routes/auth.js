@@ -2,9 +2,12 @@ const express = require('express');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
 const prisma = require('../config/db');
 const { sendOtpEmail } = require('../services/mailer');
 const router = express.Router();
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Helper to calculate SHA-256 hash for OTP codes
 function hashOtp(otpCode) {
@@ -98,6 +101,100 @@ router.post('/login', async (req, res) => {
   } catch (error) {
     console.error('[Auth Route] Login error:', error);
     res.status(500).json({ success: false, error: 'Authentication failed' });
+  }
+});
+
+// POST: Google OAuth Token Verification & Enterprise SaaS Session Issuance
+router.post('/google', async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({
+        success: false,
+        error: 'Google credential token is required',
+      });
+    }
+
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+
+    // 1. Verify Google's cryptographic ID token
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: clientId || undefined,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid Google token payload',
+      });
+    }
+
+    const email = payload.email.toLowerCase().trim();
+
+    // 2. Look up user in database (Enforces B2B closed SaaS security & tenant isolation)
+    const dbUser = await prisma.user.findUnique({
+      where: { email },
+      include: { tenant: true },
+    });
+
+    if (!dbUser) {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied. No active enterprise account found for this Google email. Contact your organization administrator to invite you.',
+      });
+    }
+
+    if (!dbUser.isActive) {
+      return res.status(403).json({
+        success: false,
+        error: 'Your account is deactivated. Please contact your administrator.',
+      });
+    }
+
+    // 3. Issue standard tenant-bound SaaS JWT
+    const token = jwt.sign(
+      {
+        userId: dbUser.id,
+        id: dbUser.id,
+        email: dbUser.email,
+        role: dbUser.role,
+        tenantId: dbUser.tenantId,
+        tokenVersion: dbUser.tokenVersion || 0,
+      },
+      process.env.JWT_SECRET || 'development_jwt_secret_key',
+      { expiresIn: '7d' }
+    );
+
+    const userProfile = {
+      id: dbUser.id,
+      name: dbUser.name || payload.name || 'User',
+      email: dbUser.email,
+      role: dbUser.role,
+      phone: dbUser.phone || null,
+      bio: dbUser.bio || null,
+      avatar: dbUser.avatar || payload.picture || null,
+      tenantId: dbUser.tenantId,
+      isFirstLogin: dbUser.isFirstLogin,
+    };
+
+    return res.status(200).json({
+      success: true,
+      token,
+      data: {
+        token,
+        user: userProfile,
+      },
+      user: userProfile,
+    });
+  } catch (error) {
+    console.error('[Google Auth Error]:', error.message);
+    return res.status(401).json({
+      success: false,
+      error: 'Google authentication failed or token is invalid: ' + error.message,
+    });
   }
 });
 
