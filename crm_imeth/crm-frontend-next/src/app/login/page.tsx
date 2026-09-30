@@ -387,7 +387,7 @@ export default function LoginPage() {
 
             {/* Subtle Horizontal Divider */}
             <div className="relative flex items-center justify-center my-0.5">
-              <div className="w-full border-t border-slate-200 dark:border-slate-700" />
+              <div className="w-full border-t border-[#155DFC]" />
               <span className="absolute bg-white dark:bg-slate-900 px-3 text-xs text-slate-400 font-medium uppercase tracking-wider">
                 Or continue with
               </span>
