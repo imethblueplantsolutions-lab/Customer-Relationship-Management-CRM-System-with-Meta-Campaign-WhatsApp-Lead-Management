@@ -637,7 +637,12 @@ export default function UserManagementPage() {
                 >
                   <option value="">No Superior (Executive Root / Unassigned)</option>
                   {usersList
-                    .filter((m) => m.role === "SUPER_ADMIN" || m.role === "ADMIN" || m.role === "TEAM_LEAD")
+                    .filter((m) => {
+                      if (formData.role === "AGENT") return m.role === "TEAM_LEAD";
+                      if (formData.role === "TEAM_LEAD") return m.role === "ADMIN";
+                      if (formData.role === "ADMIN") return m.role === "SUPER_ADMIN";
+                      return false;
+                    })
                     .map((m) => (
                       <option key={m.id} value={m.id}>
                         {m.name ? `${m.name} (${m.email})` : m.email} — {m.role === "SUPER_ADMIN" ? "Super Admin" : m.role === "ADMIN" ? "Admin" : "Team Lead"}

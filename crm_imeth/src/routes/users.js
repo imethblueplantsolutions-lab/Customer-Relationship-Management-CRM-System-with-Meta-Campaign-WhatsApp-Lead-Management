@@ -6,6 +6,7 @@ const prisma = require('../config/db');
 const { tenantStorage } = require('../middleware/tenant');
 const { authorize, authenticate } = require('../middleware/auth');
 const { sendWelcomeEmail, sendOtpEmail } = require('../services/mailer');
+const { validateHierarchyAssignment, validateBulkHierarchyAssignment } = require('../utils/hierarchyValidation');
 const router = express.Router();
 
 // Helper to calculate SHA-256 hash for OTP codes
@@ -118,11 +119,24 @@ router.post('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, r
       : null;
 
     // Default reportsToId if not explicitly provided:
-    // If an Admin or Team Lead creates a user and does not provide reportsToId, bind the new user to creator
+    // If a Team Lead creates an AGENT, bind to creator
+    // If an Admin creates a TEAM_LEAD, bind to creator
     const currentUserId = req.user?.userId || req.user?.id;
-    if (!reportsToId && (currentUserRole === 'ADMIN' || currentUserRole === 'TEAM_LEAD')) {
-      reportsToId = currentUserId;
+    if (!reportsToId) {
+      if (currentUserRole === 'TEAM_LEAD' && role === 'AGENT') {
+        reportsToId = currentUserId;
+      } else if (currentUserRole === 'ADMIN' && role === 'TEAM_LEAD') {
+        reportsToId = currentUserId;
+      }
     }
+
+    // Strict Tier-Based Hierarchy & Multi-Tenant Validation
+    await validateHierarchyAssignment({
+      userId: null,
+      userRole: role,
+      reportsToId,
+      tenantId,
+    });
 
     const newUser = await prisma.user.create({
       data: {
@@ -177,8 +191,11 @@ router.post('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, r
       },
     });
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ success: false, error: error.message });
+    }
     console.error('Error provisioning user:', error);
-    res.status(500).json({ success: false, error: 'Failed to provision user' });
+    res.status(500).json({ success: false, error: error.message || 'Failed to provision user' });
   }
 });
 
@@ -688,58 +705,12 @@ router.put('/hierarchy/bulk-reassign', authenticate, async (req, res) => {
       return res.status(400).json({ success: false, error: 'Cannot bulk reassign more than 100 users at once' });
     }
 
-    // Validate all target users exist in this tenant
-    const targetUsers = await prisma.user.findMany({
-      where: { id: { in: userIds }, tenantId },
-      select: { id: true, name: true, email: true, role: true }
+    // Strict Tier-Based Hierarchy & Tenant Validation on Batch
+    await validateBulkHierarchyAssignment({
+      userIds,
+      reportsToId,
+      tenantId,
     });
-
-    if (targetUsers.length !== userIds.length) {
-      return res.status(400).json({ success: false, error: 'One or more users not found in this tenant' });
-    }
-
-    // Prevent reassigning Super Admin root
-    const superAdminInBatch = targetUsers.find(u => u.role === 'SUPER_ADMIN');
-    if (superAdminInBatch) {
-      return res.status(400).json({
-        success: false,
-        error: 'Cannot reassign the Super Admin root user in a bulk operation'
-      });
-    }
-
-    // Validate target manager exists if not null
-    if (reportsToId) {
-      const managerExists = await prisma.user.findFirst({
-        where: { id: reportsToId, tenantId }
-      });
-      if (!managerExists) {
-        return res.status(400).json({ success: false, error: 'Target manager not found in this tenant' });
-      }
-    }
-
-    // Circular hierarchy detection for each user in the batch
-    const { getDownstreamUserIds } = require('../utils/hierarchy');
-
-    for (const userId of userIds) {
-      if (reportsToId && reportsToId === userId) {
-        const user = targetUsers.find(u => u.id === userId);
-        return res.status(400).json({
-          success: false,
-          error: `Circular hierarchy: ${user?.name || user?.email || userId} cannot report to themselves`
-        });
-      }
-
-      if (reportsToId) {
-        const subordinateIds = await getDownstreamUserIds(userId, tenantId);
-        if (subordinateIds.includes(reportsToId)) {
-          const user = targetUsers.find(u => u.id === userId);
-          return res.status(400).json({
-            success: false,
-            error: `Circular hierarchy detected: the selected manager is already a subordinate of ${user?.name || user?.email || userId}`
-          });
-        }
-      }
-    }
 
     // Execute atomic bulk update in a single transaction
     await prisma.$transaction(
@@ -768,8 +739,11 @@ router.put('/hierarchy/bulk-reassign', authenticate, async (req, res) => {
       message: `Successfully reassigned ${userIds.length} user(s) to their new reporting manager`
     });
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ success: false, error: error.message });
+    }
     console.error('Error in bulk reassignment:', error);
-    res.status(500).json({ success: false, error: 'Failed to perform bulk reassignment' });
+    res.status(500).json({ success: false, error: error.message || 'Failed to perform bulk reassignment' });
   }
 });
 
@@ -821,27 +795,22 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
       }
     }
 
-    // Validate reportsToId if provided
-    if (reportsToId !== undefined && reportsToId !== null && reportsToId !== '') {
-      if (reportsToId === req.params.id) {
-        return res.status(400).json({ success: false, error: 'A user cannot report to themselves' });
-      }
-      const managerUser = await prisma.user.findFirst({
-        where: { id: reportsToId, tenantId }
+    // Strict Tier-Based Hierarchy & Tenant Validation
+    if (reportsToId !== undefined) {
+      await validateHierarchyAssignment({
+        userId: req.params.id,
+        userRole: role || existingUser.role,
+        reportsToId,
+        tenantId,
       });
-      if (!managerUser) {
-        return res.status(400).json({ success: false, error: 'Reporting manager not found in this tenant' });
-      }
-
-      // Circular hierarchy detection: ensure the proposed manager is NOT a downstream subordinate
-      const { getDownstreamUserIds } = require('../utils/hierarchy');
-      const subordinateIds = await getDownstreamUserIds(req.params.id, tenantId);
-      if (subordinateIds.includes(reportsToId)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Circular hierarchy detected: the selected manager is already a subordinate of this user'
-        });
-      }
+    } else if (role !== undefined && existingUser.reportsToId) {
+      // If role is being changed without modifying reportsToId, ensure existing manager fits new role tier
+      await validateHierarchyAssignment({
+        userId: req.params.id,
+        userRole: role,
+        reportsToId: existingUser.reportsToId,
+        tenantId,
+      });
     }
 
     const userSelectFields = {
@@ -939,8 +908,11 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
 
     res.status(200).json({ success: true, data: updatedUser });
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ success: false, error: error.message });
+    }
     console.error('Error updating user:', error);
-    res.status(500).json({ success: false, error: 'Failed to update user' });
+    res.status(500).json({ success: false, error: error.message || 'Failed to update user' });
   }
 });
 

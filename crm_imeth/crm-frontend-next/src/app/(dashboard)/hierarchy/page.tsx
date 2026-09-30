@@ -457,8 +457,22 @@ export default function UserHierarchyPage() {
     };
 
     const subordinateIds = getSubordinateIds(reassignModalUser);
+
+    // Strict Single-Tier: AGENT -> TEAM_LEAD, TEAM_LEAD -> ADMIN, ADMIN -> SUPER_ADMIN
+    const expectedManagerRole =
+      reassignModalUser.role === "AGENT"
+        ? "TEAM_LEAD"
+        : reassignModalUser.role === "TEAM_LEAD"
+        ? "ADMIN"
+        : reassignModalUser.role === "ADMIN"
+        ? "SUPER_ADMIN"
+        : null;
+
     return hierarchyData.users.filter(
-      (u) => u.id !== reassignModalUser.id && !subordinateIds.has(u.id)
+      (u) =>
+        u.id !== reassignModalUser.id &&
+        !subordinateIds.has(u.id) &&
+        (expectedManagerRole ? u.role === expectedManagerRole : false)
     );
   }, [hierarchyData?.users, reassignModalUser]);
 
@@ -485,7 +499,26 @@ export default function UserHierarchyPage() {
       }
     }
 
-    return hierarchyData.users.filter((u) => !excludeIds.has(u.id));
+    // Determine if all selected users share a common tier
+    const selectedRoles = new Set(
+      Array.from(selectedUserIds)
+        .map((id) => hierarchyData.users.find((u) => u.id === id)?.role)
+        .filter(Boolean)
+    );
+
+    let expectedManagerRole: string | null = null;
+    if (selectedRoles.size === 1) {
+      const singleRole = Array.from(selectedRoles)[0];
+      if (singleRole === "AGENT") expectedManagerRole = "TEAM_LEAD";
+      else if (singleRole === "TEAM_LEAD") expectedManagerRole = "ADMIN";
+      else if (singleRole === "ADMIN") expectedManagerRole = "SUPER_ADMIN";
+    }
+
+    return hierarchyData.users.filter(
+      (u) =>
+        !excludeIds.has(u.id) &&
+        (expectedManagerRole ? u.role === expectedManagerRole : true)
+    );
   }, [hierarchyData?.users, selectedUserIds]);
 
   if (authLoading || currentUser?.role !== "SUPER_ADMIN") {
@@ -1575,11 +1608,18 @@ export default function UserHierarchyPage() {
                   className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:border-purple-500 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 cursor-pointer"
                 >
                   <option value="">No Superior (Executive Root / Unassigned)</option>
-                  {hierarchyData?.users?.map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.name ? `${u.name} (${u.email})` : u.email} — {u.role}
-                    </option>
-                  ))}
+                  {hierarchyData?.users
+                    ?.filter((u) => {
+                      if (newUserForm.role === "AGENT") return u.role === "TEAM_LEAD";
+                      if (newUserForm.role === "TEAM_LEAD") return u.role === "ADMIN";
+                      if (newUserForm.role === "ADMIN") return u.role === "SUPER_ADMIN";
+                      return false;
+                    })
+                    .map((u) => (
+                      <option key={u.id} value={u.id}>
+                        {u.name ? `${u.name} (${u.email})` : u.email} — {u.role}
+                      </option>
+                    ))}
                 </select>
                 <p className="text-[11px] text-slate-400 mt-1">
                   Assigning a manager automatically places this user directly underneath them in the organizational chart.
