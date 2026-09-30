@@ -18,8 +18,10 @@ router.get('/stats', async (req, res) => {
       cacheKey = `tenant:${tenantId}:dashboard:stats:agent:${currentUserId}`;
     } else if (role === 'TEAM_LEAD' && currentUserId) {
       cacheKey = `tenant:${tenantId}:dashboard:stats:teamlead:${currentUserId}`;
+    } else if (role === 'ADMIN' && currentUserId) {
+      cacheKey = `tenant:${tenantId}:dashboard:stats:admin:${currentUserId}`;
     } else {
-      cacheKey = `tenant:${tenantId}:dashboard:stats:admin`;
+      cacheKey = `tenant:${tenantId}:dashboard:stats:superadmin`;
     }
 
     // Check Redis cache first

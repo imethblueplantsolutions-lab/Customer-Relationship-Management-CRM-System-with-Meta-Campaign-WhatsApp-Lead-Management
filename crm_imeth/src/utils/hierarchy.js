@@ -60,11 +60,11 @@ async function getHierarchyScopedUserIds(user) {
   const userId = user.userId || user.id;
   const tenantId = user.tenantId;
 
-  if (role === 'SUPER_ADMIN' || role === 'ADMIN') {
+  if (role === 'SUPER_ADMIN') {
     return null; // Unrestricted access across the tenant
   }
 
-  if (role === 'TEAM_LEAD') {
+  if (role === 'ADMIN' || role === 'TEAM_LEAD') {
     return await getDownstreamUserIds(userId, tenantId);
   }
 
@@ -74,6 +74,9 @@ async function getHierarchyScopedUserIds(user) {
 
 /**
  * Generates the Prisma where filter for leads based on hierarchical RBAC.
+ * - SUPER_ADMIN: Unrestricted access across the tenant ({})
+ * - ADMIN & TEAM_LEAD: Leads assigned to self, any downstream subordinates, or unassigned leads
+ * - AGENT: Only leads explicitly assigned to themselves
  *
  * @param {object} user - req.user object
  * @returns {Promise<object>} Prisma where condition fragment
@@ -83,16 +86,16 @@ async function getLeadScopeCondition(user) {
   const userId = user?.userId || user?.id;
   const tenantId = user?.tenantId;
 
-  if (role === 'SUPER_ADMIN' || role === 'ADMIN') {
+  if (role === 'SUPER_ADMIN') {
     return {};
   }
 
-  if (role === 'TEAM_LEAD') {
-    const squadIds = await getDownstreamUserIds(userId, tenantId);
+  if (role === 'ADMIN' || role === 'TEAM_LEAD') {
+    const subordinateIds = await getDownstreamUserIds(userId, tenantId);
     return {
       OR: [
-        { assignedToId: { in: squadIds } },
-        { assignedToId: null } // Team Leads can view unassigned leads to triage & assign to squad
+        { assignedToId: { in: subordinateIds } },
+        { assignedToId: null } // Admins & Team Leads can view unassigned leads to triage & assign to squad
       ]
     };
   }

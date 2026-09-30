@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const prisma = require('../config/db');
 const { authenticate, authorize } = require('../middleware/auth');
+const { getHierarchyScopedUserIds } = require('../utils/hierarchy');
 
 router.use(authenticate);
 
@@ -101,11 +102,24 @@ router.put('/:id/stages', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) =>
   }
 });
 
-// GET: Fetch deals for a pipeline
+// GET: Fetch deals for a pipeline with hierarchy scoping
 router.get('/:id/deals', async (req, res) => {
   try {
+    const scopedUserIds = await getHierarchyScopedUserIds(req.user);
+    const where = {
+      pipelineId: req.params.id,
+      tenantId: req.user.tenantId,
+    };
+
+    if (scopedUserIds) {
+      where.OR = [
+        { assignedToId: { in: scopedUserIds } },
+        { assignedToId: null }
+      ];
+    }
+
     const deals = await prisma.deal.findMany({
-      where: { pipelineId: req.params.id, tenantId: req.user.tenantId },
+      where,
       include: { lead: true, assignedTo: { select: { id: true, email: true } } }
     });
     res.status(200).json({ success: true, data: deals });
