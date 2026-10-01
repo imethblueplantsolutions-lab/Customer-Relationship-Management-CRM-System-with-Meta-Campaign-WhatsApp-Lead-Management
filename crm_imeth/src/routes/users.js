@@ -662,7 +662,7 @@ router.get('/hierarchy', authenticate, async (req, res) => {
       },
       orderBy: [
         { role: 'asc' },
-        { createdAt: 'asc' }
+        { createdAt: 'desc' }
       ]
     });
 

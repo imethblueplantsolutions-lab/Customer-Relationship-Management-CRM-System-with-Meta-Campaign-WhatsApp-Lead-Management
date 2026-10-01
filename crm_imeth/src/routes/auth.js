@@ -380,7 +380,18 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Email and password are required' });
     }
 
-    const cleanEmail = email.toLowerCase().trim();
+    // Sanitize email typos (e.g. w3schools.@com -> w3schools@com)
+    let cleanEmail = email.toLowerCase().trim().replace(/\.+@/, '@');
+
+    // Basic email format check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please enter a valid work email address (e.g. name@company.com)',
+      });
+    }
+
     const existingUser = await prisma.user.findUnique({ where: { email: cleanEmail } });
     if (existingUser) {
       return res.status(400).json({ success: false, error: 'An account with this email address already exists. Please sign in.' });

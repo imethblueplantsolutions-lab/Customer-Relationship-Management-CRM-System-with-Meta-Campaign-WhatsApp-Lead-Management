@@ -148,12 +148,13 @@ export default function LoginPage() {
     setSignUpError("");
     setSignUpSuccess("");
     setSignUpLoading(true);
+    const cleanedEmail = signUpEmail.trim().toLowerCase().replace(/\.+@/, '@');
     try {
       const res = await apiClient<{ token: string; user: User }>("/auth/register", {
         method: "POST",
         body: JSON.stringify({
           name: signUpName.trim(),
-          email: signUpEmail.trim(),
+          email: cleanedEmail,
           password: signUpPassword,
           companyName: signUpCompanyName.trim() || undefined,
         }),
