@@ -13,8 +13,14 @@ const prisma = basePrisma.$extends({
       async $allOperations({ model, operation, args, query }) {
         const store = tenantStorage.getStore();
         const tenantId = store?.tenantId;
+        const isSuperAdmin = store?.isSuperAdmin || store?.userRole === 'SUPER_ADMIN';
 
         const isTenantModel = TENANT_SCOPED_MODELS.includes(model.toLowerCase());
+
+        // Super Admins operate globally across all platform organizations
+        if (isSuperAdmin) {
+          return query(args);
+        }
 
         if (tenantId && isTenantModel) {
           // If operation is a query/update/delete with 'where'

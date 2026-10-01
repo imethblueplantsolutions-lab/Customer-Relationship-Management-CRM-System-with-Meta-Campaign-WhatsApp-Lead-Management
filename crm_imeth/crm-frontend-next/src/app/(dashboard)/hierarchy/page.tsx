@@ -203,7 +203,7 @@ export default function UserHierarchyPage() {
       else setRefreshing(true);
       setErrorMsg("");
 
-      const res = await apiClient<HierarchyResponse>("/users/hierarchy");
+      const res = await apiClient<HierarchyResponse>(`/users/hierarchy?_t=${Date.now()}`);
       if (res.success && res.data) {
         setHierarchyData(res.data);
       } else {

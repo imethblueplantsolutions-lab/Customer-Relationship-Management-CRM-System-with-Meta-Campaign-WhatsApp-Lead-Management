@@ -36,11 +36,13 @@ const extractTenantMiddleware = (req, res, next) => {
     tenantId = req.body.entry[0].id; 
   }
 
-  if (!tenantId) {
+  const isSuperAdmin = req.user?.role === 'SUPER_ADMIN';
+
+  if (!tenantId && !isSuperAdmin) {
     return res.status(400).json({ error: 'Tenant context could not be resolved. Please login or supply x-tenant-id header.' });
   }
 
-  tenantStorage.run({ tenantId }, () => next());
+  tenantStorage.run({ tenantId, isSuperAdmin, userRole: req.user?.role }, () => next());
 };
 
 module.exports = { tenantStorage, extractTenantMiddleware };
