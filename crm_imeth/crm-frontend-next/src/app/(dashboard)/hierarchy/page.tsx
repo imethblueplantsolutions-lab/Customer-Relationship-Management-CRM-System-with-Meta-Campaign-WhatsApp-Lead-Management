@@ -52,6 +52,8 @@ import {
   Trash2,
   UserPlus,
   Copy,
+  Lock,
+  Unlock,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -155,6 +157,9 @@ export default function UserHierarchyPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [deletingUser, setDeletingUser] = useState(false);
+  const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
+  const [userToBlock, setUserToBlock] = useState<User | null>(null);
+  const [blockingUser, setBlockingUser] = useState(false);
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [newUserForm, setNewUserForm] = useState({
     name: "",
@@ -299,6 +304,38 @@ export default function UserHierarchyPage() {
       toast.error(err instanceof Error ? err.message : "Failed to delete user");
     } finally {
       setDeletingUser(false);
+    }
+  };
+
+  // Block or reactivate user account (Super Admin only)
+  const handleToggleBlockUser = async () => {
+    if (!userToBlock) return;
+    const shouldBlock = userToBlock.isActive !== false;
+    setBlockingUser(true);
+    try {
+      const res = await apiClient<User>(`/users/${userToBlock.id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          isActive: !shouldBlock,
+        }),
+      });
+
+      if (res.success) {
+        toast.success(
+          shouldBlock
+            ? `Account for ${userToBlock.name || userToBlock.email} has been blocked.`
+            : `Account for ${userToBlock.name || userToBlock.email} has been reactivated.`
+        );
+        setIsBlockModalOpen(false);
+        setUserToBlock(null);
+        await fetchHierarchy(true);
+      } else {
+        toast.error(res.error || "Failed to update user status");
+      }
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to update user status");
+    } finally {
+      setBlockingUser(false);
     }
   };
 
@@ -1152,6 +1189,21 @@ export default function UserHierarchyPage() {
 
                               <button
                                 onClick={() => {
+                                  setUserToBlock(u);
+                                  setIsBlockModalOpen(true);
+                                }}
+                                title={u.isActive !== false ? `Block ${u.name || u.email}` : `Reactivate ${u.name || u.email}`}
+                                className={`flex h-7 w-7 items-center justify-center rounded-lg border cursor-pointer transition-colors shadow-xs ${
+                                  u.isActive !== false
+                                    ? "border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100 hover:border-amber-300 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-400"
+                                    : "border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:border-emerald-300 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-400"
+                                }`}
+                              >
+                                {u.isActive !== false ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
+                              </button>
+
+                              <button
+                                onClick={() => {
                                   setUserToDelete(u);
                                   setIsDeleteModalOpen(true);
                                 }}
@@ -1273,6 +1325,10 @@ export default function UserHierarchyPage() {
                   onDeleteUser={(user) => {
                     setUserToDelete(user);
                     setIsDeleteModalOpen(true);
+                  }}
+                  onBlockUser={(user) => {
+                    setUserToBlock(user);
+                    setIsBlockModalOpen(true);
                   }}
                 />
               ))
@@ -1976,6 +2032,89 @@ export default function UserHierarchyPage() {
           </div>
         </div>
       )}
+      {/* ================= BLOCK / ACTIVATION CONFIRMATION MODAL ================= */}
+      {isBlockModalOpen && userToBlock && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-5">
+            <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 dark:bg-red-950/60 shrink-0">
+                <Lock className="h-5 w-5 text-red-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-900 dark:text-white text-base">
+                  {userToBlock.isActive !== false ? "Block User Account" : "Reactivate User Account"}
+                </h3>
+                <p className="text-xs text-slate-500">
+                  {userToBlock.name || userToBlock.email} ({userToBlock.role})
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-300 space-y-2">
+              {userToBlock.isActive !== false ? (
+                <>
+                  <p className="font-semibold text-slate-900 dark:text-white">
+                    Are you sure you want to block this account?
+                  </p>
+                  <ul className="list-disc pl-4 space-y-1 text-slate-500 dark:text-slate-400">
+                    <li>
+                      Direct reports will be automatically reassigned to their manager to prevent orphaned leads.
+                    </li>
+                    <li>
+                      Active sessions will be immediately revoked, and the user will be force-redirected to the login page.
+                    </li>
+                    <li>
+                      Subsequent API requests using their token will return 401 Unauthorized.
+                    </li>
+                  </ul>
+                </>
+              ) : (
+                <p>
+                  Reactivating this user will restore their ability to log in and access the system.
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsBlockModalOpen(false);
+                  setUserToBlock(null);
+                }}
+                className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 cursor-pointer"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleToggleBlockUser}
+                disabled={blockingUser}
+                className={`inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold text-white shadow-md transition-all cursor-pointer ${
+                  userToBlock.isActive !== false
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "bg-emerald-600 hover:bg-emerald-700"
+                }`}
+              >
+                {blockingUser ? (
+                  <RefreshCw className="h-4 w-4 animate-spin text-white" />
+                ) : userToBlock.isActive !== false ? (
+                  <>
+                    <Lock className="h-4 w-4" />
+                    Block Account
+                  </>
+                ) : (
+                  <>
+                    <Unlock className="h-4 w-4" />
+                    Reactivate Account
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </RoleGuard>
   );
@@ -1994,11 +2133,13 @@ function OrgTreeNode({
   depth = 0,
   onAssignManager,
   onDeleteUser,
+  onBlockUser,
 }: {
   node: User;
   depth?: number;
   onAssignManager: (user: User) => void;
   onDeleteUser?: (user: User) => void;
+  onBlockUser?: (user: User) => void;
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const meta = getRoleMeta(node.role);
@@ -2049,6 +2190,11 @@ function OrgTreeNode({
                   <RoleIcon className="h-3 w-3" />
                   <span>{meta.label}</span>
                 </span>
+                {node.isActive === false && (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-red-100 px-1.5 py-0.5 text-[9px] font-bold text-red-700 dark:bg-red-950/60 dark:text-red-300 border border-red-200 dark:border-red-900">
+                    <Lock className="h-2.5 w-2.5" /> Blocked
+                  </span>
+                )}
               </div>
               <span className="text-[11px] text-slate-500 truncate block">{node.email}</span>
             </div>
@@ -2068,6 +2214,19 @@ function OrgTreeNode({
                 >
                   Reassign
                 </button>
+                {onBlockUser && (
+                  <button
+                    onClick={() => onBlockUser(node)}
+                    title={node.isActive !== false ? `Block ${node.name || node.email}` : `Reactivate ${node.name || node.email}`}
+                    className={`flex h-7 w-7 items-center justify-center rounded-lg border cursor-pointer transition-colors shadow-xs ${
+                      node.isActive !== false
+                        ? "border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100 hover:border-amber-300 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-400"
+                        : "border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:border-emerald-300 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-400"
+                    }`}
+                  >
+                    {node.isActive !== false ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
+                  </button>
+                )}
                 {onDeleteUser && (
                   <button
                     onClick={() => onDeleteUser(node)}
@@ -2093,6 +2252,7 @@ function OrgTreeNode({
               depth={depth + 1}
               onAssignManager={onAssignManager}
               onDeleteUser={onDeleteUser}
+              onBlockUser={onBlockUser}
             />
           ))}
         </div>

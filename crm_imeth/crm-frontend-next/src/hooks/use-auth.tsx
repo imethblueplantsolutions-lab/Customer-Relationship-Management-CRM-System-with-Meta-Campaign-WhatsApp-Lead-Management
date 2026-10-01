@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useSocket } from "@/hooks/use-socket";
+import { toast } from "sonner";
 import type { User } from "@/types";
 
 export interface LoginResult {
@@ -30,6 +31,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { socket } = useSocket();
+
+  const logout = useCallback(() => {
+    localStorage.clear();
+    setToken(null);
+    setUser(null);
+    window.location.href = "/login";
+  }, []);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -73,11 +81,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
+    const handleAccountBlocked = (data: { userId: string; message?: string }) => {
+      if (data.userId === user.id) {
+        toast.error(data.message || "Your account has been blocked by Super Admin.", {
+          duration: 6000,
+        });
+        setTimeout(() => {
+          logout();
+        }, 1200);
+      }
+    };
+
     socket.on("user_updated", handleUserUpdated);
+    socket.on("account_blocked", handleAccountBlocked);
     return () => {
       socket.off("user_updated", handleUserUpdated);
+      socket.off("account_blocked", handleAccountBlocked);
     };
-  }, [socket, user?.id]);
+  }, [socket, user?.id, logout]);
 
   const setSession = useCallback((newToken: string, newUser: User) => {
     localStorage.setItem("token", newToken);
@@ -143,13 +164,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("user", JSON.stringify(next));
       return next;
     });
-  }, []);
-
-  const logout = useCallback(() => {
-    localStorage.clear();
-    setToken(null);
-    setUser(null);
-    window.location.href = "/login";
   }, []);
 
   const value = useMemo(() => ({

@@ -897,13 +897,14 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
           console.log(`[Zombie Manager Patch] Reassigned ${directSubordinates.length} subordinates of deactivated user ${existingUser.id} to fallback manager ${fallbackManagerId}`);
         }
 
-        // 3. Mark target user as inactive
+        // 3. Mark target user as inactive & revoke session tokenVersion
         return tx.user.update({
           where: { id: req.params.id },
           data: {
             ...(name !== undefined && { name: name ? name.trim() : null }),
             ...(role !== undefined && { role }),
             isActive: false,
+            tokenVersion: { increment: 1 },
             ...(reportsToId !== undefined && { reportsToId: reportsToId ? reportsToId : null }),
           },
           select: userSelectFields,
@@ -982,12 +983,19 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
       });
     }
 
-    // Broadcast user update
+    // Broadcast user update & account blocked socket notification
     try {
       const { io } = require('../index');
       if (io) {
         io.to(`tenant:${tenantId}`).emit('user_updated', updatedUser);
         io.to(`tenant:${tenantId}`).emit('hierarchy_updated', { userId: updatedUser.id });
+
+        if (deactivationHappened) {
+          io.to(`user:${updatedUser.id}`).emit('account_blocked', {
+            userId: updatedUser.id,
+            message: 'Your account has been blocked by Super Admin.',
+          });
+        }
       }
     } catch (socketErr) {
       console.warn('[Socket] Failed to broadcast user_updated:', socketErr.message);
