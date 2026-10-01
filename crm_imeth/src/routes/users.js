@@ -174,7 +174,30 @@ router.post('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, r
     }
 
     const initMaxTeamLeads = req.body.maxTeamLeads !== undefined ? parseInt(req.body.maxTeamLeads, 10) : 1;
-    const initMaxAgents = req.body.maxAgents !== undefined ? parseInt(req.body.maxAgents, 10) : 1;
+    let initMaxAgents = req.body.maxAgents !== undefined ? parseInt(req.body.maxAgents, 10) : undefined;
+
+    if (role === 'TEAM_LEAD' && reportsToId) {
+      const parentAdmin = await prisma.user.findFirst({
+        where: { id: reportsToId, tenantId },
+        select: { maxAgents: true },
+      });
+      const adminAgentsLimit = parentAdmin?.maxAgents !== null && parentAdmin?.maxAgents !== undefined ? parentAdmin.maxAgents : 1;
+
+      if (initMaxAgents !== undefined && !isNaN(initMaxAgents)) {
+        if (req.user?.role === 'ADMIN' && initMaxAgents > adminAgentsLimit) {
+          return res.status(403).json({
+            success: false,
+            error: `Forbidden: Cannot set Team Lead agent quota (${initMaxAgents}) higher than your Administrator capacity ceiling (${adminAgentsLimit}).`,
+          });
+        }
+      } else {
+        initMaxAgents = adminAgentsLimit;
+      }
+    } else if (role === 'ADMIN') {
+      if (initMaxAgents === undefined || isNaN(initMaxAgents)) {
+        initMaxAgents = 1;
+      }
+    }
 
     const newUser = await prisma.user.create({
       data: {
@@ -186,8 +209,13 @@ router.post('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, r
         tenantId,
         isActive: true,
         isFirstLogin,
-        ...(role === 'ADMIN' && { maxTeamLeads: !isNaN(initMaxTeamLeads) ? initMaxTeamLeads : 1 }),
-        ...(role === 'TEAM_LEAD' && { maxAgents: !isNaN(initMaxAgents) ? initMaxAgents : 1 }),
+        ...(role === 'ADMIN' && {
+          maxTeamLeads: !isNaN(initMaxTeamLeads) ? initMaxTeamLeads : 1,
+          maxAgents: !isNaN(initMaxAgents) ? initMaxAgents : 1,
+        }),
+        ...(role === 'TEAM_LEAD' && {
+          maxAgents: !isNaN(initMaxAgents) ? initMaxAgents : 1,
+        }),
       },
       select: {
         id: true,
@@ -832,12 +860,41 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
 
     const currentUserRole = req.user?.role;
 
-    // Quota Management Authorization Guard: Only Super Admin can modify capacity quotas
-    if (currentUserRole !== 'SUPER_ADMIN' && (maxTeamLeads !== undefined || maxAgents !== undefined)) {
-      return res.status(403).json({
-        success: false,
-        error: 'Forbidden: Only Super Admins can assign or modify user capacity quotas',
-      });
+    // Quota Management Authorization Guard
+    if (maxTeamLeads !== undefined || maxAgents !== undefined) {
+      if (currentUserRole !== 'SUPER_ADMIN') {
+        if (maxTeamLeads !== undefined) {
+          return res.status(403).json({
+            success: false,
+            error: 'Forbidden: Only Super Admins can assign or modify Team Lead capacity quotas (maxTeamLeads)',
+          });
+        }
+        if (currentUserRole === 'ADMIN' && maxAgents !== undefined) {
+          if (existingUser.role !== 'TEAM_LEAD') {
+            return res.status(403).json({
+              success: false,
+              error: 'Forbidden: Administrators can only modify agent capacity quotas for Team Leads',
+            });
+          }
+          const currentAdmin = await prisma.user.findFirst({
+            where: { id: req.user?.userId || req.user?.id, tenantId },
+            select: { maxAgents: true },
+          });
+          const adminCeiling = currentAdmin?.maxAgents !== null && currentAdmin?.maxAgents !== undefined ? currentAdmin.maxAgents : 1;
+          const parsedRequested = parseInt(maxAgents, 10);
+          if (!isNaN(parsedRequested) && parsedRequested > adminCeiling) {
+            return res.status(403).json({
+              success: false,
+              error: `Forbidden: Cannot set Team Lead agent quota (${parsedRequested}) higher than your Administrator capacity ceiling (${adminCeiling}).`,
+            });
+          }
+        } else {
+          return res.status(403).json({
+            success: false,
+            error: 'Forbidden: You do not have permission to modify capacity quotas',
+          });
+        }
+      }
     }
 
     // Strict Role Ceiling Guard:

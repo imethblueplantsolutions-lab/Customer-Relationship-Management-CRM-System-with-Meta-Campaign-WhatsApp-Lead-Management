@@ -44,6 +44,8 @@ export default function UserManagementPage() {
     role: "AGENT",
     reportsToId: "",
     password: "",
+    maxTeamLeads: 1,
+    maxAgents: 1,
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -142,13 +144,15 @@ export default function UserManagementPage() {
           role: formData.role,
           reportsToId: formData.reportsToId.trim() || undefined,
           password: formData.password.trim() || undefined,
+          maxTeamLeads: formData.role === "ADMIN" ? formData.maxTeamLeads : undefined,
+          maxAgents: formData.role === "ADMIN" || formData.role === "TEAM_LEAD" ? formData.maxAgents : undefined,
         }),
       });
 
       if (res.success && res.data) {
         setIsModalOpen(false);
         toast.success(res.message || "User created successfully!");
-        setFormData({ name: "", email: "", role: "AGENT", reportsToId: "", password: "" });
+        setFormData({ name: "", email: "", role: "AGENT", reportsToId: "", password: "", maxTeamLeads: 1, maxAgents: 1 });
         await fetchUsers();
 
         if (res.data.tempPasswordPreview) {
@@ -634,7 +638,15 @@ export default function UserManagementPage() {
                 </label>
                 <select
                   value={formData.reportsToId}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, reportsToId: e.target.value }))}
+                  onChange={(e) => {
+                    const selectedMgrId = e.target.value;
+                    const mgr = usersList.find((u) => u.id === selectedMgrId);
+                    setFormData((prev) => ({
+                      ...prev,
+                      reportsToId: selectedMgrId,
+                      ...(formData.role === "TEAM_LEAD" && mgr ? { maxAgents: mgr.maxAgents ?? 1 } : {}),
+                    }));
+                  }}
                   className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all cursor-pointer"
                 >
                   <option value="">No Superior (Executive Root / Unassigned)</option>
@@ -645,16 +657,84 @@ export default function UserManagementPage() {
                       if (formData.role === "ADMIN") return m.role === "SUPER_ADMIN";
                       return false;
                     })
-                    .map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.name ? `${m.name} (${m.email})` : m.email} — {m.role === "SUPER_ADMIN" ? "Super Admin" : m.role === "ADMIN" ? "Admin" : "Team Lead"}
-                      </option>
-                    ))}
+                    .map((m) => {
+                      const targetSubRole = formData.role;
+                      const activeCount = usersList.filter(
+                        (sub) => sub.reportsToId === m.id && sub.role === targetSubRole && sub.isActive !== false
+                      ).length;
+                      const limit = targetSubRole === "TEAM_LEAD" ? (m.maxTeamLeads ?? 1) : targetSubRole === "AGENT" ? (m.maxAgents ?? 1) : 999;
+                      const isFull = activeCount >= limit;
+
+                      return (
+                        <option key={m.id} value={m.id} disabled={isFull}>
+                          {m.name ? `${m.name} (${m.email})` : m.email} — ({activeCount}/{limit}){isFull ? " ⚠️ FULL" : ""}
+                        </option>
+                      );
+                    })}
                 </select>
                 <p className="text-[10px] text-slate-400 mt-1">
                   Places this user directly under this manager in their reporting branch.
                 </p>
               </div>
+
+              {/* Dual Quota Input Fields for Admin */}
+              {formData.role === "ADMIN" && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                      Team Lead Capacity Quota (Max Team Leads) *
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      required
+                      value={formData.maxTeamLeads}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, maxTeamLeads: Math.max(1, parseInt(e.target.value) || 1) }))}
+                      className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                    />
+                    <p className="text-[10px] text-slate-400 mt-1">
+                      Maximum number of Team Leads this Administrator can create and manage.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                      Sales Agent Quota per Team Lead (Max Agents per TL) *
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      required
+                      value={formData.maxAgents}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, maxAgents: Math.max(1, parseInt(e.target.value) || 1) }))}
+                      className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                    />
+                    <p className="text-[10px] text-slate-400 mt-1">
+                      Default baseline quota limit for Sales Agents assigned to Team Leads under this Administrator.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Quota Input Field for Team Lead */}
+              {formData.role === "TEAM_LEAD" && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Sales Agent Capacity Quota (Max Agents) *
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    required
+                    value={formData.maxAgents}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, maxAgents: Math.max(1, parseInt(e.target.value) || 1) }))}
+                    className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Maximum number of Sales Agents this Team Lead can manage.
+                  </p>
+                </div>
+              )}
 
               {/* Temporary Password */}
               <div>

@@ -1206,23 +1206,29 @@ export default function UserHierarchyPage() {
                             const activeCount = hierarchyData?.users?.filter(
                               (sub) => sub.reportsToId === u.id && sub.role === "TEAM_LEAD" && sub.isActive !== false
                             ).length || 0;
-                            const max = u.maxTeamLeads ?? 1;
-                            const isFull = activeCount >= max;
+                            const maxTL = u.maxTeamLeads ?? 1;
+                            const maxAgents = u.maxAgents ?? 1;
+                            const isFull = activeCount >= maxTL;
                             return (
-                              <span
-                                className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold border ${
-                                  isFull
-                                    ? "bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800"
-                                    : "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
-                                }`}
-                              >
-                                <span>TL Quota: {activeCount} / {max}</span>
-                                {isFull && (
-                                  <span className="text-[9px] uppercase font-extrabold bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-100 px-1.5 py-0.2 rounded-md">
-                                    Full
-                                  </span>
-                                )}
-                              </span>
+                              <div className="flex flex-col gap-1">
+                                <span
+                                  className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold border ${
+                                    isFull
+                                      ? "bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800"
+                                      : "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
+                                  }`}
+                                >
+                                  <span>TL Quota: {activeCount} / {maxTL}</span>
+                                  {isFull && (
+                                    <span className="text-[9px] uppercase font-extrabold bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-100 px-1.5 py-0.2 rounded-md">
+                                      Full
+                                    </span>
+                                  )}
+                                </span>
+                                <span className="inline-flex items-center gap-1 rounded-md bg-purple-50 px-2 py-0.5 text-[10px] font-semibold text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                                  Agent Cap / TL: {maxAgents}
+                                </span>
+                              </div>
                             );
                           })() : u.role === "TEAM_LEAD" ? (() => {
                             const activeCount = hierarchyData?.users?.filter(
@@ -1614,27 +1620,45 @@ export default function UserHierarchyPage() {
 
               {/* Super Admin Quota Control */}
               {currentUser?.role === "SUPER_ADMIN" && reassignModalUser.role === "ADMIN" && (
-                <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800">
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Team Lead Quota Limit (Max Team Leads)
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={quotaMaxTeamLeads}
-                    onChange={(e) => setQuotaMaxTeamLeads(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-800 focus:border-purple-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
-                  />
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    Super Admin authorization limit for maximum Team Leads this Administrator can supervise.
-                  </p>
+                <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800 space-y-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Team Lead Quota Limit (Max Team Leads) *
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={quotaMaxTeamLeads}
+                      onChange={(e) => setQuotaMaxTeamLeads(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-800 focus:border-purple-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                    />
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Super Admin authorization limit for maximum Team Leads this Administrator can supervise.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Sales Agent Quota per Team Lead (Max Agents per TL) *
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={quotaMaxAgents}
+                      onChange={(e) => setQuotaMaxAgents(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-800 focus:border-purple-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                    />
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Default baseline quota limit for Sales Agents that Team Leads under this Administrator can supervise.
+                    </p>
+                  </div>
                 </div>
               )}
 
-              {currentUser?.role === "SUPER_ADMIN" && reassignModalUser.role === "TEAM_LEAD" && (
+              {(currentUser?.role === "SUPER_ADMIN" || currentUser?.role === "ADMIN") && reassignModalUser.role === "TEAM_LEAD" && (
                 <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800">
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Sales Agent Quota Limit (Max Agents)
+                    Sales Agent Quota Limit (Max Agents) *
                   </label>
                   <input
                     type="number"
@@ -1644,7 +1668,7 @@ export default function UserHierarchyPage() {
                     className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-800 focus:border-purple-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                   />
                   <p className="text-[11px] text-slate-400 mt-1">
-                    Super Admin authorization limit for maximum Sales Agents this Team Lead can supervise.
+                    Capacity limit for maximum Sales Agents this Team Lead can supervise.
                   </p>
                 </div>
               )}
@@ -1667,11 +1691,10 @@ export default function UserHierarchyPage() {
                   handleAssignManager(
                     reassignModalUser.id,
                     targetManagerId || null,
-                    currentUser?.role === "SUPER_ADMIN"
-                      ? {
-                          maxTeamLeads: reassignModalUser.role === "ADMIN" ? quotaMaxTeamLeads : undefined,
-                          maxAgents: reassignModalUser.role === "TEAM_LEAD" ? quotaMaxAgents : undefined,
-                        }
+                    reassignModalUser.role === "ADMIN" && currentUser?.role === "SUPER_ADMIN"
+                      ? { maxTeamLeads: quotaMaxTeamLeads, maxAgents: quotaMaxAgents }
+                      : reassignModalUser.role === "TEAM_LEAD"
+                      ? { maxAgents: quotaMaxAgents }
                       : undefined
                   );
                 }}
@@ -1962,23 +1985,42 @@ export default function UserHierarchyPage() {
                 </p>
               </div>
 
-              {/* Quota Input Field for Admin */}
+              {/* Dual Quota Input Fields for Admin */}
               {newUserForm.role === "ADMIN" && (
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Team Lead Capacity Quota (Max Team Leads) *
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    required
-                    value={newUserForm.maxTeamLeads}
-                    onChange={(e) => setNewUserForm({ ...newUserForm, maxTeamLeads: Math.max(1, parseInt(e.target.value) || 1) })}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-800 placeholder-slate-400 focus:border-purple-500 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
-                  />
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    Maximum number of Team Leads this Administrator will be permitted to manage (Default: 1).
-                  </p>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Team Lead Capacity Quota (Max Team Leads) *
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      required
+                      value={newUserForm.maxTeamLeads}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, maxTeamLeads: Math.max(1, parseInt(e.target.value) || 1) })}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-800 placeholder-slate-400 focus:border-purple-500 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                    />
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Maximum number of Team Leads this Administrator will be permitted to manage (Default: 1).
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Sales Agent Quota per Team Lead (Max Agents per TL) *
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      required
+                      value={newUserForm.maxAgents}
+                      onChange={(e) => setNewUserForm({ ...newUserForm, maxAgents: Math.max(1, parseInt(e.target.value) || 1) })}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-800 placeholder-slate-400 focus:border-purple-500 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                    />
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Default baseline quota limit for Sales Agents that Team Leads under this Administrator can supervise (Default: 1).
+                    </p>
+                  </div>
                 </div>
               )}
 
