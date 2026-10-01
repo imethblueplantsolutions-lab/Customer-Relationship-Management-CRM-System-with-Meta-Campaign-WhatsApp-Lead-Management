@@ -9,11 +9,12 @@ const prisma = require('../config/db');
  * @returns {Promise<string[]>} Array of user IDs in this manager's squad/branch
  */
 async function getDownstreamUserIds(managerId, tenantId) {
-  if (!managerId || !tenantId) return [];
+  if (!managerId) return [];
 
-  // Fetch all users in the tenant to build the hierarchy tree graph
+  // Fetch users to build the hierarchy tree graph
+  const whereCondition = tenantId ? { tenantId, isActive: true } : { isActive: true };
   const allUsers = await prisma.user.findMany({
-    where: { tenantId, isActive: true },
+    where: whereCondition,
     select: { id: true, reportsToId: true }
   });
 

@@ -532,7 +532,7 @@ router.put('/profile', async (req, res) => {
   }
 });
 
-// GET: Fetch all active users/agents in the current tenant (Admins & Team Leads only)
+// GET: Fetch all active users/agents in the current tenant (Admins & Team Leads) or all tenants (Super Admin)
 router.get('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, res) => {
   try {
     const store = tenantStorage.getStore();
@@ -540,7 +540,7 @@ router.get('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, re
     const currentUserId = req.user?.userId || req.user?.id;
     const currentUserRole = req.user?.role;
 
-    const where = { tenantId };
+    const where = currentUserRole === 'SUPER_ADMIN' ? {} : { tenantId };
 
     // Strict Hierarchy-Branch Scoping:
     // - Admin is determinant for Team Leads and Sales Agents only.
@@ -578,6 +578,12 @@ router.get('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, re
         maxAgents: true,
         createdAt: true,
         reportsToId: true,
+        tenant: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         manager: {
           select: {
             id: true,
@@ -616,10 +622,9 @@ router.get('/hierarchy', authenticate, async (req, res) => {
     if (req.user?.role !== 'SUPER_ADMIN') {
       return res.status(403).json({ success: false, error: 'Forbidden: Super Admins only' });
     }
-    const tenantId = req.user?.tenantId;
 
     const allUsers = await prisma.user.findMany({
-      where: { tenantId },
+      where: {}, // Super Admin views all platform users across all organization tenants
       select: {
         id: true,
         name: true,
@@ -635,6 +640,12 @@ router.get('/hierarchy', authenticate, async (req, res) => {
         maxTeamLeads: true,
         maxAgents: true,
         createdAt: true,
+        tenant: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         manager: {
           select: {
             id: true,
@@ -709,10 +720,9 @@ router.post('/hierarchy/auto-link', authenticate, async (req, res) => {
     if (req.user?.role !== 'SUPER_ADMIN') {
       return res.status(403).json({ success: false, error: 'Forbidden: Super Admins only' });
     }
-    const tenantId = req.user?.tenantId;
 
     const users = await prisma.user.findMany({
-      where: { tenantId }
+      where: {} // Super Admin auto-links across all tenants
     });
 
     const superAdmin = users.find(u => u.role === 'SUPER_ADMIN');
@@ -862,15 +872,15 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
     const tenantId = req.user?.tenantId || store?.tenantId;
     const { name, role, isActive, reportsToId, maxTeamLeads, maxAgents } = req.body;
 
+    const currentUserRole = req.user?.role;
+
     const existingUser = await prisma.user.findFirst({
-      where: { id: req.params.id, tenantId }
+      where: currentUserRole === 'SUPER_ADMIN' ? { id: req.params.id } : { id: req.params.id, tenantId }
     });
 
     if (!existingUser) {
-      return res.status(404).json({ success: false, error: 'User not found in this tenant' });
+      return res.status(404).json({ success: false, error: 'User not found' });
     }
-
-    const currentUserRole = req.user?.role;
 
     // Quota Management Authorization Guard
     if (maxTeamLeads !== undefined || maxAgents !== undefined) {
@@ -889,7 +899,7 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
             });
           }
           const currentAdmin = await prisma.user.findFirst({
-            where: { id: req.user?.userId || req.user?.id, tenantId },
+            where: { id: req.user?.userId || req.user?.id, tenantId: existingUser.tenantId },
             select: { maxAgents: true },
           });
           const adminCeiling = currentAdmin?.maxAgents !== null && currentAdmin?.maxAgents !== undefined ? currentAdmin.maxAgents : 1;
@@ -946,7 +956,7 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
         userId: req.params.id,
         userRole: role || existingUser.role,
         reportsToId,
-        tenantId,
+        tenantId: existingUser.tenantId,
       });
     } else if (role !== undefined && existingUser.reportsToId) {
       // If role is being changed without modifying reportsToId, ensure existing manager fits new role tier
@@ -954,7 +964,7 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
         userId: req.params.id,
         userRole: role,
         reportsToId: existingUser.reportsToId,
-        tenantId,
+        tenantId: existingUser.tenantId,
       });
     }
 
@@ -1169,11 +1179,11 @@ router.delete('/:id', authorize(['SUPER_ADMIN']), async (req, res) => {
     }
 
     const targetUser = await prisma.user.findFirst({
-      where: { id: targetUserId, tenantId },
+      where: { id: targetUserId },
     });
 
     if (!targetUser) {
-      return res.status(404).json({ success: false, error: 'User not found in this tenant' });
+      return res.status(404).json({ success: false, error: 'User not found' });
     }
 
     if (targetUser.role === 'SUPER_ADMIN') {

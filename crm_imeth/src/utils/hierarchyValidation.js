@@ -96,7 +96,7 @@ async function validateHierarchyAssignment({ userId, userRole, reportsToId, tena
   }
 
   // Multi-tenant boundary check (Confused Deputy guard)
-  if (proposedManager.tenantId !== tenantId) {
+  if (proposedManager.tenantId !== tenantId && proposedManager.role !== 'SUPER_ADMIN') {
     const error = new Error('Forbidden: Cross-tenant hierarchy assignment is prohibited');
     error.statusCode = 403;
     throw error;
