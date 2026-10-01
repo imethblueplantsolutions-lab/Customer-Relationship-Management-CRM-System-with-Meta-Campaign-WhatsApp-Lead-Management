@@ -1,5 +1,14 @@
 import type { NextConfig } from "next";
 
+const rawBackend =
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  process.env.BACKEND_URL ||
+  (process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.startsWith('/')
+    ? process.env.NEXT_PUBLIC_API_URL.replace(/\/api\/?$/, '')
+    : 'http://localhost:4000');
+
+const backendOrigin = rawBackend.trim().replace(/\/+$/, '');
+
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["excavate-surround-punctured.ngrok-free.dev"],
   turbopack: {
@@ -9,11 +18,11 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "http://localhost:4000/api/:path*",
+        destination: `${backendOrigin}/api/:path*`,
       },
       {
         source: "/uploads/:path*",
-        destination: "http://localhost:4000/uploads/:path*",
+        destination: `${backendOrigin}/uploads/:path*`,
       },
     ];
   },

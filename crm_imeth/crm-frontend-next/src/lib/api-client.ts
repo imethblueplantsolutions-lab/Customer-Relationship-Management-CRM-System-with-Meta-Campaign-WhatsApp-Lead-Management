@@ -1,4 +1,14 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+function getApiBase(): string {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!envUrl) return 'http://localhost:4000/api';
+  const trimmed = envUrl.trim().replace(/\/+$/, '');
+  if (trimmed.startsWith('http') && !trimmed.endsWith('/api')) {
+    return `${trimmed}/api`;
+  }
+  return trimmed;
+}
+
+const API_BASE = getApiBase();
 
 export interface ApiResponse<T = unknown> {
   success: boolean;
@@ -29,7 +39,8 @@ export async function apiClient<T = unknown>(
     ...(options.headers as Record<string, string> || {}),
   };
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const response = await fetch(`${API_BASE}${cleanEndpoint}`, {
     cache: 'no-store',
     ...options,
     headers,

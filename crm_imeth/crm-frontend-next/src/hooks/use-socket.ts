@@ -5,18 +5,20 @@ function getSocketUrl(): string {
   if (typeof window !== 'undefined') {
     const configuredUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
     if (configuredUrl) {
-      // If configured for localhost but user is visiting from another hostname/IP, adapt host
       if (
         window.location.hostname !== 'localhost' &&
         window.location.hostname !== '127.0.0.1' &&
         configuredUrl.includes('localhost')
       ) {
-        return configuredUrl.replace('localhost', window.location.hostname);
+        return configuredUrl.replace('localhost', window.location.hostname).replace(/\/+$/, '');
       }
-      return configuredUrl;
+      return configuredUrl.trim().replace(/\/+$/, '');
     }
     if (process.env.NEXT_PUBLIC_API_URL?.startsWith('http')) {
       return process.env.NEXT_PUBLIC_API_URL.replace(/\/api\/?$/, '');
+    }
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      return window.location.origin;
     }
     return `${window.location.protocol}//${window.location.hostname}:4000`;
   }

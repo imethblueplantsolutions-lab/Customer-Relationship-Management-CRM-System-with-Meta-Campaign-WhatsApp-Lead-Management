@@ -20,12 +20,15 @@ const PORT = process.env.PORT || 3000;
 const io = new Server(server, {
   cors: {
     origin: '*',
-    methods: ['GET', 'POST']
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id', 'Cache-Control', 'Pragma', 'Expires', 'x-requested-with']
   }
 });
 
 // Attempt to attach Redis adapter for Socket.IO (non-blocking)
+let redisAdapterAttached = false;
 function setupRedisAdapter() {
+  if (redisAdapterAttached) return;
   try {
     if (redisClient && isRedisAvailable()) {
       const { createAdapter } = require('@socket.io/redis-adapter');
@@ -34,16 +37,18 @@ function setupRedisAdapter() {
       pubClient.on('error', (err) => console.warn('⚠️  Redis pubClient error:', err.message));
       subClient.on('error', (err) => console.warn('⚠️  Redis subClient error:', err.message));
       io.adapter(createAdapter(pubClient, subClient));
+      redisAdapterAttached = true;
       console.log('✅ Socket.IO Redis adapter attached');
-    } else {
-      console.warn('⚠️  Redis not available — Socket.IO using in-memory adapter (single-instance only)');
     }
   } catch (err) {
     console.warn('⚠️  Failed to setup Redis adapter:', err.message, '— using in-memory adapter');
   }
 }
 
-// Try to setup Redis adapter after a short delay to allow connection
+if (redisClient) {
+  redisClient.on('ready', setupRedisAdapter);
+  redisClient.on('connect', setupRedisAdapter);
+}
 setTimeout(setupRedisAdapter, 3000);
 
 // Socket.IO Authentication & Tenant Room Allocation
@@ -92,11 +97,14 @@ if (redisClient) {
 }
 
 // Security & CORS
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: false,
+  crossOriginOpenerPolicy: false
+}));
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id', 'Cache-Control', 'Pragma', 'Expires', 'x-requested-with']
 }));
 
 // Gzip/Brotli response compression (~80% bandwidth reduction on JSON payloads)

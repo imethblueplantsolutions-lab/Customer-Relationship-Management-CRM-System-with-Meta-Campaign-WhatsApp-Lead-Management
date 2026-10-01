@@ -4,20 +4,24 @@ let redisClient = null;
 let redisAvailable = false;
 
 try {
+  const redisUrl = process.env.REDIS_URL || process.env.REDISPRIVATE_URL || process.env.REDIS_PUBLIC_URL;
+  const isTls = redisUrl && redisUrl.startsWith('rediss://');
+
   const redisOptions = {
     maxRetriesPerRequest: null,
     retryStrategy(times) {
-      if (times > 3) {
-        console.warn('⚠️  Redis unavailable after 3 retries. Running without Redis (caching/queues disabled).');
+      if (times > 5) {
+        console.warn('⚠️  Redis unavailable after 5 retries. Running without Redis (caching/queues disabled).');
         return null; // Stop retrying
       }
       return Math.min(times * 500, 2000);
     },
     lazyConnect: true,
+    ...(isTls ? { tls: { rejectUnauthorized: false } } : {})
   };
 
-  if (process.env.REDIS_URL) {
-    redisClient = new Redis(process.env.REDIS_URL, redisOptions);
+  if (redisUrl) {
+    redisClient = new Redis(redisUrl, redisOptions);
   } else {
     redisClient = new Redis({
       host: process.env.REDIS_HOST || '127.0.0.1',
