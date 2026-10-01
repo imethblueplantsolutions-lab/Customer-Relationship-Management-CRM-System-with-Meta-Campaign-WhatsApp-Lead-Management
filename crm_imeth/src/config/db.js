@@ -5,7 +5,7 @@ const basePrisma = new PrismaClient({
   log: ['warn', 'error'],
 });
 
-const TENANT_SCOPED_MODELS = ['lead', 'user'];
+const TENANT_SCOPED_MODELS = ['lead', 'user', 'auditlog'];
 
 const prisma = basePrisma.$extends({
   query: {

@@ -21,6 +21,7 @@ model Tenant {
   deals              Deal[]
   flows              Flow[]
   tags               Tag[]
+  auditLogs          AuditLog[]
 }
 
 model User {
@@ -51,6 +52,8 @@ model User {
   activities        Activity[]     @relation("ActivityCreator")
   notifications     Notification[]
   createdAttachments Attachment[]   @relation("AttachmentCreator")
+  performedAuditLogs AuditLog[]     @relation("AuditPerformedBy")
+  targetAuditLogs    AuditLog[]     @relation("AuditTargetUser")
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
 
@@ -304,4 +307,23 @@ model Tag {
 
   @@unique([tenantId, name])
   @@index([tenantId])
+}
+
+model AuditLog {
+  id             String    @id @default(uuid())
+  tenantId       String
+  tenant         Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  performedById  String
+  performedBy    User      @relation("AuditPerformedBy", fields: [performedById], references: [id], onDelete: Cascade)
+  targetUserId   String?
+  targetUser     User?     @relation("AuditTargetUser", fields: [targetUserId], references: [id], onDelete: SetNull)
+  action         String
+  details        Json?
+  createdAt      DateTime  @default(now())
+
+  @@index([tenantId])
+  @@index([tenantId, createdAt])
+  @@index([performedById])
+  @@index([targetUserId])
+  @@index([action])
 }

@@ -7,6 +7,7 @@ const { tenantStorage } = require('../middleware/tenant');
 const { authorize, authenticate } = require('../middleware/auth');
 const { sendWelcomeEmail, sendOtpEmail } = require('../services/mailer');
 const { validateHierarchyAssignment, validateBulkHierarchyAssignment } = require('../utils/hierarchyValidation');
+const { logAudit } = require('../utils/auditLogger');
 const router = express.Router();
 
 // Helper to calculate SHA-256 hash for OTP codes
@@ -161,6 +162,20 @@ router.post('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, r
         isActive: true,
         isFirstLogin: true,
         createdAt: true,
+      },
+    });
+
+    // Log enterprise audit event
+    await logAudit({
+      tenantId,
+      performedById: req.user?.userId || req.user?.id,
+      targetUserId: newUser.id,
+      action: 'USER_CREATED',
+      details: {
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+        reportsToId: newUser.reportsToId,
       },
     });
 
@@ -722,6 +737,18 @@ router.put('/hierarchy/bulk-reassign', authenticate, async (req, res) => {
       )
     );
 
+    // Log enterprise audit event
+    await logAudit({
+      tenantId,
+      performedById: req.user?.userId || req.user?.id,
+      action: 'HIERARCHY_BULK_REASSIGNED',
+      details: {
+        affectedCount: userIds.length,
+        userIds,
+        newManagerId: reportsToId || null,
+      },
+    });
+
     // Broadcast real-time hierarchy update
     try {
       const { io } = require('../index');
@@ -895,6 +922,66 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
       });
     }
 
+    // Log enterprise audit events
+    const performedById = req.user?.userId || req.user?.id;
+    const reportsToChanged = reportsToId !== undefined && (reportsToId || null) !== (existingUser.reportsToId || null);
+    const roleChanged = role !== undefined && role !== existingUser.role;
+    const deactivationHappened = isDeactivating;
+    const activationHappened = isActive === true && existingUser.isActive === false;
+
+    if (reportsToChanged) {
+      await logAudit({
+        tenantId,
+        performedById,
+        targetUserId: updatedUser.id,
+        action: 'HIERARCHY_REASSIGNED',
+        details: {
+          userName: updatedUser.name || updatedUser.email,
+          role: updatedUser.role,
+          previousManagerId: existingUser.reportsToId || null,
+          newManagerId: updatedUser.reportsToId || null,
+        },
+      });
+    }
+
+    if (deactivationHappened) {
+      await logAudit({
+        tenantId,
+        performedById,
+        targetUserId: updatedUser.id,
+        action: 'USER_DEACTIVATED',
+        details: {
+          userName: updatedUser.name || updatedUser.email,
+          role: updatedUser.role,
+        },
+      });
+    } else if (activationHappened) {
+      await logAudit({
+        tenantId,
+        performedById,
+        targetUserId: updatedUser.id,
+        action: 'USER_ACTIVATED',
+        details: {
+          userName: updatedUser.name || updatedUser.email,
+          role: updatedUser.role,
+        },
+      });
+    }
+
+    if (roleChanged) {
+      await logAudit({
+        tenantId,
+        performedById,
+        targetUserId: updatedUser.id,
+        action: 'USER_ROLE_CHANGED',
+        details: {
+          userName: updatedUser.name || updatedUser.email,
+          previousRole: existingUser.role,
+          newRole: updatedUser.role,
+        },
+      });
+    }
+
     // Broadcast user update
     try {
       const { io } = require('../index');
@@ -994,6 +1081,19 @@ router.delete('/:id', authorize(['SUPER_ADMIN']), async (req, res) => {
       await tx.user.delete({
         where: { id: targetUserId },
       });
+    });
+
+    // Log enterprise audit event
+    await logAudit({
+      tenantId,
+      performedById: req.user?.userId || req.user?.id,
+      targetUserId,
+      action: 'USER_DELETED',
+      details: {
+        deletedUserName: targetUser.name || targetUser.email,
+        deletedUserEmail: targetUser.email,
+        deletedUserRole: targetUser.role,
+      },
     });
 
     // Broadcast real-time deletion events
