@@ -574,6 +574,8 @@ router.get('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, re
         tenantId: true,
         isActive: true,
         isFirstLogin: true,
+        maxTeamLeads: true,
+        maxAgents: true,
         createdAt: true,
         reportsToId: true,
         manager: {
@@ -583,6 +585,8 @@ router.get('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, re
             email: true,
             role: true,
             avatar: true,
+            maxTeamLeads: true,
+            maxAgents: true,
           },
         },
         teamMembers: {
@@ -592,6 +596,8 @@ router.get('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, re
             email: true,
             role: true,
             avatar: true,
+            maxTeamLeads: true,
+            maxAgents: true,
           },
         },
       },
@@ -626,6 +632,8 @@ router.get('/hierarchy', authenticate, async (req, res) => {
         isFirstLogin: true,
         reportsToId: true,
         tenantId: true,
+        maxTeamLeads: true,
+        maxAgents: true,
         createdAt: true,
         manager: {
           select: {
@@ -634,6 +642,8 @@ router.get('/hierarchy', authenticate, async (req, res) => {
             email: true,
             role: true,
             avatar: true,
+            maxTeamLeads: true,
+            maxAgents: true,
           },
         },
         teamMembers: {
@@ -643,6 +653,8 @@ router.get('/hierarchy', authenticate, async (req, res) => {
             email: true,
             role: true,
             avatar: true,
+            maxTeamLeads: true,
+            maxAgents: true,
           },
         },
       },
