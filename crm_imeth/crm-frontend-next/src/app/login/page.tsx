@@ -316,11 +316,11 @@ export default function LoginPage() {
       <div className="absolute bottom-24 right-1/4 w-9 h-9 bg-blue-600/20 backdrop-blur-md rounded-xl rotate-6 shadow-xs pointer-events-none" />
 
       {/* Main Sliding Dual-Auth Container */}
-      <div className="relative z-10 w-full max-w-5xl min-h-[560px] md:min-h-[590px] bg-white rounded-2xl shadow-[0_25px_70px_rgba(27,38,44,0.12)] border border-slate-100 overflow-hidden">
+      <div className="relative z-10 w-full max-w-4xl min-h-[460px] md:min-h-[480px] bg-white rounded-2xl shadow-[0_20px_60px_rgba(27,38,44,0.12)] border border-slate-100 overflow-hidden">
 
         {/* ================= 1. SIGN IN FORM PANEL (Left 50% Desktop) ================= */}
         <div
-          className={`w-full md:w-1/2 h-full min-h-[560px] md:min-h-[590px] p-5 sm:p-7 lg:p-8 flex flex-col justify-between bg-white transition-all duration-700 ease-in-out ${
+          className={`w-full md:w-1/2 h-full min-h-[460px] md:min-h-[480px] p-5 sm:p-6 flex flex-col justify-between bg-white transition-all duration-700 ease-in-out ${
             isSignUpActive
               ? "md:translate-x-full md:opacity-0 md:z-10 md:pointer-events-none hidden md:flex"
               : "md:translate-x-0 md:opacity-100 md:z-20 md:pointer-events-auto flex"
@@ -329,49 +329,49 @@ export default function LoginPage() {
           {/* Top Bar */}
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#0F4C75] to-[#3282B8] flex items-center justify-center shadow-md shadow-[#3282B8]/20 shrink-0">
-                <MessageSquare className="w-4.5 h-4.5 text-white" />
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#0F4C75] to-[#3282B8] flex items-center justify-center shadow-md shadow-[#3282B8]/20 shrink-0">
+                <MessageSquare className="w-4 h-4 text-white" />
               </div>
               <div className="flex items-baseline gap-0.5">
-                <span className="text-xl font-bold text-blue-600 tracking-tight">MyCRM</span>
+                <span className="text-lg font-bold text-blue-600 tracking-tight">MyCRM</span>
               </div>
             </div>
 
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#BBE1FA]/30 border border-[#BBE1FA] text-[11px] font-semibold text-[#0F4C75] shrink-0">
-              <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#BBE1FA]/30 border border-[#BBE1FA] text-[10px] font-semibold text-[#0F4C75] shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
               <span>v1.0 Live</span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 ml-0.5" />
+              <ChevronDown className="w-3 h-3 text-slate-400 ml-0.5" />
             </div>
           </div>
 
           {/* Form Content */}
-          <div className="w-full max-w-[380px] mx-auto my-auto py-2 flex flex-col gap-3">
+          <div className="w-full max-w-[360px] mx-auto my-auto py-1 flex flex-col gap-2.5">
             <div className="w-full flex flex-col items-center justify-center text-center">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight text-center">
+              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight text-center">
                 Welcome Back!
               </h1>
-              <p className="mt-1 text-xs sm:text-sm text-slate-500 max-w-xs text-center leading-relaxed">
+              <p className="mt-0.5 text-xs text-slate-500 max-w-xs text-center leading-relaxed">
                 Log in to your account to manage your WhatsApp leads, pipelines & automations.
               </p>
             </div>
 
             {error && (
-              <div className="rounded-xl bg-red-50 border border-red-200 p-2.5 text-xs text-red-700 font-medium flex items-start gap-2">
+              <div className="rounded-lg bg-red-50 border border-red-200 p-2 text-[11px] text-red-700 font-medium flex items-start gap-2">
                 <span className="shrink-0 text-red-500 font-bold">⚠️</span>
                 <span>{error}</span>
               </div>
             )}
 
             {successMsg && (
-              <div className="rounded-xl bg-sky-50 border border-[#BBE1FA] p-2.5 text-xs text-[#0F4C75] font-medium flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+              <div className="rounded-lg bg-sky-50 border border-[#BBE1FA] p-2 text-[11px] text-[#0F4C75] font-medium flex items-start gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
                 <span>{successMsg}</span>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-2">
               <div className="relative flex items-center w-full">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400 pointer-events-none z-10" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
                 <input
                   suppressHydrationWarning
                   type="email"
@@ -379,13 +379,13 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="Your email address"
-                  style={{ paddingLeft: "42px", paddingRight: "14px" }}
-                  className="w-full h-10.5 rounded-xl bg-[#f4f7f6] border border-transparent text-xs sm:text-sm text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-hidden"
+                  style={{ paddingLeft: "38px", paddingRight: "12px" }}
+                  className="w-full h-10 rounded-xl bg-[#f4f7f6] border border-transparent text-xs text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-hidden"
                 />
               </div>
 
               <div className="relative flex items-center w-full">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400 pointer-events-none z-10" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
                 <input
                   suppressHydrationWarning
                   type={showPassword ? "text" : "password"}
@@ -393,24 +393,24 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="Your password"
-                  style={{ paddingLeft: "42px", paddingRight: "42px" }}
-                  className="w-full h-10.5 rounded-xl bg-[#f4f7f6] border border-transparent text-xs sm:text-sm text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-hidden"
+                  style={{ paddingLeft: "38px", paddingRight: "38px" }}
+                  className="w-full h-10 rounded-xl bg-[#f4f7f6] border border-transparent text-xs text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-hidden"
                 />
                 <button
                   suppressHydrationWarning
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer z-10"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer z-10"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
 
-              <div className="flex items-center justify-between text-xs px-0.5">
-                <span className="text-slate-400 text-[11px]">Protected by Role Auth</span>
+              <div className="flex items-center justify-between text-[11px] px-0.5">
+                <span className="text-slate-400">Protected by Role Auth</span>
                 <a
                   href="mailto:imethblueplantsolutions@gmail.com?subject=Password%20Reset%20Request"
-                  className="text-blue-600 hover:text-[#0F4C75] font-semibold hover:underline text-[11px]"
+                  className="text-blue-600 hover:text-[#0F4C75] font-semibold hover:underline"
                 >
                   Need password reset?
                 </a>
@@ -420,7 +420,7 @@ export default function LoginPage() {
                 suppressHydrationWarning
                 type="submit"
                 disabled={loading}
-                className="w-full h-10.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm transition-all duration-200 shadow-md hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 mt-0.5 group"
+                className="w-full h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-all duration-200 shadow-md hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-1.5 mt-0.5 group"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
@@ -440,22 +440,22 @@ export default function LoginPage() {
             </form>
 
             <div className="relative flex items-center justify-center my-0.5">
-              <div className="w-full border-t border-[#155DFC]" />
-              <span className="absolute bg-white px-2.5 text-[11px] text-slate-400 font-medium uppercase tracking-wider">
+              <div className="w-full border-t border-slate-200" />
+              <span className="absolute bg-white px-2 text-[10px] text-slate-400 font-medium uppercase tracking-wider">
                 Or continue with
               </span>
             </div>
 
-            <div className="w-full flex flex-col items-center justify-center min-h-[42px]">
+            <div className="w-full flex flex-col items-center justify-center min-h-[40px]">
               <div id="google-signin-btn" className="w-full flex justify-center" />
               {!googleInitialized && (
                 <button
                   suppressHydrationWarning
                   type="button"
                   onClick={handleGoogleSignIn}
-                  className="w-full h-10.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium text-xs sm:text-sm transition-all duration-150 shadow-xs hover:shadow flex items-center justify-center gap-2.5 focus:outline-hidden cursor-pointer group"
+                  className="w-full h-10 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium text-xs transition-all duration-150 shadow-xs hover:shadow flex items-center justify-center gap-2 focus:outline-hidden cursor-pointer group"
                 >
-                  <svg className="w-4.5 h-4.5 shrink-0 transition-transform group-hover:scale-105" viewBox="0 0 24 24" aria-hidden="true">
+                  <svg className="w-4 h-4 shrink-0 transition-transform group-hover:scale-105" viewBox="0 0 24 24" aria-hidden="true">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
@@ -472,15 +472,15 @@ export default function LoginPage() {
                 type="button"
                 onClick={handleSeedDatabase}
                 disabled={seeding}
-                className="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-400 hover:text-blue-600 transition-colors cursor-pointer disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 text-[10px] font-medium text-slate-400 hover:text-blue-600 transition-colors cursor-pointer disabled:opacity-50"
               >
-                <Database className="w-3.5 h-3.5 text-blue-600" />
+                <Database className="w-3 h-3 text-blue-600" />
                 {seeding ? "Initializing database..." : "First time setup? Seed default database"}
               </button>
             </div>
 
             {/* Mobile-only toggle link */}
-            <div className="md:hidden text-center pt-2 border-t border-slate-100">
+            <div className="md:hidden text-center pt-1.5 border-t border-slate-100">
               <p className="text-xs text-slate-500">
                 New to MyCRM?{" "}
                 <button
@@ -495,8 +495,8 @@ export default function LoginPage() {
           </div>
 
           {/* Footer */}
-          <div className="mt-2 pt-2 text-center border-t border-slate-100">
-            <p className="text-[11px] text-slate-400">
+          <div className="mt-1 pt-1.5 text-center border-t border-slate-100">
+            <p className="text-[10px] text-slate-400">
               Need assistance?{" "}
               <a href="mailto:imethblueplantsolutions@gmail.com" className="text-blue-600 font-semibold hover:underline">
                 imethblueplantsolutions@gmail.com
@@ -507,7 +507,7 @@ export default function LoginPage() {
 
         {/* ================= 2. SIGN UP FORM PANEL (Slides from Left to Right 50%) ================= */}
         <div
-          className={`w-full md:w-1/2 h-full min-h-[560px] md:min-h-[590px] p-5 sm:p-7 lg:p-8 flex flex-col justify-between bg-white transition-all duration-700 ease-in-out ${
+          className={`w-full md:w-1/2 h-full min-h-[460px] md:min-h-[480px] p-5 sm:p-6 flex flex-col justify-between bg-white transition-all duration-700 ease-in-out ${
             isSignUpActive
               ? "md:translate-x-full md:opacity-100 md:z-20 md:pointer-events-auto flex"
               : "md:translate-x-0 md:opacity-0 md:z-10 md:pointer-events-none hidden md:flex"
@@ -516,49 +516,49 @@ export default function LoginPage() {
           {/* Top Bar */}
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#0F4C75] to-[#3282B8] flex items-center justify-center shadow-md shadow-[#3282B8]/20 shrink-0">
-                <MessageSquare className="w-4.5 h-4.5 text-white" />
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#0F4C75] to-[#3282B8] flex items-center justify-center shadow-md shadow-[#3282B8]/20 shrink-0">
+                <MessageSquare className="w-4 h-4 text-white" />
               </div>
               <div className="flex items-baseline gap-0.5">
-                <span className="text-xl font-bold text-blue-600 tracking-tight">MyCRM</span>
+                <span className="text-lg font-bold text-blue-600 tracking-tight">MyCRM</span>
               </div>
             </div>
 
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-[11px] font-semibold text-purple-700 shrink-0">
-              <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-[10px] font-semibold text-purple-700 shrink-0">
+              <Sparkles className="w-3 h-3 text-purple-600" />
               <span>SaaS Onboarding</span>
             </div>
           </div>
 
           {/* Form Content */}
-          <div className="w-full max-w-[380px] mx-auto my-auto py-2 flex flex-col gap-3">
+          <div className="w-full max-w-[360px] mx-auto my-auto py-1 flex flex-col gap-2">
             <div className="w-full flex flex-col items-center justify-center text-center">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight text-center">
+              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight text-center">
                 Create Account
               </h1>
-              <p className="mt-1 text-xs sm:text-sm text-slate-500 max-w-xs text-center leading-relaxed">
+              <p className="mt-0.5 text-xs text-slate-500 max-w-xs text-center leading-relaxed">
                 Join MyCRM to launch lead pipelines, automated follow-ups & team hierarchy.
               </p>
             </div>
 
             {signUpError && (
-              <div className="rounded-xl bg-red-50 border border-red-200 p-2.5 text-xs text-red-700 font-medium flex items-start gap-2">
+              <div className="rounded-lg bg-red-50 border border-red-200 p-2 text-[11px] text-red-700 font-medium flex items-start gap-2">
                 <span className="shrink-0 text-red-500 font-bold">⚠️</span>
                 <span>{signUpError}</span>
               </div>
             )}
 
             {signUpSuccess && (
-              <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-2.5 text-xs text-emerald-800 font-medium flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-2 text-[11px] text-emerald-800 font-medium flex items-start gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
                 <span>{signUpSuccess}</span>
               </div>
             )}
 
-            <form onSubmit={handleSignUpSubmit} className="flex flex-col gap-2.5">
+            <form onSubmit={handleSignUpSubmit} className="flex flex-col gap-2">
               {/* Full Name Input */}
               <div className="relative flex items-center w-full">
-                <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400 pointer-events-none z-10" />
+                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
                 <input
                   suppressHydrationWarning
                   type="text"
@@ -566,14 +566,14 @@ export default function LoginPage() {
                   onChange={(e) => setSignUpName(e.target.value)}
                   required
                   placeholder="Full name (e.g. Sarah Jenkins)"
-                  style={{ paddingLeft: "42px", paddingRight: "14px" }}
-                  className="w-full h-10.5 rounded-xl bg-[#f4f7f6] border border-transparent text-xs sm:text-sm text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-hidden"
+                  style={{ paddingLeft: "38px", paddingRight: "12px" }}
+                  className="w-full h-9.5 rounded-xl bg-[#f4f7f6] border border-transparent text-xs text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-hidden"
                 />
               </div>
 
               {/* Email Input */}
               <div className="relative flex items-center w-full">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400 pointer-events-none z-10" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
                 <input
                   suppressHydrationWarning
                   type="email"
@@ -581,14 +581,14 @@ export default function LoginPage() {
                   onChange={(e) => setSignUpEmail(e.target.value)}
                   required
                   placeholder="Work email address"
-                  style={{ paddingLeft: "42px", paddingRight: "14px" }}
-                  className="w-full h-10.5 rounded-xl bg-[#f4f7f6] border border-transparent text-xs sm:text-sm text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-hidden"
+                  style={{ paddingLeft: "38px", paddingRight: "12px" }}
+                  className="w-full h-9.5 rounded-xl bg-[#f4f7f6] border border-transparent text-xs text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-hidden"
                 />
               </div>
 
               {/* Password Input */}
               <div className="relative flex items-center w-full">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400 pointer-events-none z-10" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
                 <input
                   suppressHydrationWarning
                   type={showSignUpPassword ? "text" : "password"}
@@ -596,14 +596,14 @@ export default function LoginPage() {
                   onChange={(e) => setSignUpPassword(e.target.value)}
                   required
                   placeholder="Create a password"
-                  style={{ paddingLeft: "42px", paddingRight: "42px" }}
-                  className="w-full h-10.5 rounded-xl bg-[#f4f7f6] border border-transparent text-xs sm:text-sm text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-hidden"
+                  style={{ paddingLeft: "38px", paddingRight: "38px" }}
+                  className="w-full h-9.5 rounded-xl bg-[#f4f7f6] border border-transparent text-xs text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-hidden"
                 />
                 <button
                   suppressHydrationWarning
                   type="button"
                   onClick={() => setShowSignUpPassword(!showSignUpPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer z-10"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer z-10"
                 >
                   {showSignUpPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -611,15 +611,15 @@ export default function LoginPage() {
 
               {/* Company / Organization Name (Optional) */}
               <div className="relative flex items-center w-full">
-                <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400 pointer-events-none z-10" />
+                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
                 <input
                   suppressHydrationWarning
                   type="text"
                   value={signUpCompanyName}
                   onChange={(e) => setSignUpCompanyName(e.target.value)}
                   placeholder="Company / Organization (Optional)"
-                  style={{ paddingLeft: "42px", paddingRight: "14px" }}
-                  className="w-full h-10.5 rounded-xl bg-[#f4f7f6] border border-transparent text-xs sm:text-sm text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-hidden"
+                  style={{ paddingLeft: "38px", paddingRight: "12px" }}
+                  className="w-full h-9.5 rounded-xl bg-[#f4f7f6] border border-transparent text-xs text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-hidden"
                 />
               </div>
 
@@ -628,7 +628,7 @@ export default function LoginPage() {
                 suppressHydrationWarning
                 type="submit"
                 disabled={signUpLoading}
-                className="w-full h-10.5 rounded-xl bg-gradient-to-r from-[#0F4C75] to-[#3282B8] hover:from-[#1B262C] hover:to-[#0F4C75] text-white font-semibold text-xs sm:text-sm transition-all duration-200 shadow-md hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 mt-0.5 group"
+                className="w-full h-9.5 rounded-xl bg-gradient-to-r from-[#0F4C75] to-[#3282B8] hover:from-[#1B262C] hover:to-[#0F4C75] text-white font-semibold text-xs transition-all duration-200 shadow-md hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-1.5 mt-0.5 group"
               >
                 {signUpLoading ? (
                   <span className="flex items-center gap-2">
@@ -648,7 +648,7 @@ export default function LoginPage() {
             </form>
 
             {/* Mobile-only toggle link */}
-            <div className="md:hidden text-center pt-2 border-t border-slate-100">
+            <div className="md:hidden text-center pt-1.5 border-t border-slate-100">
               <p className="text-xs text-slate-500">
                 Already have an account?{" "}
                 <button
@@ -663,8 +663,8 @@ export default function LoginPage() {
           </div>
 
           {/* Footer */}
-          <div className="mt-2 pt-2 text-center border-t border-slate-100">
-            <p className="text-[11px] text-slate-400">
+          <div className="mt-1 pt-1.5 text-center border-t border-slate-100">
+            <p className="text-[10px] text-slate-400">
               Need assistance?{" "}
               <a href="mailto:imethblueplantsolutions@gmail.com" className="text-blue-600 font-semibold hover:underline">
                 imethblueplantsolutions@gmail.com
@@ -675,7 +675,7 @@ export default function LoginPage() {
 
         {/* ================= 3. DARK BLUE SLIDING OVERLAY PANEL (`.toggle-container`) ================= */}
         <div
-          className={`hidden md:flex absolute top-0 left-1/2 w-1/2 h-full z-30 transition-transform duration-700 ease-in-out overflow-hidden bg-gradient-to-br from-[#1B262C] via-[#0F4C75] to-[#3282B8] flex-col items-center justify-between p-6 lg:p-8 ${
+          className={`hidden md:flex absolute top-0 left-1/2 w-1/2 h-full z-30 transition-transform duration-700 ease-in-out overflow-hidden bg-gradient-to-br from-[#1B262C] via-[#0F4C75] to-[#3282B8] flex-col items-center justify-between p-5 lg:p-6 ${
             isSignUpActive ? "-translate-x-full" : "translate-x-0"
           }`}
         >
@@ -685,34 +685,34 @@ export default function LoginPage() {
 
           {/* Top Header Badge */}
           <div className="w-full flex items-center justify-between z-10">
-            <div className="px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[11px] font-semibold text-white/90 flex items-center gap-2 shadow-lg">
-              <Layers className="w-3.5 h-3.5 text-[#BBE1FA]" />
+            <div className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[10px] font-semibold text-white/90 flex items-center gap-1.5 shadow-lg">
+              <Layers className="w-3 h-3 text-[#BBE1FA]" />
               Enterprise Edition
             </div>
           </div>
 
           {/* Center Showcase Card (Preserved Feature Carousel with Dots) */}
-          <div className="relative z-10 w-full max-w-[440px] rounded-xl bg-white/15 backdrop-blur-2xl border border-white/30 p-6 lg:p-7 text-white shadow-2xl flex flex-col gap-4 my-auto">
+          <div className="relative z-10 w-full max-w-[390px] rounded-xl bg-white/15 backdrop-blur-2xl border border-white/30 p-5 lg:p-6 text-white shadow-2xl flex flex-col gap-3 my-auto">
             {/* Header Icon Ring */}
-            <div className="w-10 h-10 rounded-xl border-2 border-white/40 border-t-white flex items-center justify-center bg-white/10 backdrop-blur-md">
-              <Sparkles className="w-4.5 h-4.5 text-[#BBE1FA]" />
+            <div className="w-9 h-9 rounded-xl border-2 border-white/40 border-t-white flex items-center justify-center bg-white/10 backdrop-blur-md">
+              <Sparkles className="w-4 h-4 text-[#BBE1FA]" />
             </div>
 
             {/* Content Text */}
-            <div className="flex flex-col gap-2">
-              <span className="self-start px-2.5 py-0.5 rounded-full bg-[#BBE1FA]/20 border border-[#BBE1FA]/40 text-[10px] font-bold tracking-wider text-[#BBE1FA] uppercase">
+            <div className="flex flex-col gap-1.5">
+              <span className="self-start px-2 py-0.5 rounded-full bg-[#BBE1FA]/20 border border-[#BBE1FA]/40 text-[9px] font-bold tracking-wider text-[#BBE1FA] uppercase">
                 {slides[activeSlide].tag}
               </span>
-              <h2 className="text-lg sm:text-xl font-bold leading-snug tracking-tight text-white drop-shadow-xs">
+              <h2 className="text-base sm:text-lg font-bold leading-snug tracking-tight text-white drop-shadow-xs">
                 {slides[activeSlide].title}
               </h2>
-              <p className="text-xs text-white/90 leading-relaxed font-normal">
+              <p className="text-[11px] text-white/90 leading-relaxed font-normal">
                 {slides[activeSlide].description}
               </p>
             </div>
 
             {/* Slider Dots */}
-            <div className="flex items-center gap-2 pt-3 border-t border-white/20">
+            <div className="flex items-center gap-1.5 pt-2.5 border-t border-white/20">
               {slides.map((_, idx) => (
                 <button
                   suppressHydrationWarning
@@ -720,7 +720,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => setActiveSlide(idx)}
                   className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                    activeSlide === idx ? "w-8 bg-[#BBE1FA]" : "w-2 bg-white/40 hover:bg-white/70"
+                    activeSlide === idx ? "w-7 bg-[#BBE1FA]" : "w-1.5 bg-white/40 hover:bg-white/70"
                   }`}
                   aria-label={`Go to slide ${idx + 1}`}
                 />
@@ -729,17 +729,17 @@ export default function LoginPage() {
           </div>
 
           {/* Bottom Toggle Control Action Box */}
-          <div className="relative z-10 w-full max-w-[440px] rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 px-4 py-3 text-white flex items-center justify-between shadow-lg">
+          <div className="relative z-10 w-full max-w-[390px] rounded-xl bg-white/10 backdrop-blur-md border border-white/20 px-3.5 py-2.5 text-white flex items-center justify-between shadow-lg">
             {!isSignUpActive ? (
               <>
                 <div>
                   <p className="text-xs font-semibold text-white">New to MyCRM?</p>
-                  <p className="text-[11px] text-white/70">Create your tenant organization account</p>
+                  <p className="text-[10px] text-white/70">Create your tenant organization account</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsSignUpActive(true)}
-                  className="px-4 py-2 rounded-xl bg-white text-[#0F4C75] hover:bg-[#BBE1FA] font-bold text-xs transition-all cursor-pointer shadow-md hover:shadow-lg"
+                  className="px-3.5 py-1.5 rounded-lg bg-white text-[#0F4C75] hover:bg-[#BBE1FA] font-bold text-xs transition-all cursor-pointer shadow-md hover:shadow-lg"
                 >
                   Sign Up
                 </button>
@@ -748,12 +748,12 @@ export default function LoginPage() {
               <>
                 <div>
                   <p className="text-xs font-semibold text-white">Already have an account?</p>
-                  <p className="text-[11px] text-white/70">Sign in to your CRM workspace</p>
+                  <p className="text-[10px] text-white/70">Sign in to your CRM workspace</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsSignUpActive(false)}
-                  className="px-4 py-2 rounded-xl bg-white text-[#0F4C75] hover:bg-[#BBE1FA] font-bold text-xs transition-all cursor-pointer shadow-md hover:shadow-lg"
+                  className="px-3.5 py-1.5 rounded-lg bg-white text-[#0F4C75] hover:bg-[#BBE1FA] font-bold text-xs transition-all cursor-pointer shadow-md hover:shadow-lg"
                 >
                   Sign In
                 </button>
