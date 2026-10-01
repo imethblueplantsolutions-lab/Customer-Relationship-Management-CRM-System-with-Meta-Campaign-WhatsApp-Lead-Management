@@ -42,10 +42,14 @@ export function RoleGuard({
   useEffect(() => {
     if (!isLoading) {
       if (!isAuthenticated || !isAuthorized) {
-        router.replace(redirectTo);
+        const destination =
+          redirectTo === "/dashboard" && user?.role === "SUPER_ADMIN"
+            ? "/hierarchy"
+            : redirectTo;
+        router.replace(destination);
       }
     }
-  }, [isLoading, isAuthenticated, isAuthorized, router, redirectTo]);
+  }, [isLoading, isAuthenticated, isAuthorized, router, redirectTo, user]);
 
   // Loading state gatekeeper
   if (isLoading) {

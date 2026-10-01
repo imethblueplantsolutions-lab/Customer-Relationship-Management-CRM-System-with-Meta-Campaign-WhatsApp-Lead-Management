@@ -30,20 +30,31 @@ interface NavItem {
  * Role Hierarchy: SUPER_ADMIN > ADMIN > TEAM_LEAD > AGENT
  */
 const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  {
+    href: "/dashboard",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    allowedRoles: ["ADMIN", "TEAM_LEAD", "AGENT"],
+  },
   {
     href: "/leads",
     label: (role) => (role === "AGENT" ? "My Leads" : "Leads"),
     icon: Users,
+    allowedRoles: ["ADMIN", "TEAM_LEAD", "AGENT"],
   },
-  { href: "/followups", label: "Follow-ups", icon: Clock },
+  {
+    href: "/followups",
+    label: "Follow-ups",
+    icon: Clock,
+    allowedRoles: ["ADMIN", "TEAM_LEAD", "AGENT"],
+  },
   { href: "/pipelines", label: "Pipelines", icon: GitBranch, hidden: true },
   { href: "/flows", label: "Automation Flows", icon: Workflow, hidden: true },
   {
     href: "/users",
     label: "Users",
     icon: UserCheck,
-    allowedRoles: ["SUPER_ADMIN", "ADMIN", "TEAM_LEAD"],
+    allowedRoles: ["ADMIN", "TEAM_LEAD"],
   },
   {
     href: "/hierarchy",
@@ -55,7 +66,7 @@ const NAV_ITEMS: NavItem[] = [
     href: "/admin/dead-letters",
     label: "Dead Leads",
     icon: AlertOctagon,
-    allowedRoles: ["SUPER_ADMIN", "ADMIN"],
+    allowedRoles: ["ADMIN"],
   },
   {
     href: "/settings",

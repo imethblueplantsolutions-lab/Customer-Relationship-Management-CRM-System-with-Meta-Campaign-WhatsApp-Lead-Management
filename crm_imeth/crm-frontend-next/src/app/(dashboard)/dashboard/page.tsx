@@ -8,6 +8,7 @@ import type { DashboardStats } from "@/types";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { LayoutDashboard, ArrowRight, Plus, CheckCircle2, Users, Shield, Zap, Briefcase } from "lucide-react";
+import { RoleGuard } from "@/components/RoleGuard";
 
 const DashboardCharts = dynamic(() => import("./DashboardCharts"), {
   ssr: false,
@@ -32,6 +33,14 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function DashboardPage() {
+  return (
+    <RoleGuard allowedRoles={["ADMIN", "TEAM_LEAD", "AGENT"]} redirectTo="/hierarchy">
+      <DashboardContent />
+    </RoleGuard>
+  );
+}
+
+function DashboardContent() {
   const { user } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);

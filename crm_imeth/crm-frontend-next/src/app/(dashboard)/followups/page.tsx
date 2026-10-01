@@ -22,6 +22,7 @@ import { formatDateTime } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
+import { RoleGuard } from "@/components/RoleGuard";
 
 export default function FollowupsPage() {
   const { user } = useAuth();
@@ -179,7 +180,8 @@ export default function FollowupsPage() {
       : upcomingList;
 
   return (
-    <div className="space-y-8 pb-16">
+    <RoleGuard allowedRoles={["ADMIN", "TEAM_LEAD", "AGENT"]} redirectTo="/hierarchy">
+      <div className="space-y-8 pb-16">
       
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -396,6 +398,7 @@ export default function FollowupsPage() {
           })}
         </div>
       )}
-    </div>
+      </div>
+    </RoleGuard>
   );
 }

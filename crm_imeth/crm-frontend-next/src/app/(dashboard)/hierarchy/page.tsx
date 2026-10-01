@@ -547,7 +547,7 @@ export default function UserHierarchyPage() {
   const stats = hierarchyData?.stats;
 
   return (
-    <RoleGuard allowedRoles={["SUPER_ADMIN", "ADMIN"]}>
+    <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
       <div className="min-h-full space-y-6 p-4 md:p-8 max-w-[1600px] mx-auto animate-in fade-in duration-300">
       {/* ================= HEADER SECTION ================= */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-slate-200/80 pb-6 dark:border-slate-800">

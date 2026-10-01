@@ -4,14 +4,20 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function Home() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!isLoading) {
-      router.replace(isAuthenticated ? "/dashboard" : "/login");
+      if (!isAuthenticated) {
+        router.replace("/login");
+      } else if (user?.role === "SUPER_ADMIN") {
+        router.replace("/hierarchy");
+      } else {
+        router.replace("/dashboard");
+      }
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, user, router]);
 
   return (
     <div className="flex h-screen items-center justify-center">

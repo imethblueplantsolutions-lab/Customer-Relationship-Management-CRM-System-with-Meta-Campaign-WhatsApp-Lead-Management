@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/hooks/use-auth";
+import { RoleGuard } from "@/components/RoleGuard";
 import type { User } from "@/types";
 import {
   UserPlus,
@@ -54,8 +55,8 @@ export default function UserManagementPage() {
   } | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
-  const isPrivileged = ["SUPER_ADMIN", "ADMIN", "TEAM_LEAD"].includes(user?.role || "");
+  const isAdmin = user?.role === "ADMIN";
+  const isPrivileged = ["ADMIN", "TEAM_LEAD"].includes(user?.role || "");
 
   // Role hierarchy levels for action permissions
   const ROLE_LEVELS: Record<string, number> = {
@@ -223,7 +224,8 @@ export default function UserManagementPage() {
   }
 
   return (
-    <div className="space-y-8 pb-16">
+    <RoleGuard allowedRoles={["ADMIN", "TEAM_LEAD"]} redirectTo="/hierarchy">
+      <div className="space-y-8 pb-16">
       
       {/* Top Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -757,6 +759,7 @@ export default function UserManagementPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </RoleGuard>
   );
 }

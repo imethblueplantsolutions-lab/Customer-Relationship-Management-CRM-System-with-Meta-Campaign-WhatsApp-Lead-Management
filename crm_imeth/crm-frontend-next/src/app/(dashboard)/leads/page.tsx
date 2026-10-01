@@ -27,6 +27,7 @@ import Link from "next/link";
 import MergeLeadsModal from "@/components/leads/MergeLeadsModal";
 import LeadFilters from "@/components/leads/LeadFilters";
 import { TableSkeleton } from "@/components/ui/Skeleton";
+import { RoleGuard } from "@/components/RoleGuard";
 
 const STATUS_COLORS: Record<string, string> = {
   NEW: "#3b82f6",
@@ -49,9 +50,11 @@ const HIDE_WHATSAPP_MESSAGING = true;
 
 export default function LeadsPage() {
   return (
-    <Suspense fallback={<TableSkeleton rows={8} columns={5} />}>
-      <LeadsPageContent />
-    </Suspense>
+    <RoleGuard allowedRoles={["ADMIN", "TEAM_LEAD", "AGENT"]} redirectTo="/hierarchy">
+      <Suspense fallback={<TableSkeleton rows={8} columns={5} />}>
+        <LeadsPageContent />
+      </Suspense>
+    </RoleGuard>
   );
 }
 
