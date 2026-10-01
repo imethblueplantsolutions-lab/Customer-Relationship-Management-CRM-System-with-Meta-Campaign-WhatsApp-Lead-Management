@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/hooks/use-auth";
-import { RoleGuard } from "@/components/RoleGuard";
 import type { User } from "@/types";
 import {
   Save,
@@ -810,8 +809,7 @@ export default function AccountSettingsPage() {
   };
 
   return (
-    <RoleGuard allowedRoles={["SUPER_ADMIN", "ADMIN"]}>
-      <div className="max-w-6xl mx-auto pb-16">
+    <div className="max-w-6xl mx-auto pb-16">
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
@@ -923,7 +921,6 @@ export default function AccountSettingsPage() {
           </div>
         </main>
       </div>
-      </div>
-    </RoleGuard>
+    </div>
   );
 }

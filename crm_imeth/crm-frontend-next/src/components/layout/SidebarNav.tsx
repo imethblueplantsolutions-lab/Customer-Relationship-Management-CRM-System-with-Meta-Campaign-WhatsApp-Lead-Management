@@ -61,7 +61,6 @@ const NAV_ITEMS: NavItem[] = [
     href: "/settings",
     label: "Account Settings",
     icon: Settings,
-    allowedRoles: ["SUPER_ADMIN", "ADMIN"],
   },
 ];
 

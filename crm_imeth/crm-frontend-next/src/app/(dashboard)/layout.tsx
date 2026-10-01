@@ -162,17 +162,9 @@ export default function DashboardLayout({
 
             <button
               type="button"
-              onClick={() => {
-                if (user?.role === "SUPER_ADMIN" || user?.role === "ADMIN") {
-                  router.push("/settings");
-                }
-              }}
+              onClick={() => router.push("/settings")}
               className="shrink-0 cursor-pointer active:scale-95 transition-transform"
-              title={
-                user?.role === "SUPER_ADMIN" || user?.role === "ADMIN"
-                  ? "View Profile Settings"
-                  : user?.name || "Profile"
-              }
+              title="View Profile Settings"
             >
               {user?.avatar ? (
                 <img
