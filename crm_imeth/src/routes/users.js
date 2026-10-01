@@ -73,10 +73,10 @@ router.post('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, r
         });
       }
     } else if (currentUserRole === 'ADMIN') {
-      if (!['ADMIN', 'TEAM_LEAD', 'AGENT'].includes(role)) {
+      if (!['TEAM_LEAD', 'AGENT'].includes(role)) {
         return res.status(400).json({
           success: false,
-          error: 'Invalid user role specified. Admins can create Administrators, Team Leads, and Sales Agents',
+          error: 'Forbidden: Administrators cannot create other Administrator accounts. Only Super Admins can manage Administrators.',
         });
       }
     } else if (currentUserRole === 'SUPER_ADMIN') {
@@ -914,16 +914,16 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
     // - ADMIN cannot modify SUPER_ADMIN or peer ADMIN
     // - TEAM_LEAD cannot modify anyone except AGENT
     if (currentUserRole === 'ADMIN') {
-      if (existingUser.role === 'SUPER_ADMIN') {
+      if (['SUPER_ADMIN', 'ADMIN'].includes(existingUser.role)) {
         return res.status(403).json({
           success: false,
-          error: 'Forbidden: Administrators cannot modify Super Admins'
+          error: 'Forbidden: Administrators cannot modify peer Admins or Super Admins'
         });
       }
-      if (role !== undefined && !['ADMIN', 'TEAM_LEAD', 'AGENT'].includes(role)) {
+      if (role !== undefined && !['TEAM_LEAD', 'AGENT'].includes(role)) {
         return res.status(403).json({
           success: false,
-          error: 'Forbidden: Administrators can only assign Administrator, Team Lead, or Sales Agent roles'
+          error: 'Forbidden: Administrators can only assign Team Lead or Sales Agent roles'
         });
       }
     } else if (currentUserRole === 'TEAM_LEAD') {
