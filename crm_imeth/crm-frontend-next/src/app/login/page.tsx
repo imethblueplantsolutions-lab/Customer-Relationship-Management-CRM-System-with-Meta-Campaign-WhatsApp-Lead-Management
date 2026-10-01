@@ -322,8 +322,8 @@ export default function LoginPage() {
         <div
           className={`w-full md:w-1/2 p-6 flex flex-col justify-between gap-4 bg-white transition-all duration-700 ease-in-out ${
             isSignUpActive
-              ? "md:translate-x-full md:opacity-0 md:z-10 md:pointer-events-none hidden md:flex"
-              : "md:translate-x-0 md:opacity-100 md:z-20 md:pointer-events-auto flex"
+              ? "md:opacity-0 md:z-10 md:pointer-events-none hidden md:flex"
+              : "md:opacity-100 md:z-20 md:pointer-events-auto flex"
           }`}
         >
           {/* Top Bar */}
@@ -505,12 +505,12 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* ================= 2. SIGN UP FORM PANEL (Slides from Left to Right 50%) ================= */}
+        {/* ================= 2. SIGN UP FORM PANEL (Right 50% Desktop) ================= */}
         <div
           className={`w-full md:w-1/2 p-6 flex flex-col justify-between gap-4 bg-white transition-all duration-700 ease-in-out ${
             isSignUpActive
-              ? "md:translate-x-full md:opacity-100 md:z-20 md:pointer-events-auto flex"
-              : "md:translate-x-0 md:opacity-0 md:z-10 md:pointer-events-none hidden md:flex"
+              ? "md:opacity-100 md:z-20 md:pointer-events-auto flex"
+              : "md:opacity-0 md:z-10 md:pointer-events-none hidden md:flex"
           }`}
         >
           {/* Top Bar */}
