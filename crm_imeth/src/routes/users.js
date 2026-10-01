@@ -73,10 +73,10 @@ router.post('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, r
         });
       }
     } else if (currentUserRole === 'ADMIN') {
-      if (!['TEAM_LEAD', 'AGENT'].includes(role)) {
+      if (!['ADMIN', 'TEAM_LEAD', 'AGENT'].includes(role)) {
         return res.status(400).json({
           success: false,
-          error: 'Invalid user role specified. Admins can create Team Leads and Sales Agents',
+          error: 'Invalid user role specified. Admins can create Administrators, Team Leads, and Sales Agents',
         });
       }
     } else if (currentUserRole === 'SUPER_ADMIN') {
@@ -543,18 +543,9 @@ router.get('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, re
     const where = currentUserRole === 'SUPER_ADMIN' ? {} : { tenantId };
 
     // Strict Hierarchy-Branch Scoping:
-    // - Admin is determinant for Team Leads and Sales Agents only.
-    // - Admins can see self, their downstream branch (Team Leads & Sales Agents), and unassigned Team Leads/Sales Agents.
-    // - Admins can NEVER see peer Admins or Super Admins.
-    if (currentUserRole === 'ADMIN') {
-      const { getDownstreamUserIds } = require('../utils/hierarchy');
-      const subordinateIds = await getDownstreamUserIds(currentUserId, tenantId);
-      where.OR = [
-        { id: currentUserId }, // Self
-        { id: { in: subordinateIds }, role: { in: ['TEAM_LEAD', 'AGENT'] } }, // Downstream branch
-        { reportsToId: null, role: { in: ['TEAM_LEAD', 'AGENT'] } } // Unassigned pool
-      ];
-    } else if (currentUserRole === 'TEAM_LEAD') {
+    // - Admins can view all accounts (Admins, Team Leads, Sales Agents) in their organization tenant.
+    // - Team Leads can ONLY see their downstream squad members and their own profile.
+    if (currentUserRole === 'TEAM_LEAD') {
       // Team Leads can ONLY see their downstream squad members and their own profile
       const { getDownstreamUserIds } = require('../utils/hierarchy');
       const squadIds = await getDownstreamUserIds(currentUserId, tenantId);
@@ -923,16 +914,16 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
     // - ADMIN cannot modify SUPER_ADMIN or peer ADMIN
     // - TEAM_LEAD cannot modify anyone except AGENT
     if (currentUserRole === 'ADMIN') {
-      if (['SUPER_ADMIN', 'ADMIN'].includes(existingUser.role)) {
+      if (existingUser.role === 'SUPER_ADMIN') {
         return res.status(403).json({
           success: false,
-          error: 'Forbidden: Administrators cannot modify peer Admins or Super Admins'
+          error: 'Forbidden: Administrators cannot modify Super Admins'
         });
       }
-      if (role !== undefined && !['TEAM_LEAD', 'AGENT'].includes(role)) {
+      if (role !== undefined && !['ADMIN', 'TEAM_LEAD', 'AGENT'].includes(role)) {
         return res.status(403).json({
           success: false,
-          error: 'Forbidden: Administrators can only assign Team Lead or Sales Agent roles'
+          error: 'Forbidden: Administrators can only assign Administrator, Team Lead, or Sales Agent roles'
         });
       }
     } else if (currentUserRole === 'TEAM_LEAD') {

@@ -625,7 +625,7 @@ export default function UserManagementPage() {
                   {(user?.role === "ADMIN" || user?.role === "SUPER_ADMIN") && (
                     <option value="TEAM_LEAD">Team Lead</option>
                   )}
-                  {user?.role === "SUPER_ADMIN" && (
+                  {(user?.role === "ADMIN" || user?.role === "SUPER_ADMIN") && (
                     <option value="ADMIN">Administrator</option>
                   )}
                 </select>
@@ -654,7 +654,7 @@ export default function UserManagementPage() {
                     .filter((m) => {
                       if (formData.role === "AGENT") return m.role === "TEAM_LEAD";
                       if (formData.role === "TEAM_LEAD") return m.role === "ADMIN";
-                      if (formData.role === "ADMIN") return m.role === "SUPER_ADMIN";
+                      if (formData.role === "ADMIN") return m.role === "SUPER_ADMIN" || m.role === "ADMIN";
                       return false;
                     })
                     .map((m) => {

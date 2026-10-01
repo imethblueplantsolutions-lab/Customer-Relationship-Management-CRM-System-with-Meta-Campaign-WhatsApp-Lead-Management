@@ -110,25 +110,33 @@ async function validateHierarchyAssignment({ userId, userRole, reportsToId, tena
   }
 
   // Rule 4: Strict Single-Tier Upward Reporting Check
-  const expectedManagerRole = REQUIRED_MANAGER_ROLES[role];
-  if (expectedManagerRole && proposedManager.role !== expectedManagerRole) {
-    const roleLabels = {
-      AGENT: 'Sales Agents',
-      TEAM_LEAD: 'Team Leads',
-      ADMIN: 'Admins',
-      SUPER_ADMIN: 'Super Admins',
-    };
-    const expectedLabels = {
-      AGENT: 'a Team Lead',
-      TEAM_LEAD: 'an Admin',
-      ADMIN: 'a Super Admin',
-    };
+  if (role === 'ADMIN') {
+    if (!['ADMIN', 'SUPER_ADMIN'].includes(proposedManager.role)) {
+      const error = new Error('Invalid reporting tier: Administrators must report to an Admin or Super Admin');
+      error.statusCode = 400;
+      throw error;
+    }
+  } else {
+    const expectedManagerRole = REQUIRED_MANAGER_ROLES[role];
+    if (expectedManagerRole && proposedManager.role !== expectedManagerRole) {
+      const roleLabels = {
+        AGENT: 'Sales Agents',
+        TEAM_LEAD: 'Team Leads',
+        ADMIN: 'Admins',
+        SUPER_ADMIN: 'Super Admins',
+      };
+      const expectedLabels = {
+        AGENT: 'a Team Lead',
+        TEAM_LEAD: 'an Admin',
+        ADMIN: 'an Admin or Super Admin',
+      };
 
-    const error = new Error(
-      `Invalid reporting tier: ${roleLabels[role] || role} must report strictly to ${expectedLabels[role]} (selected manager is a ${proposedManager.role})`
-    );
-    error.statusCode = 400;
-    throw error;
+      const error = new Error(
+        `Invalid reporting tier: ${roleLabels[role] || role} must report strictly to ${expectedLabels[role]} (selected manager is a ${proposedManager.role})`
+      );
+      error.statusCode = 400;
+      throw error;
+    }
   }
 
   // Rule 5: Circular hierarchy detection

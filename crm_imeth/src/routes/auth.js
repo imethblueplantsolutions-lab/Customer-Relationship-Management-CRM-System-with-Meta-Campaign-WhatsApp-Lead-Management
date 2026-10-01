@@ -422,6 +422,17 @@ router.post('/register', async (req, res) => {
       { expiresIn: '12h' }
     );
 
+    // Broadcast real-time Socket.IO notification for new Admin registration
+    try {
+      const { io } = require('../index');
+      if (io) {
+        io.emit('user_created', newUser);
+        io.emit('hierarchy_updated', { message: 'New organization Admin account registered' });
+      }
+    } catch (socketErr) {
+      console.warn('[Socket] Failed to broadcast register user_created:', socketErr.message);
+    }
+
     return res.status(201).json({
       success: true,
       message: 'Account and organization created successfully! Signing you in...',
