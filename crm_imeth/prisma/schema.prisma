@@ -43,6 +43,8 @@ model User {
   otpAttempts       Int            @default(0)
   pendingEmail      String?
   tokenVersion      Int            @default(0)
+  maxTeamLeads      Int?           @default(1)
+  maxAgents         Int?           @default(1)
   tenantId          String
   tenant            Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   assignedLeads     Lead[]

@@ -167,7 +167,18 @@ export default function UserHierarchyPage() {
     role: "AGENT",
     reportsToId: "",
     password: "",
+    maxTeamLeads: 1,
+    maxAgents: 1,
   });
+  const [quotaMaxTeamLeads, setQuotaMaxTeamLeads] = useState<number>(1);
+  const [quotaMaxAgents, setQuotaMaxAgents] = useState<number>(1);
+
+  useEffect(() => {
+    if (reassignModalUser) {
+      setQuotaMaxTeamLeads(reassignModalUser.maxTeamLeads ?? 1);
+      setQuotaMaxAgents(reassignModalUser.maxAgents ?? 1);
+    }
+  }, [reassignModalUser]);
   const [creatingUser, setCreatingUser] = useState(false);
   const [createdTempModal, setCreatedTempModal] = useState<{
     email: string;
@@ -257,26 +268,36 @@ export default function UserHierarchyPage() {
     }
   };
 
-  // Change manager for a specific user
-  const handleAssignManager = async (userId: string, managerId: string | null) => {
+  // Change manager & quota settings for a specific user
+  const handleAssignManager = async (
+    userId: string,
+    managerId: string | null,
+    quotaUpdates?: { maxTeamLeads?: number; maxAgents?: number }
+  ) => {
     setUpdatingUserId(userId);
     try {
+      const payload: Record<string, any> = {
+        reportsToId: managerId,
+      };
+      if (quotaUpdates) {
+        if (quotaUpdates.maxTeamLeads !== undefined) payload.maxTeamLeads = quotaUpdates.maxTeamLeads;
+        if (quotaUpdates.maxAgents !== undefined) payload.maxAgents = quotaUpdates.maxAgents;
+      }
+
       const res = await apiClient<User>(`/users/${userId}`, {
         method: "PUT",
-        body: JSON.stringify({
-          reportsToId: managerId,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (res.success) {
-        toast.success("Reporting line updated successfully!");
+        toast.success("User management settings updated successfully!");
         setReassignModalUser(null);
         await fetchHierarchy(true);
       } else {
-        toast.error(res.error || "Failed to update reporting line");
+        toast.error(res.error || "Failed to update user settings");
       }
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to update manager");
+      toast.error(err instanceof Error ? err.message : "Failed to update user settings");
     } finally {
       setUpdatingUserId(null);
       setSavingReassignment(false);
@@ -371,6 +392,8 @@ export default function UserHierarchyPage() {
           role: newUserForm.role,
           reportsToId: newUserForm.reportsToId.trim() || undefined,
           password: newUserForm.password.trim() || undefined,
+          maxTeamLeads: newUserForm.role === "ADMIN" ? newUserForm.maxTeamLeads : undefined,
+          maxAgents: newUserForm.role === "TEAM_LEAD" ? newUserForm.maxAgents : undefined,
         }),
       });
 
@@ -386,6 +409,8 @@ export default function UserHierarchyPage() {
           role: "AGENT",
           reportsToId: "",
           password: "",
+          maxTeamLeads: 1,
+          maxAgents: 1,
         });
         await fetchHierarchy(true);
 
@@ -935,6 +960,7 @@ export default function UserHierarchyPage() {
                   <th className="py-3.5 px-4 min-w-[140px]">Designated Role</th>
                   <th className="py-3.5 px-4 min-w-[220px]">Direct Manager (Reports To)</th>
                   <th className="py-3.5 px-4 min-w-[180px]">Direct Reports (Subordinates)</th>
+                  <th className="py-3.5 px-4 min-w-[160px]">Capacity Quota</th>
                   <th className="py-3.5 px-4 min-w-[200px]">Authority Scope</th>
                   <th className="py-3.5 px-4 text-right w-28">Actions</th>
                 </tr>
@@ -975,7 +1001,7 @@ export default function UserHierarchyPage() {
                   ))
                 ) : filteredUsers.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-12 text-center text-slate-500 dark:text-slate-400">
+                    <td colSpan={9} className="py-12 text-center text-slate-500 dark:text-slate-400">
                       <div className="flex flex-col items-center justify-center gap-2">
                         <UserX className="h-8 w-8 text-slate-300 dark:text-slate-600" />
                         <p className="text-sm font-semibold">No team members match the current filter.</p>
@@ -1117,11 +1143,20 @@ export default function UserHierarchyPage() {
                                       </option>
                                     );
                                   }
-                                  return tierCandidates.map((cand) => (
-                                    <option key={cand.id} value={cand.id}>
-                                      {cand.name ? `${cand.name} (${cand.email})` : cand.email}
-                                    </option>
-                                  ));
+                                  return tierCandidates.map((cand) => {
+                                    const targetSubRole = u.role;
+                                    const activeCount = hierarchyData?.users?.filter(
+                                      (sub) => sub.reportsToId === cand.id && sub.role === targetSubRole && sub.isActive !== false
+                                    ).length || 0;
+                                    const limit = targetSubRole === "TEAM_LEAD" ? (cand.maxTeamLeads ?? 1) : targetSubRole === "AGENT" ? (cand.maxAgents ?? 1) : 999;
+                                    const isFull = activeCount >= limit && u.reportsToId !== cand.id;
+
+                                    return (
+                                      <option key={cand.id} value={cand.id} disabled={isFull}>
+                                        {cand.name ? `${cand.name} (${cand.email})` : cand.email} ({activeCount}/{limit}){isFull ? " ⚠️ FULL" : ""}
+                                      </option>
+                                    );
+                                  });
                                 })()}
                               </select>
                               {!u.reportsToId && REQUIRED_MANAGER_LABEL[u.role] && (
@@ -1162,6 +1197,57 @@ export default function UserHierarchyPage() {
                             <span className="text-[11px] text-slate-400 dark:text-slate-500 italic">
                               No direct reports
                             </span>
+                          )}
+                        </td>
+
+                        {/* 6. Capacity Quota */}
+                        <td className="py-4 px-4 align-middle">
+                          {u.role === "ADMIN" ? (() => {
+                            const activeCount = hierarchyData?.users?.filter(
+                              (sub) => sub.reportsToId === u.id && sub.role === "TEAM_LEAD" && sub.isActive !== false
+                            ).length || 0;
+                            const max = u.maxTeamLeads ?? 1;
+                            const isFull = activeCount >= max;
+                            return (
+                              <span
+                                className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold border ${
+                                  isFull
+                                    ? "bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800"
+                                    : "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
+                                }`}
+                              >
+                                <span>TL Quota: {activeCount} / {max}</span>
+                                {isFull && (
+                                  <span className="text-[9px] uppercase font-extrabold bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-100 px-1.5 py-0.2 rounded-md">
+                                    Full
+                                  </span>
+                                )}
+                              </span>
+                            );
+                          })() : u.role === "TEAM_LEAD" ? (() => {
+                            const activeCount = hierarchyData?.users?.filter(
+                              (sub) => sub.reportsToId === u.id && sub.role === "AGENT" && sub.isActive !== false
+                            ).length || 0;
+                            const max = u.maxAgents ?? 1;
+                            const isFull = activeCount >= max;
+                            return (
+                              <span
+                                className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold border ${
+                                  isFull
+                                    ? "bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800"
+                                    : "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
+                                }`}
+                              >
+                                <span>Agent Quota: {activeCount} / {max}</span>
+                                {isFull && (
+                                  <span className="text-[9px] uppercase font-extrabold bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-100 px-1.5 py-0.2 rounded-md">
+                                    Full
+                                  </span>
+                                )}
+                              </span>
+                            );
+                          })() : (
+                            <span className="text-[11px] text-slate-400 dark:text-slate-500 italic">—</span>
                           )}
                         </td>
 
@@ -1506,16 +1592,62 @@ export default function UserHierarchyPage() {
                   className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:border-blue-500 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 cursor-pointer"
                 >
                   <option value="">No Manager (Root Level / Unassigned)</option>
-                  {potentialManagers.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name ? `${m.name} (${m.email})` : m.email} — {m.role}
-                    </option>
-                  ))}
+                  {potentialManagers.map((m) => {
+                    const targetSubRole = reassignModalUser.role;
+                    const activeCount = hierarchyData?.users?.filter(
+                      (sub) => sub.reportsToId === m.id && sub.role === targetSubRole && sub.isActive !== false
+                    ).length || 0;
+                    const limit = targetSubRole === "TEAM_LEAD" ? (m.maxTeamLeads ?? 1) : targetSubRole === "AGENT" ? (m.maxAgents ?? 1) : 999;
+                    const isFull = activeCount >= limit && reassignModalUser.reportsToId !== m.id;
+
+                    return (
+                      <option key={m.id} value={m.id} disabled={isFull}>
+                        {m.name ? `${m.name} (${m.email})` : m.email} — {m.role} ({activeCount}/{limit}){isFull ? " ⚠️ FULL" : ""}
+                      </option>
+                    );
+                  })}
                 </select>
                 <p className="text-[11px] text-slate-400 mt-1">
                   The subordinate will directly report to this manager for leads, escalations, and oversight.
                 </p>
               </div>
+
+              {/* Super Admin Quota Control */}
+              {currentUser?.role === "SUPER_ADMIN" && reassignModalUser.role === "ADMIN" && (
+                <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Team Lead Quota Limit (Max Team Leads)
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={quotaMaxTeamLeads}
+                    onChange={(e) => setQuotaMaxTeamLeads(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-800 focus:border-purple-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                  />
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Super Admin authorization limit for maximum Team Leads this Administrator can supervise.
+                  </p>
+                </div>
+              )}
+
+              {currentUser?.role === "SUPER_ADMIN" && reassignModalUser.role === "TEAM_LEAD" && (
+                <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Sales Agent Quota Limit (Max Agents)
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={quotaMaxAgents}
+                    onChange={(e) => setQuotaMaxAgents(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-800 focus:border-purple-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                  />
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Super Admin authorization limit for maximum Sales Agents this Team Lead can supervise.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Modal Actions */}
@@ -1532,12 +1664,21 @@ export default function UserHierarchyPage() {
                 disabled={savingReassignment}
                 onClick={() => {
                   setSavingReassignment(true);
-                  handleAssignManager(reassignModalUser.id, targetManagerId || null);
+                  handleAssignManager(
+                    reassignModalUser.id,
+                    targetManagerId || null,
+                    currentUser?.role === "SUPER_ADMIN"
+                      ? {
+                          maxTeamLeads: reassignModalUser.role === "ADMIN" ? quotaMaxTeamLeads : undefined,
+                          maxAgents: reassignModalUser.role === "TEAM_LEAD" ? quotaMaxAgents : undefined,
+                        }
+                      : undefined
+                  );
                 }}
                 className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition-all cursor-pointer shadow-sm disabled:opacity-50"
               >
                 {savingReassignment && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
-                <span>Save Assignment</span>
+                <span>Save Changes</span>
               </button>
             </div>
           </div>
@@ -1801,16 +1942,65 @@ export default function UserHierarchyPage() {
                       if (newUserForm.role === "ADMIN") return u.role === "SUPER_ADMIN";
                       return false;
                     })
-                    .map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.name ? `${u.name} (${u.email})` : u.email} — {u.role}
-                      </option>
-                    ))}
+                    .map((u) => {
+                      const targetSubRole = newUserForm.role;
+                      const activeCount = hierarchyData?.users?.filter(
+                        (sub) => sub.reportsToId === u.id && sub.role === targetSubRole && sub.isActive !== false
+                      ).length || 0;
+                      const limit = targetSubRole === "TEAM_LEAD" ? (u.maxTeamLeads ?? 1) : targetSubRole === "AGENT" ? (u.maxAgents ?? 1) : 999;
+                      const isFull = activeCount >= limit;
+
+                      return (
+                        <option key={u.id} value={u.id} disabled={isFull}>
+                          {u.name ? `${u.name} (${u.email})` : u.email} — {u.role} ({activeCount}/{limit}){isFull ? " ⚠️ FULL" : ""}
+                        </option>
+                      );
+                    })}
                 </select>
                 <p className="text-[11px] text-slate-400 mt-1">
                   Assigning a manager automatically places this user directly underneath them in the organizational chart.
                 </p>
               </div>
+
+              {/* Quota Input Field for Admin */}
+              {newUserForm.role === "ADMIN" && (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Team Lead Capacity Quota (Max Team Leads) *
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    required
+                    value={newUserForm.maxTeamLeads}
+                    onChange={(e) => setNewUserForm({ ...newUserForm, maxTeamLeads: Math.max(1, parseInt(e.target.value) || 1) })}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-800 placeholder-slate-400 focus:border-purple-500 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                  />
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Maximum number of Team Leads this Administrator will be permitted to manage (Default: 1).
+                  </p>
+                </div>
+              )}
+
+              {/* Quota Input Field for Team Lead */}
+              {newUserForm.role === "TEAM_LEAD" && (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Sales Agent Capacity Quota (Max Agents) *
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    required
+                    value={newUserForm.maxAgents}
+                    onChange={(e) => setNewUserForm({ ...newUserForm, maxAgents: Math.max(1, parseInt(e.target.value) || 1) })}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-800 placeholder-slate-400 focus:border-purple-500 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                  />
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Maximum number of Sales Agents this Team Lead will be permitted to manage (Default: 1).
+                  </p>
+                </div>
+              )}
 
               {/* Optional Custom Password */}
               <div>

@@ -10,6 +10,8 @@ export interface User {
   tenantId: string;
   isActive?: boolean;
   isFirstLogin?: boolean;
+  maxTeamLeads?: number | null;
+  maxAgents?: number | null;
   reportsToId?: string | null;
   manager?: User | null;
   teamMembers?: User[];

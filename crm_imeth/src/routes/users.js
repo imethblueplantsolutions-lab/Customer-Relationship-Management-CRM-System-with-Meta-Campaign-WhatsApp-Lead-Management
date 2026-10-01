@@ -139,6 +139,43 @@ router.post('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, r
       tenantId,
     });
 
+    // Enforce Manager Capacity Quota (hierarchical maxTeamLeads / maxAgents)
+    if (reportsToId) {
+      const manager = await prisma.user.findFirst({
+        where: { id: reportsToId, tenantId },
+        select: { id: true, name: true, email: true, role: true, maxTeamLeads: true, maxAgents: true },
+      });
+
+      if (manager) {
+        if (role === 'TEAM_LEAD' && manager.role === 'ADMIN') {
+          const currentCount = await prisma.user.count({
+            where: { reportsToId: manager.id, role: 'TEAM_LEAD', isActive: true, tenantId },
+          });
+          const limit = manager.maxTeamLeads !== null && manager.maxTeamLeads !== undefined ? manager.maxTeamLeads : 1;
+          if (currentCount >= limit) {
+            return res.status(403).json({
+              success: false,
+              error: `Quota exceeded: ${manager.name || manager.email} can only manage up to ${limit} Team Lead(s) (current active: ${currentCount}). Request a quota increase from Super Admin.`,
+            });
+          }
+        } else if (role === 'AGENT' && manager.role === 'TEAM_LEAD') {
+          const currentCount = await prisma.user.count({
+            where: { reportsToId: manager.id, role: 'AGENT', isActive: true, tenantId },
+          });
+          const limit = manager.maxAgents !== null && manager.maxAgents !== undefined ? manager.maxAgents : 1;
+          if (currentCount >= limit) {
+            return res.status(403).json({
+              success: false,
+              error: `Quota exceeded: ${manager.name || manager.email} can only manage up to ${limit} Sales Agent(s) (current active: ${currentCount}). Request a quota increase from Super Admin.`,
+            });
+          }
+        }
+      }
+    }
+
+    const initMaxTeamLeads = req.body.maxTeamLeads !== undefined ? parseInt(req.body.maxTeamLeads, 10) : 1;
+    const initMaxAgents = req.body.maxAgents !== undefined ? parseInt(req.body.maxAgents, 10) : 1;
+
     const newUser = await prisma.user.create({
       data: {
         name: name ? name.trim() : null,
@@ -149,6 +186,8 @@ router.post('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, r
         tenantId,
         isActive: true,
         isFirstLogin,
+        ...(role === 'ADMIN' && { maxTeamLeads: !isNaN(initMaxTeamLeads) ? initMaxTeamLeads : 1 }),
+        ...(role === 'TEAM_LEAD' && { maxAgents: !isNaN(initMaxAgents) ? initMaxAgents : 1 }),
       },
       select: {
         id: true,
@@ -161,6 +200,8 @@ router.post('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, r
         tenantId: true,
         isActive: true,
         isFirstLogin: true,
+        maxTeamLeads: true,
+        maxAgents: true,
         createdAt: true,
       },
     });
@@ -779,7 +820,7 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
   try {
     const store = tenantStorage.getStore();
     const tenantId = req.user?.tenantId || store?.tenantId;
-    const { name, role, isActive, reportsToId } = req.body;
+    const { name, role, isActive, reportsToId, maxTeamLeads, maxAgents } = req.body;
 
     const existingUser = await prisma.user.findFirst({
       where: { id: req.params.id, tenantId }
@@ -790,6 +831,14 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
     }
 
     const currentUserRole = req.user?.role;
+
+    // Quota Management Authorization Guard: Only Super Admin can modify capacity quotas
+    if (currentUserRole !== 'SUPER_ADMIN' && (maxTeamLeads !== undefined || maxAgents !== undefined)) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: Only Super Admins can assign or modify user capacity quotas',
+      });
+    }
 
     // Strict Role Ceiling Guard:
     // - ADMIN cannot modify SUPER_ADMIN or peer ADMIN
@@ -851,6 +900,8 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
       tenantId: true,
       isActive: true,
       isFirstLogin: true,
+      maxTeamLeads: true,
+      maxAgents: true,
       createdAt: true,
       reportsToId: true,
       manager: {
@@ -875,6 +926,9 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
 
     let updatedUser;
     const isDeactivating = isActive === false && existingUser.isActive === true;
+
+    const parsedMaxTeamLeads = maxTeamLeads !== undefined ? (maxTeamLeads !== null ? parseInt(maxTeamLeads, 10) : null) : undefined;
+    const parsedMaxAgents = maxAgents !== undefined ? (maxAgents !== null ? parseInt(maxAgents, 10) : null) : undefined;
 
     if (isDeactivating) {
       // Patch 3: Atomic Tree-Healing on User Deactivation ("Zombie Manager" Prevention)
@@ -906,6 +960,8 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
             isActive: false,
             tokenVersion: { increment: 1 },
             ...(reportsToId !== undefined && { reportsToId: reportsToId ? reportsToId : null }),
+            ...(parsedMaxTeamLeads !== undefined && { maxTeamLeads: parsedMaxTeamLeads }),
+            ...(parsedMaxAgents !== undefined && { maxAgents: parsedMaxAgents }),
           },
           select: userSelectFields,
         });
@@ -918,6 +974,8 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
           ...(role !== undefined && { role }),
           ...(isActive !== undefined && { isActive }),
           ...(reportsToId !== undefined && { reportsToId: reportsToId ? reportsToId : null }),
+          ...(parsedMaxTeamLeads !== undefined && { maxTeamLeads: parsedMaxTeamLeads }),
+          ...(parsedMaxAgents !== undefined && { maxAgents: parsedMaxAgents }),
         },
         select: userSelectFields,
       });
@@ -929,6 +987,21 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
     const roleChanged = role !== undefined && role !== existingUser.role;
     const deactivationHappened = isDeactivating;
     const activationHappened = isActive === true && existingUser.isActive === false;
+    const quotaChanged = (parsedMaxTeamLeads !== undefined && parsedMaxTeamLeads !== existingUser.maxTeamLeads) || (parsedMaxAgents !== undefined && parsedMaxAgents !== existingUser.maxAgents);
+
+    if (quotaChanged) {
+      await logAudit({
+        tenantId,
+        performedById,
+        targetUserId: updatedUser.id,
+        action: 'USER_QUOTA_UPDATED',
+        details: {
+          userName: updatedUser.name || updatedUser.email,
+          maxTeamLeads: updatedUser.maxTeamLeads,
+          maxAgents: updatedUser.maxAgents,
+        },
+      });
+    }
 
     if (reportsToChanged) {
       await logAudit({
