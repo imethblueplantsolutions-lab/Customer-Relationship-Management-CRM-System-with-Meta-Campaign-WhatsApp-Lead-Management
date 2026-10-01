@@ -49,7 +49,7 @@ const NAV_ITEMS: NavItem[] = [
     href: "/hierarchy",
     label: "User Hierarchy",
     icon: Network,
-    allowedRoles: ["SUPER_ADMIN", "ADMIN"],
+    allowedRoles: ["SUPER_ADMIN"],
   },
   {
     href: "/admin/dead-letters",
