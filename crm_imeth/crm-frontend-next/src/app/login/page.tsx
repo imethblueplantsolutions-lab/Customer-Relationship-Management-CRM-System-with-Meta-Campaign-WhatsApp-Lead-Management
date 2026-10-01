@@ -315,12 +315,12 @@ export default function LoginPage() {
       <div className="absolute top-20 right-16 w-12 h-12 bg-white/80 backdrop-blur-md rounded-2xl rotate-45 shadow-xs pointer-events-none" />
       <div className="absolute bottom-24 right-1/4 w-9 h-9 bg-blue-600/20 backdrop-blur-md rounded-xl rotate-6 shadow-xs pointer-events-none" />
 
-      {/* Main Sliding Dual-Auth Container */}
-      <div className="relative z-10 w-full max-w-4xl min-h-[460px] md:min-h-[480px] bg-white rounded-2xl shadow-[0_20px_60px_rgba(27,38,44,0.12)] border border-slate-100 overflow-hidden">
+      {/* Main Sliding Dual-Auth Container (Natural Auto-Height) */}
+      <div className="relative z-10 w-full max-w-4xl bg-white rounded-2xl shadow-[0_20px_60px_rgba(27,38,44,0.12)] border border-slate-100 overflow-hidden flex flex-col md:flex-row items-stretch">
 
         {/* ================= 1. SIGN IN FORM PANEL (Left 50% Desktop) ================= */}
         <div
-          className={`w-full md:w-1/2 h-full min-h-[460px] md:min-h-[480px] p-5 sm:p-6 flex flex-col justify-between bg-white transition-all duration-700 ease-in-out ${
+          className={`w-full md:w-1/2 p-6 flex flex-col justify-between gap-4 bg-white transition-all duration-700 ease-in-out ${
             isSignUpActive
               ? "md:translate-x-full md:opacity-0 md:z-10 md:pointer-events-none hidden md:flex"
               : "md:translate-x-0 md:opacity-100 md:z-20 md:pointer-events-auto flex"
@@ -345,7 +345,7 @@ export default function LoginPage() {
           </div>
 
           {/* Form Content */}
-          <div className="w-full max-w-[360px] mx-auto my-auto py-1 flex flex-col gap-2.5">
+          <div className="w-full max-w-[360px] mx-auto flex flex-col gap-2.5">
             <div className="w-full flex flex-col items-center justify-center text-center">
               <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight text-center">
                 Welcome Back!
@@ -495,7 +495,7 @@ export default function LoginPage() {
           </div>
 
           {/* Footer */}
-          <div className="mt-1 pt-1.5 text-center border-t border-slate-100">
+          <div className="pt-1.5 text-center border-t border-slate-100">
             <p className="text-[10px] text-slate-400">
               Need assistance?{" "}
               <a href="mailto:imethblueplantsolutions@gmail.com" className="text-blue-600 font-semibold hover:underline">
@@ -507,7 +507,7 @@ export default function LoginPage() {
 
         {/* ================= 2. SIGN UP FORM PANEL (Slides from Left to Right 50%) ================= */}
         <div
-          className={`w-full md:w-1/2 h-full min-h-[460px] md:min-h-[480px] p-5 sm:p-6 flex flex-col justify-between bg-white transition-all duration-700 ease-in-out ${
+          className={`w-full md:w-1/2 p-6 flex flex-col justify-between gap-4 bg-white transition-all duration-700 ease-in-out ${
             isSignUpActive
               ? "md:translate-x-full md:opacity-100 md:z-20 md:pointer-events-auto flex"
               : "md:translate-x-0 md:opacity-0 md:z-10 md:pointer-events-none hidden md:flex"
@@ -531,7 +531,7 @@ export default function LoginPage() {
           </div>
 
           {/* Form Content */}
-          <div className="w-full max-w-[360px] mx-auto my-auto py-1 flex flex-col gap-2">
+          <div className="w-full max-w-[360px] mx-auto flex flex-col gap-2">
             <div className="w-full flex flex-col items-center justify-center text-center">
               <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight text-center">
                 Create Account
@@ -663,7 +663,7 @@ export default function LoginPage() {
           </div>
 
           {/* Footer */}
-          <div className="mt-1 pt-1.5 text-center border-t border-slate-100">
+          <div className="pt-1.5 text-center border-t border-slate-100">
             <p className="text-[10px] text-slate-400">
               Need assistance?{" "}
               <a href="mailto:imethblueplantsolutions@gmail.com" className="text-blue-600 font-semibold hover:underline">
@@ -675,7 +675,7 @@ export default function LoginPage() {
 
         {/* ================= 3. DARK BLUE SLIDING OVERLAY PANEL (`.toggle-container`) ================= */}
         <div
-          className={`hidden md:flex absolute top-0 left-1/2 w-1/2 h-full z-30 transition-transform duration-700 ease-in-out overflow-hidden bg-gradient-to-br from-[#1B262C] via-[#0F4C75] to-[#3282B8] flex-col items-center justify-between p-5 lg:p-6 ${
+          className={`hidden md:flex absolute top-0 left-1/2 w-1/2 h-full z-30 transition-transform duration-700 ease-in-out overflow-hidden bg-gradient-to-br from-[#1B262C] via-[#0F4C75] to-[#3282B8] flex-col justify-between p-6 ${
             isSignUpActive ? "-translate-x-full" : "translate-x-0"
           }`}
         >
@@ -692,14 +692,14 @@ export default function LoginPage() {
           </div>
 
           {/* Center Showcase Card (Preserved Feature Carousel with Dots) */}
-          <div className="relative z-10 w-full max-w-[390px] rounded-xl bg-white/15 backdrop-blur-2xl border border-white/30 p-5 lg:p-6 text-white shadow-2xl flex flex-col gap-3 my-auto">
+          <div className="relative z-10 w-full max-w-[380px] mx-auto rounded-xl bg-white/15 backdrop-blur-2xl border border-white/30 p-5 text-white shadow-2xl flex flex-col gap-3 my-auto">
             {/* Header Icon Ring */}
-            <div className="w-9 h-9 rounded-xl border-2 border-white/40 border-t-white flex items-center justify-center bg-white/10 backdrop-blur-md">
+            <div className="w-8.5 h-8.5 rounded-xl border-2 border-white/40 border-t-white flex items-center justify-center bg-white/10 backdrop-blur-md">
               <Sparkles className="w-4 h-4 text-[#BBE1FA]" />
             </div>
 
             {/* Content Text */}
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1">
               <span className="self-start px-2 py-0.5 rounded-full bg-[#BBE1FA]/20 border border-[#BBE1FA]/40 text-[9px] font-bold tracking-wider text-[#BBE1FA] uppercase">
                 {slides[activeSlide].tag}
               </span>
@@ -712,7 +712,7 @@ export default function LoginPage() {
             </div>
 
             {/* Slider Dots */}
-            <div className="flex items-center gap-1.5 pt-2.5 border-t border-white/20">
+            <div className="flex items-center gap-1.5 pt-2 border-t border-white/20">
               {slides.map((_, idx) => (
                 <button
                   suppressHydrationWarning
@@ -729,7 +729,7 @@ export default function LoginPage() {
           </div>
 
           {/* Bottom Toggle Control Action Box */}
-          <div className="relative z-10 w-full max-w-[390px] rounded-xl bg-white/10 backdrop-blur-md border border-white/20 px-3.5 py-2.5 text-white flex items-center justify-between shadow-lg">
+          <div className="relative z-10 w-full max-w-[380px] mx-auto rounded-xl bg-white/10 backdrop-blur-md border border-white/20 px-3.5 py-2.5 text-white flex items-center justify-between shadow-lg">
             {!isSignUpActive ? (
               <>
                 <div>
