@@ -406,8 +406,8 @@ router.post('/register', async (req, res) => {
         tenantId: tenant.id,
         isActive: true,
         isFirstLogin: false,
-        maxTeamLeads: 5,
-        maxAgents: 10,
+        maxTeamLeads: 1,
+        maxAgents: 1,
       },
     });
 
