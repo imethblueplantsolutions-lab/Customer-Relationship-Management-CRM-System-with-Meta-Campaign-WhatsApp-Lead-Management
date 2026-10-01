@@ -372,6 +372,76 @@ router.post('/resend-otp', async (req, res) => {
   }
 });
 
+// POST: Self-service Registration for new organization/account
+router.post('/register', async (req, res) => {
+  try {
+    const { name, email, password, companyName } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ success: false, error: 'Email and password are required' });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const existingUser = await prisma.user.findUnique({ where: { email: cleanEmail } });
+    if (existingUser) {
+      return res.status(400).json({ success: false, error: 'An account with this email address already exists. Please sign in.' });
+    }
+
+    const tenantName = companyName?.trim() || (name ? `${name.trim()}'s Organization` : 'MyCRM Tenant');
+
+    const tenant = await prisma.tenant.create({
+      data: {
+        name: tenantName,
+        wabaId: `WABA_${Date.now()}`,
+      },
+    });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = await prisma.user.create({
+      data: {
+        name: name ? name.trim() : null,
+        email: cleanEmail,
+        password: hashedPassword,
+        role: 'ADMIN',
+        tenantId: tenant.id,
+        isActive: true,
+        isFirstLogin: false,
+        maxTeamLeads: 5,
+        maxAgents: 10,
+      },
+    });
+
+    const token = jwt.sign(
+      {
+        userId: newUser.id,
+        tenantId: newUser.tenantId,
+        role: newUser.role,
+        tokenVersion: newUser.tokenVersion || 0,
+      },
+      process.env.JWT_SECRET || 'development_jwt_secret_key',
+      { expiresIn: '12h' }
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: 'Account and organization created successfully! Signing you in...',
+      data: {
+        token,
+        user: {
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role,
+          tenantId: newUser.tenantId,
+        },
+      },
+    });
+  } catch (error) {
+    console.error('[Auth Route] Registration error:', error);
+    res.status(500).json({ success: false, error: 'Failed to create account. Please try again.' });
+  }
+});
+
 // POST: Seed initial tenant and admin user for testing
 router.post('/seed', async (req, res) => {
   try {
