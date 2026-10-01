@@ -14,56 +14,79 @@ import {
   Network,
   type LucideIcon,
 } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 import type { User } from "@/types";
 
 interface NavItem {
   href: string;
-  label: string;
+  label: string | ((role?: string) => string);
   icon: LucideIcon;
-  adminOnly?: boolean;
   allowedRoles?: string[];
   hidden?: boolean;
 }
 
+/**
+ * Navigation Item Registry with Role-Based Access Control (RBAC)
+ * Role Hierarchy: SUPER_ADMIN > ADMIN > TEAM_LEAD > AGENT
+ */
 const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/leads", label: "Leads", icon: Users },
+  {
+    href: "/leads",
+    label: (role) => (role === "AGENT" ? "My Leads" : "Leads"),
+    icon: Users,
+  },
   { href: "/followups", label: "Follow-ups", icon: Clock },
   { href: "/pipelines", label: "Pipelines", icon: GitBranch, hidden: true },
   { href: "/flows", label: "Automation Flows", icon: Workflow, hidden: true },
-  { href: "/users", label: "Users", icon: UserCheck },
-  { href: "/hierarchy", label: "User Hierarchy", icon: Network, allowedRoles: ["SUPER_ADMIN"] },
-  { href: "/admin/dead-letters", label: "Dead Leads", icon: AlertOctagon, adminOnly: true },
-  { href: "/settings", label: "Account Settings", icon: Settings },
+  {
+    href: "/users",
+    label: "Users",
+    icon: UserCheck,
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "TEAM_LEAD"],
+  },
+  {
+    href: "/hierarchy",
+    label: "User Hierarchy",
+    icon: Network,
+    allowedRoles: ["SUPER_ADMIN", "ADMIN"],
+  },
+  {
+    href: "/admin/dead-letters",
+    label: "Dead Leads",
+    icon: AlertOctagon,
+    allowedRoles: ["SUPER_ADMIN", "ADMIN"],
+  },
+  {
+    href: "/settings",
+    label: "Account Settings",
+    icon: Settings,
+    allowedRoles: ["SUPER_ADMIN", "ADMIN"],
+  },
 ];
 
 interface SidebarNavProps {
-  user: User | null;
+  user?: User | null;
   isCollapsed: boolean;
   onNavigate?: () => void;
 }
 
-export default function SidebarNav({ user, isCollapsed, onNavigate }: SidebarNavProps) {
+export default function SidebarNav({ user: propUser, isCollapsed, onNavigate }: SidebarNavProps) {
   const pathname = usePathname();
+  const { user: authUser } = useAuth();
+  const user = propUser || authUser;
+  const userRole = user?.role;
 
+  // Filter navigation items based on strict RBAC allowances
   const filteredItems = NAV_ITEMS.filter((item) => {
     if (item.hidden) {
       return false;
     }
-    // SUPER_ADMIN only sees items explicitly allowed for them + Account Settings
-    if (user?.role === "SUPER_ADMIN") {
-      if (item.allowedRoles?.includes("SUPER_ADMIN")) return true;
-      if (item.href === "/settings") return true;
-      return false;
-    }
-    if (item.allowedRoles && (!user?.role || !item.allowedRoles.includes(user.role))) {
-      return false;
-    }
-    if (item.adminOnly && user?.role !== "ADMIN") {
-      return false;
-    }
-    if (user?.role === "AGENT") {
-      return item.href !== "/users";
+    // Items with explicit role restrictions
+    if (item.allowedRoles) {
+      if (!userRole || !item.allowedRoles.includes(userRole)) {
+        return false;
+      }
     }
     return true;
   });
@@ -75,13 +98,14 @@ export default function SidebarNav({ user, isCollapsed, onNavigate }: SidebarNav
           pathname === item.href ||
           (item.href !== "/dashboard" && pathname.startsWith(item.href));
         const Icon = item.icon;
+        const itemLabel = typeof item.label === "function" ? item.label(userRole) : item.label;
 
         return (
           <Link
             key={item.href}
             href={item.href}
             onClick={onNavigate}
-            title={isCollapsed ? item.label : undefined}
+            title={isCollapsed ? itemLabel : undefined}
             className={`flex items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all group ${
               isActive
                 ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
@@ -93,7 +117,7 @@ export default function SidebarNav({ user, isCollapsed, onNavigate }: SidebarNav
                 isActive ? "text-white" : "text-slate-400 group-hover:text-blue-300"
               }`}
             />
-            {!isCollapsed && <span className="truncate">{item.label}</span>}
+            {!isCollapsed && <span className="truncate">{itemLabel}</span>}
           </Link>
         );
       })}

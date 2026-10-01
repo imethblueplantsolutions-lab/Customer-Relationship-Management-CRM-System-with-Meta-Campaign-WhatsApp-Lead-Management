@@ -219,3 +219,29 @@ export interface Notification {
   isRead: boolean;
   createdAt: string;
 }
+
+// ─── Audit Logs ────────────────────────────────────────────
+export interface AuditLog {
+  id: string;
+  tenantId: string;
+  performedById: string;
+  performedBy?: {
+    id: string;
+    name?: string | null;
+    email: string;
+    role: string;
+    avatar?: string | null;
+  } | null;
+  targetUserId?: string | null;
+  targetUser?: {
+    id: string;
+    name?: string | null;
+    email: string;
+    role: string;
+    avatar?: string | null;
+  } | null;
+  action: string;
+  details?: Record<string, any> | null;
+  createdAt: string;
+}
+

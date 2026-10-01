@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/hooks/use-auth";
+import { RoleGuard } from "@/components/RoleGuard";
 import type { User } from "@/types";
 import {
   Save,
@@ -23,10 +24,12 @@ import {
   Trash2,
   Phone,
   Upload,
+  History,
 } from "lucide-react";
+import ActivityFeed from "@/components/hierarchy/ActivityFeed";
 
 // ─── Types ─────────────────────────────────────────────────
-type SettingsTab = "profile" | "security" | "meta";
+type SettingsTab = "profile" | "security" | "meta" | "audit";
 
 interface TenantSettings {
   id: string;
@@ -784,7 +787,7 @@ export default function AccountSettingsPage() {
   const { user, updateUser, setSession, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
 
-  const isPrivileged = ["ADMIN", "TEAM_LEAD"].includes(user?.role || "");
+  const isPrivileged = ["SUPER_ADMIN", "ADMIN", "TEAM_LEAD"].includes(user?.role || "");
 
   const tabs: {
     id: SettingsTab;
@@ -795,6 +798,7 @@ export default function AccountSettingsPage() {
     { id: "profile", label: "Profile Data", icon: UserIcon, allowed: true },
     { id: "security", label: "Security", icon: Lock, allowed: true },
     { id: "meta", label: "Meta Settings", icon: Smartphone, allowed: isPrivileged },
+    { id: "audit", label: "Audit Logs", icon: History, allowed: ["SUPER_ADMIN", "ADMIN"].includes(user?.role || "") },
   ];
 
   const visibleTabs = tabs.filter((t) => t.allowed);
@@ -806,7 +810,8 @@ export default function AccountSettingsPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto pb-16">
+    <RoleGuard allowedRoles={["SUPER_ADMIN", "ADMIN"]}>
+      <div className="max-w-6xl mx-auto pb-16">
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
@@ -914,9 +919,11 @@ export default function AccountSettingsPage() {
               <SecurityTab user={user} setSession={setSession} />
             )}
             {activeTab === "meta" && <MetaSettingsTab />}
+            {activeTab === "audit" && <ActivityFeed />}
           </div>
         </main>
       </div>
-    </div>
+      </div>
+    </RoleGuard>
   );
 }

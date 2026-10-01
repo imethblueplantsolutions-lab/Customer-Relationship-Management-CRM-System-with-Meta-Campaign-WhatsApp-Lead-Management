@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
+import { RoleGuard } from "@/components/RoleGuard";
 import { useSocket } from "@/hooks/use-socket";
 import { apiClient } from "@/lib/api-client";
 import type { User, HierarchyResponse, HierarchyStats } from "@/types";
@@ -19,8 +20,10 @@ const OrgChartTree = dynamic(() => import("@/components/hierarchy/OrgChartTree")
     </div>
   ),
 });
+import ActivityFeed from "@/components/hierarchy/ActivityFeed";
 import {
   Network,
+  History,
   Users,
   Crown,
   Shield,
@@ -112,6 +115,19 @@ function getRoleMeta(role?: string) {
   return ROLE_CONFIG[role || "AGENT"] || ROLE_CONFIG.AGENT;
 }
 
+// Strict single-tier manager requirement map (mirrors backend hierarchyValidation.js)
+const REQUIRED_MANAGER_ROLE: Record<string, string> = {
+  AGENT: "TEAM_LEAD",
+  TEAM_LEAD: "ADMIN",
+  ADMIN: "SUPER_ADMIN",
+};
+
+const REQUIRED_MANAGER_LABEL: Record<string, string> = {
+  AGENT: "Team Lead",
+  TEAM_LEAD: "Administrator",
+  ADMIN: "Super Admin",
+};
+
 export default function UserHierarchyPage() {
   const { user: currentUser, isLoading: authLoading } = useAuth();
   const router = useRouter();
@@ -129,7 +145,7 @@ export default function UserHierarchyPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [activeView, setActiveView] = useState<"matrix" | "chart" | "tree" | "grid">("matrix");
+  const [activeView, setActiveView] = useState<"matrix" | "chart" | "tree" | "grid" | "audit">("matrix");
 
   // Modals
   const [reassignModalUser, setReassignModalUser] = useState<User | null>(null);
@@ -161,15 +177,11 @@ export default function UserHierarchyPage() {
   const [bulkTargetManagerId, setBulkTargetManagerId] = useState<string>("");
   const [bulkReassigning, setBulkReassigning] = useState(false);
 
-  // Security barrier
-  useEffect(() => {
-    if (!authLoading && currentUser?.role !== "SUPER_ADMIN") {
-      router.push("/dashboard");
-    }
-  }, [currentUser, authLoading, router]);
-
   // Load Hierarchy Data
   const fetchHierarchy = useCallback(async (isSilent = false) => {
+    if (currentUser && !["SUPER_ADMIN", "ADMIN"].includes(currentUser.role)) {
+      return;
+    }
     try {
       if (!isSilent) setLoading(true);
       else setRefreshing(true);
@@ -406,6 +418,17 @@ export default function UserHierarchyPage() {
     setSelectedUserIds(new Set());
   }, []);
 
+  // Detect whether the current checkbox selection spans multiple role tiers
+  const selectedRolesSet = useMemo(() => {
+    return new Set(
+      Array.from(selectedUserIds)
+        .map((id) => hierarchyData?.users?.find((u) => u.id === id)?.role)
+        .filter(Boolean) as string[]
+    );
+  }, [selectedUserIds, hierarchyData?.users]);
+
+  const isMixedRoleSelection = selectedRolesSet.size > 1;
+
   // Bulk reassign all selected users to a new manager
   const handleBulkReassign = async () => {
     if (selectedUserIds.size === 0) return;
@@ -521,21 +544,11 @@ export default function UserHierarchyPage() {
     );
   }, [hierarchyData?.users, selectedUserIds]);
 
-  if (authLoading || currentUser?.role !== "SUPER_ADMIN") {
-    return (
-      <div className="flex h-[80vh] items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-purple-600 border-t-transparent shadow-lg" />
-          <p className="text-sm font-medium text-slate-500">Verifying Super Admin clearance...</p>
-        </div>
-      </div>
-    );
-  }
-
   const stats = hierarchyData?.stats;
 
   return (
-    <div className="min-h-full space-y-6 p-4 md:p-8 max-w-[1600px] mx-auto animate-in fade-in duration-300">
+    <RoleGuard allowedRoles={["SUPER_ADMIN", "ADMIN"]}>
+      <div className="min-h-full space-y-6 p-4 md:p-8 max-w-[1600px] mx-auto animate-in fade-in duration-300">
       {/* ================= HEADER SECTION ================= */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-slate-200/80 pb-6 dark:border-slate-800">
         <div>
@@ -788,6 +801,18 @@ export default function UserHierarchyPage() {
             <Grid3X3 className="h-3.5 w-3.5" />
             <span>Role Grid</span>
           </button>
+
+          <button
+            onClick={() => setActiveView("audit")}
+            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+              activeView === "audit"
+                ? "bg-white text-purple-600 shadow-xs dark:bg-slate-700 dark:text-purple-300"
+                : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+            }`}
+          >
+            <History className="h-3.5 w-3.5" />
+            <span>Audit Feed</span>
+          </button>
         </div>
       </div>
 
@@ -811,15 +836,31 @@ export default function UserHierarchyPage() {
             <div className="flex items-center gap-2.5">
               <button
                 type="button"
+                disabled={isMixedRoleSelection}
                 onClick={() => {
                   setBulkTargetManagerId("");
                   setIsBulkReassignModalOpen(true);
                 }}
-                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition-all cursor-pointer active:scale-95"
+                title={
+                  isMixedRoleSelection
+                    ? "All selected users must share the same role tier before bulk reassignment"
+                    : "Bulk reassign all selected users to a new manager"
+                }
+                className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all active:scale-95 ${
+                  isMixedRoleSelection
+                    ? "bg-slate-400 cursor-not-allowed opacity-70"
+                    : "bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                }`}
               >
                 <ArrowRight className="h-3.5 w-3.5" />
                 <span>Bulk Reassign Manager</span>
               </button>
+              {isMixedRoleSelection && (
+                <span className="inline-flex items-center gap-1 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-[10px] font-semibold text-amber-700 dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
+                  <AlertCircle className="h-3 w-3 shrink-0" />
+                  Mixed tiers selected
+                </span>
+              )}
               <button
                 type="button"
                 onClick={clearSelection}
@@ -1027,14 +1068,30 @@ export default function UserHierarchyPage() {
                                 }`}
                               >
                                 <option value="">⚠️ Unassigned (None)</option>
-                                {hierarchyData?.users
-                                  ?.filter((cand) => cand.id !== u.id)
-                                  .map((cand) => (
+                                {(() => {
+                                  const expectedRole = REQUIRED_MANAGER_ROLE[u.role];
+                                  const tierCandidates = hierarchyData?.users?.filter(
+                                    (cand) => cand.id !== u.id && (expectedRole ? cand.role === expectedRole : false)
+                                  ) || [];
+                                  if (tierCandidates.length === 0) {
+                                    return (
+                                      <option disabled value="__none__">
+                                        — No {REQUIRED_MANAGER_LABEL[u.role] || "eligible"} managers available —
+                                      </option>
+                                    );
+                                  }
+                                  return tierCandidates.map((cand) => (
                                     <option key={cand.id} value={cand.id}>
-                                      {cand.name ? `${cand.name} (${cand.email})` : cand.email} — {cand.role}
+                                      {cand.name ? `${cand.name} (${cand.email})` : cand.email}
                                     </option>
-                                  ))}
+                                  ));
+                                })()}
                               </select>
+                              {!u.reportsToId && REQUIRED_MANAGER_LABEL[u.role] && (
+                                <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5">
+                                  Must report to a {REQUIRED_MANAGER_LABEL[u.role]}
+                                </p>
+                              )}
 
                               {updatingUserId === u.id && (
                                 <RefreshCw className="h-3.5 w-3.5 animate-spin text-blue-600 shrink-0" />
@@ -1154,7 +1211,7 @@ export default function UserHierarchyPage() {
       {/* ================= VIEW 3: ORG TREE LIST ================= */}
       {activeView === "tree" && (
         <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-5 flex items-center justify-between">
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-white">
                 Organizational Hierarchy Tree
@@ -1172,6 +1229,35 @@ export default function UserHierarchyPage() {
             </button>
           </div>
 
+          {/* Role Chain Legend Banner */}
+          <div className="mb-5 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200/80 bg-slate-50/80 px-4 py-3 dark:border-slate-700 dark:bg-slate-800/60">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mr-1">
+              Strict Chain:
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-md border border-purple-200 bg-purple-100 px-2 py-0.5 text-[11px] font-bold text-purple-700 dark:border-purple-800 dark:bg-purple-950/60 dark:text-purple-300">
+              <Crown className="h-3 w-3" />
+              Super Admin
+            </span>
+            <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+            <span className="inline-flex items-center gap-1 rounded-md border border-blue-200 bg-blue-100 px-2 py-0.5 text-[11px] font-bold text-blue-700 dark:border-blue-800 dark:bg-blue-950/60 dark:text-blue-300">
+              <Shield className="h-3 w-3" />
+              Admin
+            </span>
+            <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+            <span className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+              <Zap className="h-3 w-3" />
+              Team Lead
+            </span>
+            <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+            <span className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+              <Briefcase className="h-3 w-3" />
+              Agent
+            </span>
+            <span className="ml-auto text-[10px] text-slate-400 dark:text-slate-500">
+              Each tier reports strictly to the tier directly above it
+            </span>
+          </div>
+
           {/* Hierarchical Tree Rendering */}
           <div className="space-y-6">
             {hierarchyData?.tree && hierarchyData.tree.length > 0 ? (
@@ -1179,6 +1265,7 @@ export default function UserHierarchyPage() {
                 <OrgTreeNode
                   key={rootNode.id}
                   node={rootNode}
+                  depth={0}
                   onAssignManager={(user) => {
                     setReassignModalUser(user);
                     setTargetManagerId(user.reportsToId || "");
@@ -1239,7 +1326,7 @@ export default function UserHierarchyPage() {
                             key={u.id}
                             className="flex items-center justify-between rounded-lg bg-white p-2.5 text-xs shadow-xs dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700"
                           >
-                            <div className="min-w-0 pr-2">
+                            <div className="min-w-0 pr-2 flex-1">
                               <p className="font-bold text-slate-800 dark:text-slate-100 truncate">
                                 {u.name || u.email.split("@")[0]}
                               </p>
@@ -1250,9 +1337,43 @@ export default function UserHierarchyPage() {
                                 Reports to: {u.manager?.name ? `${u.manager.name} (${u.manager.email})` : (u.manager?.email || (u.role === "SUPER_ADMIN" ? "Root" : "⚠️ None"))}
                               </p>
                             </div>
-                            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300 shrink-0">
-                              {u.teamMembers?.length || 0} subs
-                            </span>
+                            <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
+                              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                                {u.teamMembers?.length || 0} subs
+                              </span>
+                              {u.role !== "SUPER_ADMIN" && (() => {
+                                const expectedMgrRole = REQUIRED_MANAGER_ROLE[u.role];
+                                const managerRole = u.manager?.role;
+                                const hasManager = !!u.reportsToId;
+                                const isCompliant = hasManager && managerRole === expectedMgrRole;
+                                const isViolation = hasManager && managerRole !== expectedMgrRole;
+                                if (!hasManager) {
+                                  return (
+                                    <span className="inline-flex items-center gap-0.5 rounded-full border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold text-amber-600 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-300">
+                                      ⚠ Unassigned
+                                    </span>
+                                  );
+                                }
+                                if (isViolation) {
+                                  return (
+                                    <span
+                                      title={`Expected manager role: ${expectedMgrRole}, got: ${managerRole}`}
+                                      className="inline-flex items-center gap-0.5 rounded-full border border-red-200 bg-red-50 px-1.5 py-0.5 text-[9px] font-bold text-red-600 dark:border-red-800 dark:bg-red-950/50 dark:text-red-300"
+                                    >
+                                      ✗ Wrong Tier
+                                    </span>
+                                  );
+                                }
+                                if (isCompliant) {
+                                  return (
+                                    <span className="inline-flex items-center gap-0.5 rounded-full border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-[9px] font-bold text-emerald-600 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
+                                      ✓ Tier OK
+                                    </span>
+                                  );
+                                }
+                                return null;
+                              })()}
+                            </div>
                           </div>
                         ))
                       ) : (
@@ -1269,6 +1390,15 @@ export default function UserHierarchyPage() {
             })}
           </div>
         </div>
+      )}
+
+      {/* ================= AUDIT LOG ACTIVITY FEED ================= */}
+      {activeView === "audit" && (
+        <ActivityFeed
+          users={hierarchyData?.users || []}
+          title="Organizational Audit Trail"
+          subtitle="Real-time chronological timeline of reporting chain updates, reassignments, and user provisioning events"
+        />
       )}
 
       {/* ================= MODAL: ASSIGN / CHANGE MANAGER ================= */}
@@ -1757,6 +1887,21 @@ export default function UserHierarchyPage() {
             </div>
 
             <div className="py-4 space-y-4">
+              {/* Mixed-Role Tier Warning Banner */}
+              {isMixedRoleSelection && (
+                <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50/80 p-3.5 text-xs text-amber-800 dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-300 animate-in fade-in duration-200">
+                  <AlertCircle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold mb-0.5">Mixed Role Tiers Selected</p>
+                    <p className="text-[11px] leading-relaxed">
+                      Your selection includes users from <strong>{selectedRolesSet.size} different role tiers</strong>.
+                      Strict hierarchy rules require all bulk-reassigned users to share the same tier so the
+                      correct manager pool can be determined. Please deselect and retry with a uniform role tier.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Selected Users Summary */}
               <div className="rounded-xl bg-slate-50 p-3.5 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700">
                 <span className="text-[11px] font-semibold text-slate-400 block mb-2">Selected Users</span>
@@ -1819,9 +1964,10 @@ export default function UserHierarchyPage() {
               </button>
               <button
                 type="button"
-                disabled={bulkReassigning}
+                disabled={bulkReassigning || isMixedRoleSelection}
                 onClick={handleBulkReassign}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition-all cursor-pointer shadow-sm disabled:opacity-50"
+                title={isMixedRoleSelection ? "Cannot bulk reassign across mixed role tiers" : ""}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition-all cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {bulkReassigning && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
                 <span>{bulkReassigning ? "Reassigning..." : `Reassign ${selectedUserIds.size} Users`}</span>
@@ -1830,23 +1976,34 @@ export default function UserHierarchyPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </RoleGuard>
   );
 }
 
 // ─── Sub-component: Recursive Org Tree Node ──────────────────────────────────
+const DEPTH_STRIPE_CLASSES = [
+  "border-l-purple-400 dark:border-l-purple-600",   // depth 0 — SUPER_ADMIN
+  "border-l-blue-400 dark:border-l-blue-600",       // depth 1 — ADMIN
+  "border-l-amber-400 dark:border-l-amber-500",     // depth 2 — TEAM_LEAD
+  "border-l-emerald-400 dark:border-l-emerald-500", // depth 3 — AGENT
+];
+
 function OrgTreeNode({
   node,
+  depth = 0,
   onAssignManager,
   onDeleteUser,
 }: {
   node: User;
+  depth?: number;
   onAssignManager: (user: User) => void;
   onDeleteUser?: (user: User) => void;
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const meta = getRoleMeta(node.role);
   const RoleIcon = meta.icon;
+  const depthStripe = DEPTH_STRIPE_CLASSES[Math.min(depth, DEPTH_STRIPE_CLASSES.length - 1)];
   const hasMembers = node.teamMembers && node.teamMembers.length > 0;
 
   return (
@@ -1867,9 +2024,9 @@ function OrgTreeNode({
           </span>
         )}
 
-        {/* User Card */}
+        {/* User Card — depth-based left border stripe for visual tier distinction */}
         <div
-          className={`flex flex-wrap items-center justify-between gap-3 flex-1 rounded-xl border p-3 bg-white shadow-xs dark:bg-slate-800 ${meta.borderClass}`}
+          className={`flex flex-wrap items-center justify-between gap-3 flex-1 rounded-xl border border-l-4 p-3 bg-white shadow-xs dark:bg-slate-800 ${meta.borderClass} ${depthStripe}`}
         >
           <div className="flex items-center gap-3 min-w-0">
             {node.avatar ? (
@@ -1926,13 +2083,14 @@ function OrgTreeNode({
         </div>
       </div>
 
-      {/* Children branches */}
+      {/* Children branches — pass depth + 1 for progressive stripe coloring */}
       {hasMembers && !collapsed && (
         <div className="ml-6 pl-4 border-l-2 border-slate-200 dark:border-slate-800 space-y-3">
           {node.teamMembers?.map((sub) => (
             <OrgTreeNode
               key={sub.id}
               node={sub}
+              depth={depth + 1}
               onAssignManager={onAssignManager}
               onDeleteUser={onDeleteUser}
             />

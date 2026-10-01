@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { apiClient } from "@/lib/api-client";
+import { RoleGuard } from "@/components/RoleGuard";
 import {
   AlertOctagon,
   RotateCcw,
@@ -142,20 +143,9 @@ export default function DeadLetterQueuePage() {
     );
   }
 
-  if (user && user.role !== "ADMIN") {
-    return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
-        <ShieldAlert className="mx-auto h-12 w-12 text-red-500 mb-3" />
-        <h2 className="text-lg font-bold text-red-800">Admin Privileges Required</h2>
-        <p className="text-xs text-red-600 mt-1 max-w-md mx-auto">
-          The Dead Leads inspection console is restricted to system administrators.
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6 pb-12">
+    <RoleGuard allowedRoles={["SUPER_ADMIN", "ADMIN"]}>
+      <div className="space-y-6 pb-12">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -430,6 +420,7 @@ export default function DeadLetterQueuePage() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </RoleGuard>
   );
 }
