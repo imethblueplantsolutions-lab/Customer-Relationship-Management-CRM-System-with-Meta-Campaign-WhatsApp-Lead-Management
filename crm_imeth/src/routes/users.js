@@ -567,16 +567,32 @@ router.get('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, re
     const currentUserId = req.user?.userId || req.user?.id;
     const currentUserRole = req.user?.role;
 
-    const where = currentUserRole === 'SUPER_ADMIN' ? {} : { tenantId };
+    if (currentUserRole !== 'SUPER_ADMIN' && !tenantId) {
+      return res.status(400).json({ success: false, error: 'Tenant context is required' });
+    }
 
-    // Strict Hierarchy-Branch Scoping:
-    // - Admins can view all accounts (Admins, Team Leads, Sales Agents) in their organization tenant.
-    // - Team Leads can ONLY see their downstream squad members and their own profile.
-    if (currentUserRole === 'TEAM_LEAD') {
+    let where;
+    if (currentUserRole === 'SUPER_ADMIN') {
+      where = {};
+    } else if (currentUserRole === 'ADMIN') {
+      // Standard Admins must ONLY see their own account plus the Team Leads and Agents of their exact tenantId
+      where = {
+        tenantId,
+        role: { not: 'SUPER_ADMIN' },
+        OR: [
+          { id: currentUserId },
+          { role: { in: ['TEAM_LEAD', 'AGENT'] } },
+        ],
+      };
+    } else if (currentUserRole === 'TEAM_LEAD') {
       // Team Leads can ONLY see their downstream squad members and their own profile
       const { getDownstreamUserIds } = require('../utils/hierarchy');
       const squadIds = await getDownstreamUserIds(currentUserId, tenantId);
-      where.id = { in: squadIds };
+      where = {
+        tenantId,
+        role: { not: 'SUPER_ADMIN' },
+        id: { in: squadIds },
+      };
     }
 
     const users = await prisma.user.findMany({

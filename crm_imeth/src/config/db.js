@@ -22,18 +22,25 @@ const prisma = basePrisma.$extends({
           return query(args);
         }
 
-        if (tenantId && isTenantModel) {
-          // If operation is a query/update/delete with 'where'
-          if (['findMany', 'findFirst', 'findUnique', 'count', 'update', 'updateMany', 'delete', 'deleteMany'].includes(operation)) {
-            args.where = { ...args.where, tenantId };
-          }
-          // If operation is creating data
-          if (['create', 'createMany', 'upsert'].includes(operation)) {
-            if (args.data && !Array.isArray(args.data)) {
-              args.data.tenantId = tenantId;
+        if (isTenantModel) {
+          if (!tenantId) {
+            // Fail-safe: if tenant context is missing for a non-superadmin query, force impossible match to prevent data leak
+            if (['findMany', 'findFirst', 'count', 'updateMany', 'deleteMany'].includes(operation)) {
+              args.where = { ...args.where, tenantId: '__NO_TENANT_CONTEXT__' };
             }
-            if (args.create) {
-              args.create.tenantId = tenantId;
+          } else {
+            // If operation is a query/update/delete with 'where'
+            if (['findMany', 'findFirst', 'findUnique', 'count', 'update', 'updateMany', 'delete', 'deleteMany'].includes(operation)) {
+              args.where = { ...args.where, tenantId };
+            }
+            // If operation is creating data
+            if (['create', 'createMany', 'upsert'].includes(operation)) {
+              if (args.data && !Array.isArray(args.data)) {
+                args.data.tenantId = tenantId;
+              }
+              if (args.create) {
+                args.create.tenantId = tenantId;
+              }
             }
           }
         }
