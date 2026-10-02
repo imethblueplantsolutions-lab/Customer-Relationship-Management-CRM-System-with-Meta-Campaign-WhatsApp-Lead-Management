@@ -372,6 +372,175 @@ router.post('/resend-otp', async (req, res) => {
   }
 });
 
+// POST: Self-service Forgot Password - Dispatch OTP reset code
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email address is required' });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const user = await prisma.user.findUnique({ where: { email: cleanEmail } });
+
+    // Anti-enumeration: Return 200 OK even if user doesn't exist or is inactive
+    if (!user || !user.isActive) {
+      return res.status(200).json({
+        success: true,
+        message: 'If an account exists with that email address, a password reset code has been sent.',
+      });
+    }
+
+    // Rate-limiting safeguard: Allow maximum 1 request per 60 seconds
+    if (user.otpExpiresAt) {
+      const timeRemaining = new Date(user.otpExpiresAt).getTime() - Date.now();
+      if (timeRemaining > 9 * 60 * 1000) {
+        return res.status(429).json({
+          success: false,
+          error: 'Please wait 60 seconds before requesting another reset code.',
+        });
+      }
+    }
+
+    // Generate 6-digit numeric OTP
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpHash = hashOtp(otpCode);
+    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        otpHash,
+        otpExpiresAt,
+        otpAttempts: 0,
+      },
+    });
+
+    // Dispatch email with subject "Your password reset code"
+    await sendOtpEmail(user.email, otpCode, 'Your password reset code');
+
+    return res.status(200).json({
+      success: true,
+      message: 'If an account exists with that email address, a password reset code has been sent.',
+    });
+  } catch (error) {
+    console.error('[Auth Route] Forgot password error:', error);
+    return res.status(500).json({ success: false, error: 'Failed to process password reset' });
+  }
+});
+
+// POST: Self-service Reset Password - Verify OTP and update password
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email, OTP code, and new password are required',
+      });
+    }
+
+    if (newPassword.trim().length < 6) {
+      return res.status(400).json({
+        success: false,
+        error: 'Password must be at least 6 characters long',
+      });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const user = await prisma.user.findUnique({ where: { email: cleanEmail } });
+
+    if (!user || !user.isActive) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid or expired OTP',
+      });
+    }
+
+    // Verify OTP exists and is not expired
+    if (!user.otpHash || !user.otpExpiresAt) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid or expired OTP',
+      });
+    }
+
+    if (new Date() > new Date(user.otpExpiresAt)) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { otpHash: null, otpExpiresAt: null, otpAttempts: 0 },
+      });
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid or expired OTP',
+      });
+    }
+
+    // Check brute-force attempts
+    if (user.otpAttempts >= 3) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { otpHash: null, otpExpiresAt: null, otpAttempts: 0 },
+      });
+      return res.status(400).json({
+        success: false,
+        error: 'Maximum invalid attempts exceeded. Please request a new code.',
+      });
+    }
+
+    // Hash the provided OTP and compare against stored otpHash
+    const computedHash = hashOtp(otp);
+    if (computedHash !== user.otpHash) {
+      const updatedAttempts = (user.otpAttempts || 0) + 1;
+      if (updatedAttempts >= 3) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { otpHash: null, otpExpiresAt: null, otpAttempts: 0 },
+        });
+        return res.status(400).json({
+          success: false,
+          error: 'Maximum invalid attempts exceeded. Please request a new code.',
+        });
+      }
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { otpAttempts: updatedAttempts },
+      });
+
+      return res.status(400).json({
+        success: false,
+        error: `Invalid or expired OTP. Remaining attempts: ${3 - updatedAttempts}`,
+      });
+    }
+
+    // Hash the new password using bcrypt
+    const hashedPassword = await bcrypt.hash(newPassword.trim(), 10);
+
+    // Update user password and clear OTP fields
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        otpHash: null,
+        otpExpiresAt: null,
+        otpAttempts: 0,
+        isFirstLogin: false,
+        tokenVersion: { increment: 1 },
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Your password has been securely updated. You can now log in.',
+    });
+  } catch (error) {
+    console.error('[Auth Route] Reset password error:', error);
+    return res.status(500).json({ success: false, error: 'Failed to reset password' });
+  }
+});
+
 // POST: Self-service Registration for new organization/account
 router.post('/register', async (req, res) => {
   try {
