@@ -317,16 +317,22 @@ export default function LoginPage() {
       <div className="absolute bottom-24 right-1/4 w-9 h-9 bg-blue-600/20 backdrop-blur-md rounded-xl rotate-6 shadow-xs pointer-events-none" />
 
       {/* Main Sliding Dual-Auth Container (Natural Auto-Height) */}
-      <div className="relative z-10 w-full max-w-4xl bg-white rounded-2xl shadow-[0_20px_60px_rgba(27,38,44,0.12)] border border-slate-100 overflow-hidden flex flex-col md:flex-row items-stretch">
+      <div className="relative z-10 w-full max-w-4xl bg-white rounded-2xl shadow-[0_20px_60px_rgba(27,38,44,0.12)] border border-slate-100 overflow-hidden">
 
-        {/* ================= 1. SIGN IN FORM PANEL (Left 50% Desktop) ================= */}
+        {/* Mobile Sliding Track / Desktop Dual Grid */}
         <div
-          className={`w-full md:w-1/2 p-6 flex flex-col justify-between gap-4 bg-white transition-all duration-700 ease-in-out ${
-            isSignUpActive
-              ? "md:opacity-0 md:z-10 md:pointer-events-none hidden md:flex"
-              : "md:opacity-100 md:z-20 md:pointer-events-auto flex"
+          className={`flex w-[200%] md:w-full transition-transform duration-500 ease-in-out items-stretch ${
+            isSignUpActive ? "-translate-x-1/2 md:translate-x-0" : "translate-x-0"
           }`}
         >
+          {/* ================= 1. SIGN IN FORM PANEL (Left 50% Desktop) ================= */}
+          <div
+            className={`w-1/2 md:w-1/2 p-6 flex flex-col justify-between gap-4 bg-white transition-opacity duration-700 ease-in-out ${
+              isSignUpActive
+                ? "md:opacity-0 md:z-10 md:pointer-events-none"
+                : "md:opacity-100 md:z-20 md:pointer-events-auto"
+            }`}
+          >
           {/* Top Bar */}
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2 min-w-0">
@@ -500,14 +506,14 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* ================= 2. SIGN UP FORM PANEL (Right 50% Desktop) ================= */}
-        <div
-          className={`w-full md:w-1/2 p-6 flex flex-col justify-between gap-4 bg-white transition-all duration-700 ease-in-out ${
-            isSignUpActive
-              ? "md:opacity-100 md:z-20 md:pointer-events-auto flex"
-              : "md:opacity-0 md:z-10 md:pointer-events-none hidden md:flex"
-          }`}
-        >
+          {/* ================= 2. SIGN UP FORM PANEL (Right 50% Desktop) ================= */}
+          <div
+            className={`w-1/2 md:w-1/2 p-6 flex flex-col justify-between gap-4 bg-white transition-opacity duration-700 ease-in-out ${
+              isSignUpActive
+                ? "md:opacity-100 md:z-20 md:pointer-events-auto"
+                : "md:opacity-0 md:z-10 md:pointer-events-none"
+            }`}
+          >
           {/* Top Bar */}
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2 min-w-0">
@@ -667,8 +673,9 @@ export default function LoginPage() {
             </p>
           </div>
         </div>
+      </div>
 
-        {/* ================= 3. DARK BLUE SLIDING OVERLAY PANEL (`.toggle-container`) ================= */}
+      {/* ================= 3. DARK BLUE SLIDING OVERLAY PANEL (`.toggle-container`) ================= */}
         <div
           className={`hidden md:flex absolute top-0 left-1/2 w-1/2 h-full z-30 transition-transform duration-700 ease-in-out overflow-hidden bg-gradient-to-br from-[#1B262C] via-[#0F4C75] to-[#3282B8] flex-col justify-between p-6 ${
             isSignUpActive ? "-translate-x-full" : "translate-x-0"
