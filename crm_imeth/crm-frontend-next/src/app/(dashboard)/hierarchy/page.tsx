@@ -627,21 +627,21 @@ export default function UserHierarchyPage() {
       {/* ================= HEADER SECTION ================= */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-slate-200/80 pb-6 dark:border-slate-800">
         <div>
-          <div className="flex items-center gap-3 mb-1">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-600/20">
+          <div className="flex items-start sm:items-center gap-3 mb-1">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-600/20">
               <Network className="h-5 w-5" />
             </span>
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-900 whitespace-nowrap">
                   User Hierarchy Matrix
                 </h1>
-                <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-semibold text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-semibold text-purple-700 border border-purple-200 shrink-0">
                   <Crown className="h-3 w-3" />
                   Super Admin Exclusive
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-600 dark:text-slate-600 mt-1 max-w-2xl">
                 Manage organizational chain of command, evaluate multi-tier reporting lines, and configure team supervision.
               </p>
             </div>
