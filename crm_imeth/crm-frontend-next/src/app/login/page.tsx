@@ -337,12 +337,6 @@ export default function LoginPage() {
                 <span className="text-lg font-bold text-blue-600 tracking-tight">MyCRM</span>
               </div>
             </div>
-
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#BBE1FA]/30 border border-[#BBE1FA] text-[10px] font-semibold text-[#0F4C75] shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
-              <span>v1.0 Live</span>
-              <ChevronDown className="w-3 h-3 text-slate-400 ml-0.5" />
-            </div>
           </div>
 
           {/* Form Content */}

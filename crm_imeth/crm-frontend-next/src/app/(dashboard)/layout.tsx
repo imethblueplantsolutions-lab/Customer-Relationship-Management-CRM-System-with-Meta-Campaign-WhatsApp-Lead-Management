@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
-import { useSocket } from "@/hooks/use-socket";
 import { X, ChevronLeft, ChevronRight, Settings, LogOut } from "lucide-react";
 import SidebarNav from "@/components/layout/SidebarNav";
 import NotificationDropdown from "@/components/layout/NotificationDropdown";
@@ -15,7 +14,6 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { isAuthenticated, isLoading, user, logout } = useAuth();
-  const { isConnected } = useSocket();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -180,20 +178,6 @@ export default function DashboardLayout({
           </div>
 
           <div className="flex items-center gap-2.5">
-            <span
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
-                isConnected
-                  ? "bg-[#BBE1FA]/30 text-[#0F4C75] border-[#BBE1FA]"
-                  : "bg-slate-100 text-slate-500 border-slate-200"
-              }`}
-            >
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${
-                  isConnected ? "bg-blue-600 animate-pulse" : "bg-slate-400"
-                }`}
-              />
-              {isConnected ? "Live" : "Offline"}
-            </span>
 
             {/* User Profile Avatar with Dropdown Menu */}
             <div className="relative" ref={profileMenuRef}>
