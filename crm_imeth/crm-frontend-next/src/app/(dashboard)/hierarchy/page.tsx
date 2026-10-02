@@ -118,15 +118,15 @@ function getRoleMeta(role?: string) {
   return ROLE_CONFIG[role || "AGENT"] || ROLE_CONFIG.AGENT;
 }
 
-// Strict single-tier manager requirement map (mirrors backend hierarchyValidation.js)
-const REQUIRED_MANAGER_ROLE: Record<string, string> = {
-  AGENT: "TEAM_LEAD",
-  TEAM_LEAD: "ADMIN",
-  ADMIN: "SUPER_ADMIN",
+// Role manager requirement map (mirrors backend hierarchyValidation.js)
+const REQUIRED_MANAGER_ROLE: Record<string, string[]> = {
+  AGENT: ["TEAM_LEAD", "ADMIN"],
+  TEAM_LEAD: ["ADMIN"],
+  ADMIN: ["SUPER_ADMIN"],
 };
 
 const REQUIRED_MANAGER_LABEL: Record<string, string> = {
-  AGENT: "Team Lead",
+  AGENT: "Team Lead or Administrator",
   TEAM_LEAD: "Administrator",
   ADMIN: "Super Admin",
 };
@@ -557,21 +557,16 @@ export default function UserHierarchyPage() {
 
     const subordinateIds = getSubordinateIds(reassignModalUser);
 
-    // Strict Single-Tier: AGENT -> TEAM_LEAD, TEAM_LEAD -> ADMIN, ADMIN -> SUPER_ADMIN
-    const expectedManagerRole =
-      reassignModalUser.role === "AGENT"
-        ? "TEAM_LEAD"
-        : reassignModalUser.role === "TEAM_LEAD"
-        ? "ADMIN"
-        : reassignModalUser.role === "ADMIN"
-        ? "SUPER_ADMIN"
-        : null;
+    // Upward Reporting: AGENT -> TEAM_LEAD / ADMIN, TEAM_LEAD -> ADMIN, ADMIN -> SUPER_ADMIN
+    const allowedManagerRoles = REQUIRED_MANAGER_ROLE[reassignModalUser.role] || [];
+    const targetTenantId = reassignModalUser.tenantId;
 
     return hierarchyData.users.filter(
       (u) =>
         u.id !== reassignModalUser.id &&
         !subordinateIds.has(u.id) &&
-        (expectedManagerRole ? u.role === expectedManagerRole : false)
+        (u.role === "SUPER_ADMIN" || !targetTenantId || u.tenantId === targetTenantId) &&
+        (allowedManagerRoles.length > 0 ? allowedManagerRoles.includes(u.role) : false)
     );
   }, [hierarchyData?.users, reassignModalUser]);
 
@@ -605,18 +600,22 @@ export default function UserHierarchyPage() {
         .filter(Boolean)
     );
 
-    let expectedManagerRole: string | null = null;
+    let allowedManagerRoles: string[] | null = null;
+    let targetTenantId: string | null = null;
     if (selectedRoles.size === 1) {
       const singleRole = Array.from(selectedRoles)[0];
-      if (singleRole === "AGENT") expectedManagerRole = "TEAM_LEAD";
-      else if (singleRole === "TEAM_LEAD") expectedManagerRole = "ADMIN";
-      else if (singleRole === "ADMIN") expectedManagerRole = "SUPER_ADMIN";
+      if (singleRole && REQUIRED_MANAGER_ROLE[singleRole]) {
+        allowedManagerRoles = REQUIRED_MANAGER_ROLE[singleRole];
+      }
+      const firstUser = hierarchyData.users.find((u) => selectedUserIds.has(u.id));
+      if (firstUser) targetTenantId = firstUser.tenantId;
     }
 
     return hierarchyData.users.filter(
       (u) =>
         !excludeIds.has(u.id) &&
-        (expectedManagerRole ? u.role === expectedManagerRole : true)
+        (u.role === "SUPER_ADMIN" || !targetTenantId || u.tenantId === targetTenantId) &&
+        (allowedManagerRoles ? allowedManagerRoles.includes(u.role) : true)
     );
   }, [hierarchyData?.users, selectedUserIds]);
 
@@ -1146,9 +1145,13 @@ export default function UserHierarchyPage() {
                               >
                                 <option value="">⚠️ Unassigned (None)</option>
                                 {(() => {
-                                  const expectedRole = REQUIRED_MANAGER_ROLE[u.role];
+                                  const allowedRoles = REQUIRED_MANAGER_ROLE[u.role] || [];
+                                  const targetTenantId = u.tenantId;
                                   const tierCandidates = hierarchyData?.users?.filter(
-                                    (cand) => cand.id !== u.id && (expectedRole ? cand.role === expectedRole : false)
+                                    (cand) =>
+                                      cand.id !== u.id &&
+                                      (cand.role === "SUPER_ADMIN" || !targetTenantId || cand.tenantId === targetTenantId) &&
+                                      (allowedRoles.length > 0 ? allowedRoles.includes(cand.role) : false)
                                   ) || [];
                                   if (tierCandidates.length === 0) {
                                     return (
@@ -1504,11 +1507,11 @@ export default function UserHierarchyPage() {
                                 {u.teamMembers?.length || 0} subs
                               </span>
                               {u.role !== "SUPER_ADMIN" && (() => {
-                                const expectedMgrRole = REQUIRED_MANAGER_ROLE[u.role];
+                                const allowedMgrRoles = REQUIRED_MANAGER_ROLE[u.role] || [];
                                 const managerRole = u.manager?.role;
                                 const hasManager = !!u.reportsToId;
-                                const isCompliant = hasManager && managerRole === expectedMgrRole;
-                                const isViolation = hasManager && managerRole !== expectedMgrRole;
+                                const isCompliant = hasManager && Boolean(managerRole && allowedMgrRoles.includes(managerRole));
+                                const isViolation = hasManager && Boolean(managerRole && !allowedMgrRoles.includes(managerRole));
                                 if (!hasManager) {
                                   return (
                                     <span className="inline-flex items-center gap-0.5 rounded-full border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold text-amber-600 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-300">
@@ -1519,7 +1522,7 @@ export default function UserHierarchyPage() {
                                 if (isViolation) {
                                   return (
                                     <span
-                                      title={`Expected manager role: ${expectedMgrRole}, got: ${managerRole}`}
+                                      title={`Expected manager role: ${allowedMgrRoles.join(" or ")}, got: ${managerRole}`}
                                       className="inline-flex items-center gap-0.5 rounded-full border border-red-200 bg-red-50 px-1.5 py-0.5 text-[9px] font-bold text-red-600 dark:border-red-800 dark:bg-red-950/50 dark:text-red-300"
                                     >
                                       ✗ Wrong Tier
@@ -1983,7 +1986,11 @@ export default function UserHierarchyPage() {
                   <option value="">No Superior (Executive Root / Unassigned)</option>
                   {hierarchyData?.users
                     ?.filter((u) => {
-                      if (newUserForm.role === "AGENT") return u.role === "TEAM_LEAD";
+                      const targetTenantId = currentUser?.tenantId;
+                      if (targetTenantId && u.role !== "SUPER_ADMIN" && u.tenantId && u.tenantId !== targetTenantId) {
+                        return false;
+                      }
+                      if (newUserForm.role === "AGENT") return u.role === "TEAM_LEAD" || u.role === "ADMIN";
                       if (newUserForm.role === "TEAM_LEAD") return u.role === "ADMIN";
                       if (newUserForm.role === "ADMIN") return u.role === "SUPER_ADMIN";
                       return false;

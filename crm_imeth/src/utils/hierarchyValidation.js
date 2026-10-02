@@ -9,9 +9,9 @@ const ROLE_RANKS = {
 };
 
 const REQUIRED_MANAGER_ROLES = {
-  AGENT: 'TEAM_LEAD',
-  TEAM_LEAD: 'ADMIN',
-  ADMIN: 'SUPER_ADMIN',
+  AGENT: ['TEAM_LEAD', 'ADMIN'],
+  TEAM_LEAD: ['ADMIN'],
+  ADMIN: ['SUPER_ADMIN'],
 };
 
 /**
@@ -96,7 +96,9 @@ async function validateHierarchyAssignment({ userId, userRole, reportsToId, tena
   }
 
   // Multi-tenant boundary check (Confused Deputy guard)
-  if (proposedManager.tenantId !== tenantId && proposedManager.role !== 'SUPER_ADMIN') {
+  // Super Admin exception ONLY applies when the subordinate being evaluated is an ADMIN
+  const isSuperAdminManagerForAdmin = role === 'ADMIN' && proposedManager.role === 'SUPER_ADMIN';
+  if (proposedManager.tenantId !== tenantId && !isSuperAdminManagerForAdmin) {
     const error = new Error('Forbidden: Cross-tenant hierarchy assignment is prohibited');
     error.statusCode = 403;
     throw error;
@@ -109,9 +111,14 @@ async function validateHierarchyAssignment({ userId, userRole, reportsToId, tena
     throw error;
   }
 
-  // Rule 4: Strict Single-Tier Upward Reporting Check
-  const expectedManagerRole = REQUIRED_MANAGER_ROLES[role];
-  if (expectedManagerRole && proposedManager.role !== expectedManagerRole) {
+  // Rule 4: Tier-Based Upward Reporting Check
+  const allowedManagerRoles = Array.isArray(REQUIRED_MANAGER_ROLES[role])
+    ? REQUIRED_MANAGER_ROLES[role]
+    : REQUIRED_MANAGER_ROLES[role]
+      ? [REQUIRED_MANAGER_ROLES[role]]
+      : [];
+
+  if (allowedManagerRoles.length > 0 && !allowedManagerRoles.includes(proposedManager.role)) {
     const roleLabels = {
       AGENT: 'Sales Agents',
       TEAM_LEAD: 'Team Leads',
@@ -119,13 +126,13 @@ async function validateHierarchyAssignment({ userId, userRole, reportsToId, tena
       SUPER_ADMIN: 'Super Admins',
     };
     const expectedLabels = {
-      AGENT: 'a Team Lead',
-      TEAM_LEAD: 'an Admin',
-      ADMIN: 'a Super Admin',
+      AGENT: 'a Team Lead or Administrator',
+      TEAM_LEAD: 'an Administrator',
+      ADMIN: 'a Super Administrator',
     };
 
     const error = new Error(
-      `Invalid reporting tier: ${roleLabels[role] || role} must report strictly to ${expectedLabels[role]} (selected manager is a ${proposedManager.role})`
+      `Invalid reporting tier: ${roleLabels[role] || role} must report strictly to ${expectedLabels[role] || allowedManagerRoles.join(' or ')} (selected manager is a ${proposedManager.role})`
     );
     error.statusCode = 400;
     throw error;
@@ -203,7 +210,9 @@ async function validateBulkHierarchyAssignment({ userIds, reportsToId, tenantId 
     throw error;
   }
 
-  if (proposedManager.tenantId !== tenantId) {
+  const allTargetUsersAreAdmin = targetUsers.every((u) => u.role === 'ADMIN');
+  const isBulkSuperAdminManagerForAdmin = allTargetUsersAreAdmin && proposedManager.role === 'SUPER_ADMIN';
+  if (proposedManager.tenantId !== tenantId && !isBulkSuperAdminManagerForAdmin) {
     const error = new Error('Forbidden: Cross-tenant hierarchy assignment is prohibited');
     error.statusCode = 403;
     throw error;
@@ -215,12 +224,24 @@ async function validateBulkHierarchyAssignment({ userIds, reportsToId, tenantId 
     throw error;
   }
 
-  // Strict Single-Tier check for each user in the batch
+  // Strict Tier & Tenant check for each user in the batch
   for (const user of targetUsers) {
-    const expectedManagerRole = REQUIRED_MANAGER_ROLES[user.role];
-    if (expectedManagerRole && proposedManager.role !== expectedManagerRole) {
+    const isSuperAdminManagerForAdmin = user.role === 'ADMIN' && proposedManager.role === 'SUPER_ADMIN';
+    if (proposedManager.tenantId !== tenantId && !isSuperAdminManagerForAdmin) {
+      const error = new Error('Forbidden: Cross-tenant hierarchy assignment is prohibited');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    const allowedManagerRoles = Array.isArray(REQUIRED_MANAGER_ROLES[user.role])
+      ? REQUIRED_MANAGER_ROLES[user.role]
+      : REQUIRED_MANAGER_ROLES[user.role]
+        ? [REQUIRED_MANAGER_ROLES[user.role]]
+        : [];
+
+    if (allowedManagerRoles.length > 0 && !allowedManagerRoles.includes(proposedManager.role)) {
       const error = new Error(
-        `Invalid reporting tier: User ${user.name || user.email} (${user.role}) cannot report to a ${proposedManager.role}. Expected ${expectedManagerRole}.`
+        `Invalid reporting tier: User ${user.name || user.email} (${user.role}) cannot report to a ${proposedManager.role}. Expected ${allowedManagerRoles.join(' or ')}.`
       );
       error.statusCode = 400;
       throw error;

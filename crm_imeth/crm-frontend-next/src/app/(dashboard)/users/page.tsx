@@ -861,7 +861,11 @@ export default function UserManagementPage() {
                   <option value="">No Superior (Executive Root / Unassigned)</option>
                   {usersList
                     .filter((m) => {
-                      if (formData.role === "AGENT") return m.role === "TEAM_LEAD";
+                      const targetTenantId = user?.tenantId;
+                      if (targetTenantId && m.role !== "SUPER_ADMIN" && m.tenantId && m.tenantId !== targetTenantId) {
+                        return false;
+                      }
+                      if (formData.role === "AGENT") return m.role === "TEAM_LEAD" || m.role === "ADMIN";
                       if (formData.role === "TEAM_LEAD") return m.role === "ADMIN";
                       if (formData.role === "ADMIN") return m.role === "SUPER_ADMIN";
                       return false;
@@ -876,7 +880,7 @@ export default function UserManagementPage() {
 
                       return (
                         <option key={m.id} value={m.id} disabled={isFull}>
-                          {m.name ? `${m.name} (${m.email})` : m.email} — ({activeCount}/{limit}){isFull ? " ⚠️ FULL" : ""}
+                          {m.name ? `${m.name} (${m.email})` : m.email} — {m.role} ({activeCount}/{limit}){isFull ? " ⚠️ FULL" : ""}
                         </option>
                       );
                     })}
@@ -1146,8 +1150,13 @@ export default function UserManagementPage() {
                   {usersList
                     .filter((m) => {
                       if (m.id === editingUser.id || !m.isActive) return false;
-                      if (editFormData.role === "AGENT") return m.role === "TEAM_LEAD";
-                      if (editFormData.role === "TEAM_LEAD") return m.role === "ADMIN" || m.role === "SUPER_ADMIN";
+                      const targetTenantId = editingUser.tenantId;
+                      if (targetTenantId && m.role !== "SUPER_ADMIN" && m.tenantId && m.tenantId !== targetTenantId) {
+                        return false;
+                      }
+                      if (editFormData.role === "AGENT") return m.role === "TEAM_LEAD" || m.role === "ADMIN";
+                      if (editFormData.role === "TEAM_LEAD") return m.role === "ADMIN";
+                      if (editFormData.role === "ADMIN") return m.role === "SUPER_ADMIN";
                       return false;
                     })
                     .map((m) => (
