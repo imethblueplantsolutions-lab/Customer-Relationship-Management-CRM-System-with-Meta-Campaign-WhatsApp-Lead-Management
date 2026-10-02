@@ -156,3 +156,12 @@ td {
   border: 2px solid #2563EB !important;
   background: white !important;
 }
+
+/* Custom scrollbar utility */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}

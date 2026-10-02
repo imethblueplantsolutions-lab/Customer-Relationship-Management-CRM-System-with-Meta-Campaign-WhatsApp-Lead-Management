@@ -774,7 +774,7 @@ export default function UserHierarchyPage() {
       </div>
 
       {/* ================= CONTROLS & VIEW SWITCHER ================= */}
-      <div className="flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-between bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
+      <div className="flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-between bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs w-full max-w-full overflow-hidden">
         {/* Search & Filters */}
         <div className="flex flex-wrap items-center gap-3 flex-1">
           {/* Search bar */}
@@ -828,10 +828,10 @@ export default function UserHierarchyPage() {
         </div>
 
         {/* View Mode Switcher */}
-        <div className="flex items-center gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700">
+        <div className="flex items-center gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 w-full sm:w-auto max-w-full overflow-x-auto scrollbar-none">
           <button
             onClick={() => setActiveView("matrix")}
-            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold shrink-0 whitespace-nowrap transition-all cursor-pointer ${
               activeView === "matrix"
                 ? "bg-white text-blue-600 shadow-xs dark:bg-slate-700 dark:text-white"
                 : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
@@ -843,7 +843,7 @@ export default function UserHierarchyPage() {
 
           <button
             onClick={() => setActiveView("chart")}
-            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold shrink-0 whitespace-nowrap transition-all cursor-pointer ${
               activeView === "chart"
                 ? "bg-white text-blue-600 shadow-xs dark:bg-slate-700 dark:text-white"
                 : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
@@ -855,7 +855,7 @@ export default function UserHierarchyPage() {
 
           <button
             onClick={() => setActiveView("tree")}
-            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold shrink-0 whitespace-nowrap transition-all cursor-pointer ${
               activeView === "tree"
                 ? "bg-white text-blue-600 shadow-xs dark:bg-slate-700 dark:text-white"
                 : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
@@ -867,7 +867,7 @@ export default function UserHierarchyPage() {
 
           <button
             onClick={() => setActiveView("grid")}
-            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold shrink-0 whitespace-nowrap transition-all cursor-pointer ${
               activeView === "grid"
                 ? "bg-white text-blue-600 shadow-xs dark:bg-slate-700 dark:text-white"
                 : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
@@ -879,7 +879,7 @@ export default function UserHierarchyPage() {
 
           <button
             onClick={() => setActiveView("audit")}
-            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold shrink-0 whitespace-nowrap transition-all cursor-pointer ${
               activeView === "audit"
                 ? "bg-white text-purple-600 shadow-xs dark:bg-slate-700 dark:text-purple-300"
                 : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
@@ -1336,7 +1336,7 @@ export default function UserHierarchyPage() {
 
       {/* ================= VIEW 2: VISUAL TOP-DOWN ORG FLOWCHART ================= */}
       {activeView === "chart" && (
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+        <div className="w-full max-w-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
           <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -1355,17 +1355,19 @@ export default function UserHierarchyPage() {
             </button>
           </div>
 
-          <OrgChartTree
-            data={hierarchyData?.tree || []}
-            onAssignManager={(user) => {
-              setReassignModalUser(user);
-              setTargetManagerId(user.reportsToId || "");
-            }}
-            onDeleteUser={(user) => {
-              setUserToDelete(user);
-              setIsDeleteModalOpen(true);
-            }}
-          />
+          <div className="w-full max-w-full overflow-x-auto">
+            <OrgChartTree
+              data={hierarchyData?.tree || []}
+              onAssignManager={(user) => {
+                setReassignModalUser(user);
+                setTargetManagerId(user.reportsToId || "");
+              }}
+              onDeleteUser={(user) => {
+                setUserToDelete(user);
+                setIsDeleteModalOpen(true);
+              }}
+            />
+          </div>
         </div>
       )}
 
