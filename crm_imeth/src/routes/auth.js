@@ -425,7 +425,7 @@ router.post('/forgot-password', async (req, res) => {
     });
   } catch (error) {
     console.error('[Auth Route] Forgot password error:', error);
-    return res.status(500).json({ success: false, error: 'Failed to process password reset' });
+    return res.status(500).json({ success: false, error: error.message || 'Failed to process password reset' });
   }
 });
 

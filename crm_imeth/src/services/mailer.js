@@ -57,6 +57,7 @@ async function sendOtpEmail(email, otpCode, title = 'Security Verification Code'
       console.log(`[Mailer] OTP email successfully sent to ${email}`);
     } catch (err) {
       console.error(`[Mailer Error] Failed to send OTP email to ${email}:`, err.message);
+      throw new Error(`Email delivery failed: ${err.message}`);
     }
   } else {
     // Development console fallback mode
@@ -66,6 +67,9 @@ async function sendOtpEmail(email, otpCode, title = 'Security Verification Code'
     console.log(`Subject:      ${subject}`);
     console.log(`OTP Code:     ${otpCode}`);
     console.log(`======================================================\n`);
+    if (process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT) {
+      throw new Error('SMTP email credentials are not configured on this server (missing EMAIL_USER or EMAIL_PASS).');
+    }
   }
 }
 
@@ -113,6 +117,7 @@ async function sendWelcomeEmail(email, name, tempPassword, role) {
       console.log(`[Mailer] Welcome email sent to ${email}`);
     } catch (err) {
       console.error(`[Mailer Error] Failed to send welcome email to ${email}:`, err.message);
+      throw new Error(`Welcome email delivery failed: ${err.message}`);
     }
   } else {
     console.log(`\n======================================================`);
@@ -122,6 +127,9 @@ async function sendWelcomeEmail(email, name, tempPassword, role) {
     console.log(`Temp Password: ${tempPassword}`);
     console.log(`Role:          ${role}`);
     console.log(`======================================================\n`);
+    if (process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT) {
+      throw new Error('SMTP email credentials are not configured on this server (missing EMAIL_USER or EMAIL_PASS).');
+    }
   }
 }
 

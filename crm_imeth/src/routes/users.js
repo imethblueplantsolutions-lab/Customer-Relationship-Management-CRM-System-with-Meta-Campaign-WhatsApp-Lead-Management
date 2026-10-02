@@ -366,7 +366,7 @@ router.post('/profile/request-otp', async (req, res) => {
     });
   } catch (error) {
     console.error('Error requesting profile OTP:', error);
-    res.status(500).json({ success: false, error: 'Failed to dispatch security OTP' });
+    res.status(500).json({ success: false, error: error.message || 'Failed to dispatch security OTP' });
   }
 });
 
