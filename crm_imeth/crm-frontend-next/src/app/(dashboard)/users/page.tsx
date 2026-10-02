@@ -750,11 +750,16 @@ export default function UserManagementPage() {
 
       {/* Modal: Add User Account */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
-            
+        <div
+          onClick={() => setIsModalOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md max-h-[calc(100dvh-2rem)] flex flex-col bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden my-auto"
+          >
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-[#1B262C] via-[#0F4C75] to-[#3282B8] p-6 text-white flex items-center justify-between">
+            <div className="shrink-0 bg-gradient-to-r from-[#1B262C] via-[#0F4C75] to-[#3282B8] p-6 text-white flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-bold flex items-center gap-2">
                   <UserPlus className="h-5 w-5 text-[#BBE1FA]" />
@@ -774,9 +779,9 @@ export default function UserManagementPage() {
             </div>
 
             {/* Modal Form */}
-            <form onSubmit={handleCreateUser} className="p-6 space-y-4">
-              
-              {/* Plan Limit Alert Banner (Matching Picture 1: Icon, Title, Body, Close, Themeable) */}
+            <form onSubmit={handleCreateUser} className="flex-1 min-h-0 flex flex-col overflow-hidden">
+              <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                {/* Plan Limit Alert Banner (Matching Picture 1: Icon, Title, Body, Close, Themeable) */}
               {(planLimitAlert || (quotaStatus && ((formData.role === "AGENT" && !quotaStatus.agents.canCreate) || (formData.role === "TEAM_LEAD" && !quotaStatus.teamLeads.canCreate)))) && (
                 <PlanLimitAlert
                   title={planLimitAlert?.title || "Unavailable with your plan"}
@@ -974,53 +979,57 @@ export default function UserManagementPage() {
                 </span>
               </div>
 
-              {/* Modal Actions */}
-              {(() => {
-                const isRoleLimitReached =
-                  Boolean(quotaStatus && (
-                    (formData.role === "AGENT" && !quotaStatus.agents.canCreate) ||
-                    (formData.role === "TEAM_LEAD" && !quotaStatus.teamLeads.canCreate)
-                  ));
+              </div>
 
-                return (
-                  <div className="flex items-center gap-3 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setIsModalOpen(false)}
-                      className="flex-1 h-11 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-all cursor-pointer"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={submitting || isRoleLimitReached}
-                      title={isRoleLimitReached ? "Plan limit reached for this role tier" : undefined}
-                      className={`flex-1 h-11 rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 ${
-                        isRoleLimitReached
-                          ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
-                          : "bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg disabled:opacity-50 cursor-pointer"
-                      }`}
-                    >
-                      {submitting ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 animate-spin" />
-                          Creating User...
-                        </>
-                      ) : isRoleLimitReached ? (
-                        <>
-                          <ShieldAlert className="h-4 w-4 text-slate-500" />
-                          Limit Reached
-                        </>
-                      ) : (
-                        <>
-                          <UserPlus className="h-4 w-4" />
-                          Add User
-                        </>
-                      )}
-                    </button>
-                  </div>
-                );
-              })()}
+              {/* Sticky Footer Actions */}
+              <div className="shrink-0 p-6 pt-4 border-t border-slate-100 bg-slate-50/50 rounded-b-3xl mt-auto">
+                {(() => {
+                  const isRoleLimitReached =
+                    Boolean(quotaStatus && (
+                      (formData.role === "AGENT" && !quotaStatus.agents.canCreate) ||
+                      (formData.role === "TEAM_LEAD" && !quotaStatus.teamLeads.canCreate)
+                    ));
+
+                  return (
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setIsModalOpen(false)}
+                        className="flex-1 h-11 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-all cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={submitting || isRoleLimitReached}
+                        title={isRoleLimitReached ? "Plan limit reached for this role tier" : undefined}
+                        className={`flex-1 h-11 rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 ${
+                          isRoleLimitReached
+                            ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
+                            : "bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg disabled:opacity-50 cursor-pointer"
+                        }`}
+                      >
+                        {submitting ? (
+                          <>
+                            <RefreshCw className="h-4 w-4 animate-spin" />
+                            Creating User...
+                          </>
+                        ) : isRoleLimitReached ? (
+                          <>
+                            <ShieldAlert className="h-4 w-4 text-slate-500" />
+                            Limit Reached
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus className="h-4 w-4" />
+                            Add User
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  );
+                })()}
+              </div>
             </form>
           </div>
         </div>
@@ -1028,11 +1037,16 @@ export default function UserManagementPage() {
 
       {/* Modal: Edit User Account */}
       {editingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
-            
+        <div
+          onClick={() => setEditingUser(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md max-h-[calc(100dvh-2rem)] flex flex-col bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden my-auto"
+          >
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-[#1B262C] via-[#0F4C75] to-[#3282B8] p-6 text-white flex items-center justify-between">
+            <div className="shrink-0 bg-gradient-to-r from-[#1B262C] via-[#0F4C75] to-[#3282B8] p-6 text-white flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-bold flex items-center gap-2">
                   <Pencil className="h-5 w-5 text-[#BBE1FA]" />
@@ -1052,9 +1066,9 @@ export default function UserManagementPage() {
             </div>
 
             {/* Modal Form */}
-            <form onSubmit={handleUpdateUser} className="p-6 space-y-4">
-              
-              {/* Plan Limit Alert Banner */}
+            <form onSubmit={handleUpdateUser} className="flex-1 min-h-0 flex flex-col overflow-hidden">
+              <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                {/* Plan Limit Alert Banner */}
               {(() => {
                 const isRoleChanged = editFormData.role !== editingUser.role;
                 const isBlockedByQuota = isRoleChanged && (
@@ -1167,52 +1181,56 @@ export default function UserManagementPage() {
                 </select>
               </div>
 
-              {/* Modal Actions */}
-              {(() => {
-                const isRoleChanged = editFormData.role !== editingUser.role;
-                const isRoleLimitReached = isRoleChanged && Boolean(
-                  quotaStatus && (
-                    (editFormData.role === "AGENT" && !quotaStatus.agents.canCreate) ||
-                    (editFormData.role === "TEAM_LEAD" && !quotaStatus.teamLeads.canCreate)
-                  )
-                );
+              </div>
 
-                return (
-                  <div className="flex items-center gap-3 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setEditingUser(null)}
-                      className="flex-1 h-11 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-all cursor-pointer"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={editSubmitting || isRoleLimitReached}
-                      title={isRoleLimitReached ? "Plan limit reached for this role tier" : undefined}
-                      className={`flex-1 h-11 rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 ${
-                        isRoleLimitReached
-                          ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
-                          : "bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg disabled:opacity-50 cursor-pointer"
-                      }`}
-                    >
-                      {editSubmitting ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 animate-spin" />
-                          Saving...
-                        </>
-                      ) : isRoleLimitReached ? (
-                        <>
-                          <ShieldAlert className="h-4 w-4 text-slate-500" />
-                          Limit Reached
-                        </>
-                      ) : (
-                        "Save Changes"
-                      )}
-                    </button>
-                  </div>
-                );
-              })()}
+              {/* Sticky Footer Actions */}
+              <div className="shrink-0 p-6 pt-4 border-t border-slate-100 bg-slate-50/50 rounded-b-3xl mt-auto">
+                {(() => {
+                  const isRoleChanged = editFormData.role !== editingUser.role;
+                  const isRoleLimitReached = isRoleChanged && Boolean(
+                    quotaStatus && (
+                      (editFormData.role === "AGENT" && !quotaStatus.agents.canCreate) ||
+                      (editFormData.role === "TEAM_LEAD" && !quotaStatus.teamLeads.canCreate)
+                    )
+                  );
+
+                  return (
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setEditingUser(null)}
+                        className="flex-1 h-11 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-all cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={editSubmitting || isRoleLimitReached}
+                        title={isRoleLimitReached ? "Plan limit reached for this role tier" : undefined}
+                        className={`flex-1 h-11 rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 ${
+                          isRoleLimitReached
+                            ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
+                            : "bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg disabled:opacity-50 cursor-pointer"
+                        }`}
+                      >
+                        {editSubmitting ? (
+                          <>
+                            <RefreshCw className="h-4 w-4 animate-spin" />
+                            Saving...
+                          </>
+                        ) : isRoleLimitReached ? (
+                          <>
+                            <ShieldAlert className="h-4 w-4 text-slate-500" />
+                            Limit Reached
+                          </>
+                        ) : (
+                          "Save Changes"
+                        )}
+                      </button>
+                    </div>
+                  );
+                })()}
+              </div>
             </form>
           </div>
         </div>
@@ -1220,8 +1238,14 @@ export default function UserManagementPage() {
 
       {/* Modal: Created Temp Password Preview Modal */}
       {createdTempModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden p-6 sm:p-7 text-center space-y-5">
+        <div
+          onClick={() => setCreatedTempModal(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md max-h-[calc(100dvh-2rem)] flex flex-col bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-y-auto p-6 sm:p-7 text-center space-y-5 my-auto"
+          >
             <div className="w-14 h-14 mx-auto rounded-2xl bg-sky-100 text-[#0F4C75] flex items-center justify-center shadow-inner">
               <CheckCircle2 className="h-8 w-8 text-blue-600" />
             </div>
