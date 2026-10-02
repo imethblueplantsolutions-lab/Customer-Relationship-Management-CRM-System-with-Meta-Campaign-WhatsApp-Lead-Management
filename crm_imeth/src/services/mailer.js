@@ -1,16 +1,28 @@
+const dns = require('dns');
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first');
+}
 const nodemailer = require('nodemailer');
+const axios = require('axios');
 
 let transporter = null;
 
 // Initialize Nodemailer transporter if credentials exist in environment
 if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+  const port = parseInt(process.env.EMAIL_PORT || '587', 10);
+  const isSecure = process.env.EMAIL_SECURE === 'true' || port === 465;
+
   transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.EMAIL_PORT || '587', 10),
-    secure: process.env.EMAIL_SECURE === 'true',
+    port: port,
+    secure: isSecure,
+    family: 4, // Explicitly force IPv4 to prevent ENETUNREACH in cloud environments without IPv6 routing
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
+    },
+    tls: {
+      rejectUnauthorized: false,
     },
   });
 }
@@ -46,6 +58,29 @@ async function sendOtpEmail(email, otpCode, title = 'Security Verification Code'
     </div>
   `;
 
+  // 1. Prioritize Resend HTTPS API if configured (bypasses all cloud SMTP port restrictions)
+  if (process.env.RESEND_API_KEY) {
+    try {
+      await axios.post('https://api.resend.com/emails', {
+        from: `${process.env.EMAIL_FROM_NAME || 'MyCRM Security'} <${process.env.RESEND_FROM || 'onboarding@resend.dev'}>`,
+        to: [email],
+        subject,
+        html: htmlContent,
+      }, {
+        headers: {
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        }
+      });
+      console.log(`[Mailer - Resend API] OTP email successfully sent to ${email}`);
+      return;
+    } catch (err) {
+      console.error(`[Mailer Error - Resend] Failed to send OTP to ${email}:`, err.response?.data || err.message);
+      throw new Error(`Email delivery failed via Resend API: ${err.response?.data?.message || err.message}`);
+    }
+  }
+
+  // 2. Fall back to Nodemailer SMTP (IPv4 enforced)
   if (transporter) {
     try {
       await transporter.sendMail({
@@ -106,6 +141,29 @@ async function sendWelcomeEmail(email, name, tempPassword, role) {
     </div>
   `;
 
+  // 1. Prioritize Resend HTTPS API if configured
+  if (process.env.RESEND_API_KEY) {
+    try {
+      await axios.post('https://api.resend.com/emails', {
+        from: `${process.env.EMAIL_FROM_NAME || 'MyCRM Provisioning'} <${process.env.RESEND_FROM || 'onboarding@resend.dev'}>`,
+        to: [email],
+        subject,
+        html: htmlContent,
+      }, {
+        headers: {
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        }
+      });
+      console.log(`[Mailer - Resend API] Welcome email successfully sent to ${email}`);
+      return;
+    } catch (err) {
+      console.error(`[Mailer Error - Resend] Failed to send welcome email to ${email}:`, err.response?.data || err.message);
+      throw new Error(`Welcome email delivery failed via Resend API: ${err.response?.data?.message || err.message}`);
+    }
+  }
+
+  // 2. Fall back to Nodemailer SMTP (IPv4 enforced)
   if (transporter) {
     try {
       await transporter.sendMail({
