@@ -158,6 +158,7 @@ export default function UserHierarchyPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [deletingUser, setDeletingUser] = useState(false);
+  const [isCascadeDelete, setIsCascadeDelete] = useState(false);
   const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
   const [userToBlock, setUserToBlock] = useState<User | null>(null);
   const [blockingUser, setBlockingUser] = useState(false);
@@ -309,12 +310,51 @@ export default function UserHierarchyPage() {
     }
   };
 
-  // Delete user permanently (Super Admin only)
+  // Helper to recursively collect all downstream subordinate users for a given user
+  const getSubordinateUsers = useCallback((userId: string, users: User[] = []): User[] => {
+    if (!userId || !users.length) return [];
+
+    const subordinateMap = new Map<string, User[]>();
+    for (const u of users) {
+      if (u.reportsToId) {
+        if (!subordinateMap.has(u.reportsToId)) {
+          subordinateMap.set(u.reportsToId, []);
+        }
+        subordinateMap.get(u.reportsToId)!.push(u);
+      }
+    }
+
+    const result: User[] = [];
+    const queue: string[] = [userId];
+    const visited = new Set<string>([userId]);
+
+    while (queue.length > 0) {
+      const currentId = queue.shift()!;
+      const directSubs = subordinateMap.get(currentId) || [];
+      for (const sub of directSubs) {
+        if (!visited.has(sub.id)) {
+          visited.add(sub.id);
+          result.push(sub);
+          queue.push(sub.id);
+        }
+      }
+    }
+
+    return result;
+  }, []);
+
+  const subordinatesToDelete = useMemo(() => {
+    if (!userToDelete || !hierarchyData?.users) return [];
+    return getSubordinateUsers(userToDelete.id, hierarchyData.users);
+  }, [userToDelete, hierarchyData?.users, getSubordinateUsers]);
+
+  // Delete user permanently (Super Admin only, supports ?cascade=true)
   const handleDeleteUser = async () => {
     if (!userToDelete) return;
     setDeletingUser(true);
     try {
-      const res = await apiClient<{ success: boolean; message: string }>(`/users/${userToDelete.id}`, {
+      const endpoint = `/users/${userToDelete.id}${isCascadeDelete ? "?cascade=true" : ""}`;
+      const res = await apiClient<{ success: boolean; message: string }>(endpoint, {
         method: "DELETE",
       });
 
@@ -322,6 +362,7 @@ export default function UserHierarchyPage() {
         toast.success(res.message || "User deleted successfully");
         setIsDeleteModalOpen(false);
         setUserToDelete(null);
+        setIsCascadeDelete(false);
         await fetchHierarchy(true);
       } else {
         toast.error(res.error || "Failed to delete user");
@@ -1314,6 +1355,7 @@ export default function UserHierarchyPage() {
                               <button
                                 onClick={() => {
                                   setUserToDelete(u);
+                                  setIsCascadeDelete(false);
                                   setIsDeleteModalOpen(true);
                                 }}
                                 title={`Delete ${u.name || u.email}`}
@@ -1364,6 +1406,7 @@ export default function UserHierarchyPage() {
               }}
               onDeleteUser={(user) => {
                 setUserToDelete(user);
+                setIsCascadeDelete(false);
                 setIsDeleteModalOpen(true);
               }}
             />
@@ -1435,6 +1478,7 @@ export default function UserHierarchyPage() {
                   }}
                   onDeleteUser={(user) => {
                     setUserToDelete(user);
+                    setIsCascadeDelete(false);
                     setIsDeleteModalOpen(true);
                   }}
                   onBlockUser={(user) => {
@@ -1804,6 +1848,7 @@ export default function UserHierarchyPage() {
           onClick={() => {
             setIsDeleteModalOpen(false);
             setUserToDelete(null);
+            setIsCascadeDelete(false);
           }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200"
         >
@@ -1843,10 +1888,62 @@ export default function UserHierarchyPage() {
               </div>
             </div>
 
-            {/* Warning Message per User Prompt */}
+            {/* Subordinate Cascade Deletion Warning Banner */}
+            {subordinatesToDelete.length > 0 && (
+              <div className="rounded-xl border border-amber-300 bg-amber-50/90 dark:border-amber-700/80 dark:bg-amber-950/40 p-4 mb-4 text-xs space-y-2.5 animate-in fade-in duration-150">
+                <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-bold">
+                  <AlertCircle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                  <span>Branch Deletion Warning</span>
+                </div>
+                <p className="text-amber-700 dark:text-amber-300/90 leading-relaxed text-[11px]">
+                  This user currently manages <strong>{subordinatesToDelete.length} subordinate{subordinatesToDelete.length > 1 ? "s" : ""}</strong> (
+                  {[
+                    subordinatesToDelete.filter((u) => u.role === "TEAM_LEAD").length > 0
+                      ? `${subordinatesToDelete.filter((u) => u.role === "TEAM_LEAD").length} Team Lead(s)`
+                      : null,
+                    subordinatesToDelete.filter((u) => u.role === "AGENT").length > 0
+                      ? `${subordinatesToDelete.filter((u) => u.role === "AGENT").length} Sales Agent(s)`
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
+                  ).
+                </p>
+
+                {/* Cascade Option Checkbox */}
+                <label className="flex items-start gap-2.5 pt-2.5 border-t border-amber-200 dark:border-amber-800/60 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={isCascadeDelete}
+                    onChange={(e) => setIsCascadeDelete(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-amber-400 text-red-600 focus:ring-red-500 cursor-pointer"
+                  />
+                  <div className="flex-1">
+                    <span className="font-bold text-slate-900 dark:text-white block text-xs">
+                      Cascade delete all {subordinatesToDelete.length} subordinate{subordinatesToDelete.length > 1 ? "s" : ""}
+                    </span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block mt-0.5 leading-normal">
+                      {isCascadeDelete
+                        ? "Permanently deletes this user AND their entire downstream reporting branch to prevent orphaned accounts and reclaim tenant quotas."
+                        : "Leave unchecked to only delete this user (subordinates will become unassigned orphans)."}
+                    </span>
+                  </div>
+                </label>
+              </div>
+            )}
+
+            {/* General Confirmation Text */}
             <div className="rounded-xl border border-red-200/80 bg-red-50/60 p-4 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300 mb-5 leading-relaxed">
               <p>
-                Are you sure you want to delete <strong>{userToDelete.name || userToDelete.email}</strong>? This action cannot be undone. Any agents reporting to them will lose their manager, and any leads assigned to them will be returned to the unassigned pool.
+                {isCascadeDelete && subordinatesToDelete.length > 0 ? (
+                  <>
+                    Are you sure you want to delete <strong>{userToDelete.name || userToDelete.email}</strong> and all <strong>{subordinatesToDelete.length} subordinate(s)</strong>? This action cannot be undone. All assigned leads and deals across this branch will be returned to the unassigned pool.
+                  </>
+                ) : (
+                  <>
+                    Are you sure you want to delete <strong>{userToDelete.name || userToDelete.email}</strong>? This action cannot be undone. Any agents reporting to them will lose their manager, and any leads assigned to them will be returned to the unassigned pool.
+                  </>
+                )}
               </p>
             </div>
 
@@ -1858,6 +1955,7 @@ export default function UserHierarchyPage() {
                 onClick={() => {
                   setIsDeleteModalOpen(false);
                   setUserToDelete(null);
+                  setIsCascadeDelete(false);
                 }}
                 className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 cursor-pointer"
               >
@@ -1870,7 +1968,13 @@ export default function UserHierarchyPage() {
                 className="inline-flex items-center gap-1.5 rounded-xl bg-red-600 px-4 py-2 text-xs font-semibold text-white hover:bg-red-700 transition-all cursor-pointer shadow-sm disabled:opacity-50"
               >
                 {deletingUser && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
-                <span>{deletingUser ? "Deleting..." : "Delete User"}</span>
+                <span>
+                  {deletingUser
+                    ? "Deleting..."
+                    : isCascadeDelete && subordinatesToDelete.length > 0
+                    ? `Delete Branch (${subordinatesToDelete.length + 1} Users)`
+                    : "Delete User"}
+                </span>
               </button>
             </div>
           </div>

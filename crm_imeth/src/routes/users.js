@@ -9,6 +9,7 @@ const { sendWelcomeEmail, sendOtpEmail } = require('../services/mailer');
 const { validateHierarchyAssignment, validateBulkHierarchyAssignment } = require('../utils/hierarchyValidation');
 const { logAudit } = require('../utils/auditLogger');
 const { assertCanProvisionRole, getTenantQuotaStatus } = require('../utils/tenantQuota');
+const { getDownstreamUserIds } = require('../utils/hierarchy');
 const router = express.Router();
 
 // Helper to calculate SHA-256 hash for OTP codes
@@ -1278,17 +1279,19 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
 });
 
 // DELETE: Delete user with relational cleanup in transaction (Super Admin only)
+// Supports ?cascade=true to recursively delete all subordinate users (Team Leads & Sales Agents)
 router.delete('/:id', authorize(['SUPER_ADMIN']), async (req, res) => {
   try {
     const store = tenantStorage.getStore();
     const tenantId = req.user?.tenantId || store?.tenantId;
     const targetUserId = req.params.id;
+    const isCascade = req.query.cascade === 'true';
 
     if (req.user?.role !== 'SUPER_ADMIN') {
       return res.status(403).json({ success: false, error: 'Forbidden: Super Admins only' });
     }
 
-    if (req.user?.id === targetUserId) {
+    if (req.user?.id === targetUserId || req.user?.userId === targetUserId) {
       return res.status(400).json({ success: false, error: 'You cannot delete your own account' });
     }
 
@@ -1304,69 +1307,92 @@ router.delete('/:id', authorize(['SUPER_ADMIN']), async (req, res) => {
       return res.status(400).json({ success: false, error: 'Cannot delete a Super Admin root user' });
     }
 
+    const effectiveTenantId = targetUser.tenantId || tenantId;
+
+    // Subtree Traversal: Resolve all downstream subordinate IDs if cascade is enabled
+    let allBranchUserIds = [targetUserId];
+    if (isCascade) {
+      const downstreamIds = await getDownstreamUserIds(targetUserId, effectiveTenantId, true);
+      if (Array.isArray(downstreamIds) && downstreamIds.length > 0) {
+        allBranchUserIds = Array.from(new Set(downstreamIds));
+      }
+    }
+
     // Pre-Deletion Cleanup in Prisma $transaction
     await prisma.$transaction(async (tx) => {
-      // 1. Subordinates: Reassign to targetUser's manager or set to null
-      await tx.user.updateMany({
-        where: { reportsToId: targetUserId },
-        data: { reportsToId: targetUser.reportsToId || null },
-      });
+      // 1. If NOT cascading, reassign direct subordinates of targetUser to targetUser's manager or null
+      if (!isCascade) {
+        await tx.user.updateMany({
+          where: { reportsToId: targetUserId },
+          data: { reportsToId: targetUser.reportsToId || null },
+        });
+      }
 
-      // 2. Leads: Return assigned leads to unassigned pool
+      // 2. Leads: Return assigned leads across all branch users to the unassigned pool
       await tx.lead.updateMany({
-        where: { assignedToId: targetUserId },
+        where: { assignedToId: { in: allBranchUserIds } },
         data: { assignedToId: null },
       });
 
-      // 3. Deals: Clear assigned agent
+      // 3. Deals: Clear assigned agent across all branch users
       await tx.deal.updateMany({
-        where: { assignedToId: targetUserId },
+        where: { assignedToId: { in: allBranchUserIds } },
         data: { assignedToId: null },
       });
 
-      // 4. Followups: Clear assignedTo and createdBy
+      // 4. Followups: Clear assignedTo and createdBy across all branch users
       await tx.followup.updateMany({
-        where: { assignedToId: targetUserId },
+        where: { assignedToId: { in: allBranchUserIds } },
         data: { assignedToId: null },
       });
       await tx.followup.updateMany({
-        where: { createdById: targetUserId },
+        where: { createdById: { in: allBranchUserIds } },
         data: { createdById: null },
       });
 
-      // 5. Activities: Clear createdBy
+      // 5. Activities: Clear createdBy across all branch users
       await tx.activity.updateMany({
-        where: { createdById: targetUserId },
+        where: { createdById: { in: allBranchUserIds } },
         data: { createdById: null },
       });
 
       // 6. Attachments: Reassign creator to the requesting Super Admin (field is non-nullable)
+      const currentAdminId = req.user?.id || req.user?.userId;
       await tx.attachment.updateMany({
-        where: { createdById: targetUserId },
-        data: { createdById: req.user.id },
+        where: { createdById: { in: allBranchUserIds } },
+        data: { createdById: currentAdminId },
       });
 
-      // 7. Notifications: Remove any user notifications
+      // 7. Notifications: Remove any user notifications for all deleted users
       await tx.notification.deleteMany({
-        where: { userId: targetUserId },
+        where: { userId: { in: allBranchUserIds } },
       });
 
-      // 8. Delete the user
-      await tx.user.delete({
-        where: { id: targetUserId },
+      // 8. Break self-referential reporting links among branch members to prevent FK constraint errors
+      await tx.user.updateMany({
+        where: { id: { in: allBranchUserIds } },
+        data: { reportsToId: null },
+      });
+
+      // 9. Atomically delete all users in the branch
+      await tx.user.deleteMany({
+        where: { id: { in: allBranchUserIds } },
       });
     });
 
     // Log enterprise audit event
     await logAudit({
-      tenantId,
+      tenantId: effectiveTenantId,
       performedById: req.user?.userId || req.user?.id,
       targetUserId,
-      action: 'USER_DELETED',
+      action: isCascade ? 'USER_BRANCH_DELETED' : 'USER_DELETED',
       details: {
         deletedUserName: targetUser.name || targetUser.email,
         deletedUserEmail: targetUser.email,
         deletedUserRole: targetUser.role,
+        isCascade,
+        deletedUserIds: allBranchUserIds,
+        deletedCount: allBranchUserIds.length,
       },
     });
 
@@ -1374,17 +1400,33 @@ router.delete('/:id', authorize(['SUPER_ADMIN']), async (req, res) => {
     try {
       const { io } = require('../index');
       if (io) {
-        io.to(`tenant:${tenantId}`).emit('user_deleted', { userId: targetUserId });
-        io.to(`tenant:${tenantId}`).emit('hierarchy_updated', { userId: targetUserId, action: 'deleted' });
-        io.to(`tenant:${tenantId}`).emit('quota_updated', { tenantId });
+        allBranchUserIds.forEach((uid) => {
+          io.to(`tenant:${effectiveTenantId}`).emit('user_deleted', { userId: uid });
+        });
+        io.to(`tenant:${effectiveTenantId}`).emit('hierarchy_updated', {
+          userId: targetUserId,
+          deletedUserIds: allBranchUserIds,
+          action: 'deleted',
+          isCascade,
+        });
+        io.to(`tenant:${effectiveTenantId}`).emit('quota_updated', { tenantId: effectiveTenantId });
       }
     } catch (socketErr) {
       console.warn('[Socket] Failed to broadcast user_deleted:', socketErr.message);
     }
 
+    const successMessage = isCascade && allBranchUserIds.length > 1
+      ? `User ${targetUser.name || targetUser.email} and ${allBranchUserIds.length - 1} subordinate(s) deleted successfully`
+      : `User ${targetUser.name || targetUser.email} deleted successfully`;
+
     res.status(200).json({
       success: true,
-      message: `User ${targetUser.name || targetUser.email} deleted successfully`,
+      message: successMessage,
+      data: {
+        deletedUserIds: allBranchUserIds,
+        count: allBranchUserIds.length,
+        isCascade,
+      },
     });
   } catch (error) {
     console.error('Error deleting user:', error);
