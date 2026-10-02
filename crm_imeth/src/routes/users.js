@@ -863,7 +863,7 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
   try {
     const store = tenantStorage.getStore();
     const tenantId = req.user?.tenantId || store?.tenantId;
-    const { name, role, isActive, reportsToId, maxTeamLeads, maxAgents } = req.body;
+    const { name, email, role, isActive, reportsToId, maxTeamLeads, maxAgents } = req.body;
 
     const currentUserRole = req.user?.role;
 
@@ -873,6 +873,30 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
 
     if (!existingUser) {
       return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    // Email format & uniqueness validation
+    let cleanEmail = undefined;
+    if (email !== undefined && email !== null) {
+      cleanEmail = email.toLowerCase().trim().replace(/\.+@/, '@');
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(cleanEmail)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Please enter a valid work email address (e.g. name@company.com)',
+        });
+      }
+      if (cleanEmail !== existingUser.email) {
+        const emailInUse = await prisma.user.findFirst({
+          where: { email: cleanEmail, id: { not: existingUser.id } },
+        });
+        if (emailInUse) {
+          return res.status(409).json({
+            success: false,
+            error: 'A user with this email address already exists in the system',
+          });
+        }
+      }
     }
 
     // Quota Management Authorization Guard
@@ -1053,6 +1077,7 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
           where: { id: req.params.id },
           data: {
             ...(name !== undefined && { name: name ? name.trim() : null }),
+            ...(cleanEmail !== undefined && { email: cleanEmail }),
             ...(role !== undefined && { role }),
             isActive: false,
             tokenVersion: { increment: 1 },
@@ -1068,6 +1093,7 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
         where: { id: req.params.id },
         data: {
           ...(name !== undefined && { name: name ? name.trim() : null }),
+          ...(cleanEmail !== undefined && { email: cleanEmail }),
           ...(role !== undefined && { role }),
           ...(isActive !== undefined && { isActive }),
           ...(reportsToId !== undefined && { reportsToId: reportsToId ? reportsToId : null }),
@@ -1159,6 +1185,10 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
       if (io) {
         io.to(`tenant:${tenantId}`).emit('user_updated', updatedUser);
         io.to(`tenant:${tenantId}`).emit('hierarchy_updated', { userId: updatedUser.id });
+
+        if (roleChanged || deactivationHappened || activationHappened) {
+          io.to(`tenant:${tenantId}`).emit('quota_updated', { tenantId });
+        }
 
         if (deactivationHappened) {
           io.to(`user:${updatedUser.id}`).emit('account_blocked', {
