@@ -247,3 +247,19 @@ export interface AuditLog {
   createdAt: string;
 }
 
+// ─── Tenant Quota & Subscription ────────────────────────────
+export interface TenantQuotaStatus {
+  plan: string;
+  teamLeads: {
+    current: number;
+    max: number;
+    canCreate: boolean;
+  };
+  agents: {
+    current: number;
+    max: number;
+    canCreate: boolean;
+  };
+  totalUsers: number;
+}
+

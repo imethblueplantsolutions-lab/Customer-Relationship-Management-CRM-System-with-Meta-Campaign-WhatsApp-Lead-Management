@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { apiClient } from "@/lib/api-client";
+import { apiClient, ApiError } from "@/lib/api-client";
 import { useAuth } from "@/hooks/use-auth";
 import { RoleGuard } from "@/components/RoleGuard";
-import type { User } from "@/types";
+import type { User, TenantQuotaStatus } from "@/types";
+import PlanLimitAlert from "@/components/ui/PlanLimitAlert";
 import {
   UserPlus,
   Users,
@@ -48,6 +49,12 @@ export default function UserManagementPage() {
     maxAgents: 1,
   });
   const [submitting, setSubmitting] = useState(false);
+  const [quotaStatus, setQuotaStatus] = useState<TenantQuotaStatus | null>(null);
+  const [planLimitAlert, setPlanLimitAlert] = useState<{
+    title: string;
+    message: string;
+    variant?: "blue" | "teal" | "amber" | "dark";
+  } | null>(null);
 
   // Modal State for Showing Provisioned Temp Password
   const [createdTempModal, setCreatedTempModal] = useState<{
@@ -75,14 +82,27 @@ export default function UserManagementPage() {
     return "Sales Agent";
   };
 
+  // Fetch Tenant Quota Status
+  const fetchQuotaStatus = async () => {
+    try {
+      const res = await apiClient<TenantQuotaStatus>("/users/quota-status");
+      if (res.success && res.data) {
+        setQuotaStatus(res.data);
+      }
+    } catch (_) {}
+  };
+
   // Load Users
   const fetchUsers = async () => {
     try {
       setLoading(true);
       setErrorMsg("");
-      const res = await apiClient<User[]>("/users");
-      if (res.success && res.data) {
-        setUsersList(res.data);
+      const [resUsers] = await Promise.all([
+        apiClient<User[]>("/users"),
+        fetchQuotaStatus(),
+      ]);
+      if (resUsers.success && resUsers.data) {
+        setUsersList(resUsers.data);
       }
     } catch (err: unknown) {
       setErrorMsg(err instanceof Error ? err.message : "Failed to load users");
@@ -112,11 +132,13 @@ export default function UserManagementPage() {
     socket.on("user_created", handleRefresh);
     socket.on("hierarchy_updated", handleRefresh);
     socket.on("user_deleted", handleRefresh);
+    socket.on("quota_updated", handleRefresh);
     return () => {
       socket.off("user_updated", handleRefresh);
       socket.off("user_created", handleRefresh);
       socket.off("hierarchy_updated", handleRefresh);
       socket.off("user_deleted", handleRefresh);
+      socket.off("quota_updated", handleRefresh);
     };
   }, [socket]);
 
@@ -131,6 +153,7 @@ export default function UserManagementPage() {
     setSubmitting(true);
     setErrorMsg("");
     setSuccessMsg("");
+    setPlanLimitAlert(null);
 
     try {
       const res = await apiClient<{
@@ -168,9 +191,18 @@ export default function UserManagementPage() {
         toast.error(errorText);
       }
     } catch (err: unknown) {
-      const errorText = err instanceof Error ? err.message : "Error creating user";
-      setErrorMsg(errorText);
-      toast.error(errorText);
+      if (err instanceof ApiError && err.code === "PLAN_LIMIT_REACHED") {
+        setPlanLimitAlert({
+          title: err.title || "Unavailable with your plan",
+          message: err.message || "Upgrade to a pay-as-you-go account to use this feature.",
+          variant: "blue",
+        });
+        toast.error(err.title || "Unavailable with your plan");
+      } else {
+        const errorText = err instanceof Error ? err.message : "Error creating user";
+        setErrorMsg(errorText);
+        toast.error(errorText);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -271,10 +303,22 @@ export default function UserManagementPage() {
           <div className="h-12 w-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
             <ShieldCheck className="h-6 w-6" />
           </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Team Leaders</p>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Team Leaders</p>
+              {quotaStatus && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
+                  Cap: {quotaStatus.teamLeads.max}
+                </span>
+              )}
+            </div>
             <p className="text-2xl font-black text-slate-900 mt-0.5">
               {usersList.filter((u) => u.role === "TEAM_LEAD").length}
+              {quotaStatus && (
+                <span className="text-xs font-normal text-slate-400 ml-1.5">
+                  / {quotaStatus.teamLeads.max} allowed
+                </span>
+              )}
             </p>
           </div>
         </div>
@@ -283,10 +327,22 @@ export default function UserManagementPage() {
           <div className="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
             <UserCheck className="h-6 w-6" />
           </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Sales Agents</p>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Sales Agents</p>
+              {quotaStatus && (
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${quotaStatus.agents.canCreate ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-800"}`}>
+                  {quotaStatus.agents.canCreate ? `Cap: ${quotaStatus.agents.max}` : "Plan limit reached"}
+                </span>
+              )}
+            </div>
             <p className="text-2xl font-black text-slate-900 mt-0.5">
               {usersList.filter((u) => u.role === "AGENT").length}
+              {quotaStatus && (
+                <span className="text-xs font-normal text-slate-400 ml-1.5">
+                  / {quotaStatus.agents.max} allowed
+                </span>
+              )}
             </p>
           </div>
         </div>
@@ -582,6 +638,21 @@ export default function UserManagementPage() {
             {/* Modal Form */}
             <form onSubmit={handleCreateUser} className="p-6 space-y-4">
               
+              {/* Plan Limit Alert Banner (Matching Picture 1: Icon, Title, Body, Close, Themeable) */}
+              {(planLimitAlert || (quotaStatus && ((formData.role === "AGENT" && !quotaStatus.agents.canCreate) || (formData.role === "TEAM_LEAD" && !quotaStatus.teamLeads.canCreate)))) && (
+                <PlanLimitAlert
+                  title={planLimitAlert?.title || "Unavailable with your plan"}
+                  message={
+                    planLimitAlert?.message ||
+                    (formData.role === "AGENT"
+                      ? `Upgrade to a pay-as-you-go account to use this feature. Your Free Plan allows a maximum of 1 Sales Agent across your organization (${quotaStatus?.agents.current} of ${quotaStatus?.agents.max} active).`
+                      : `Upgrade to a pay-as-you-go account to use this feature. Your Free Plan allows a maximum of 1 Team Lead across your organization (${quotaStatus?.teamLeads.current} of ${quotaStatus?.teamLeads.max} active).`)
+                  }
+                  variant={planLimitAlert?.variant || "blue"}
+                  onClose={() => setPlanLimitAlert(null)}
+                />
+              )}
+              
               {/* Full Name */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
@@ -762,32 +833,52 @@ export default function UserManagementPage() {
               </div>
 
               {/* Modal Actions */}
-              <div className="flex items-center gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="flex-1 h-11 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="flex-1 h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md hover:shadow-lg disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
-                >
-                  {submitting ? (
-                    <>
-                      <RefreshCw className="h-4 w-4 animate-spin" />
-                      Creating User...
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="h-4 w-4" />
-                      Add User
-                    </>
-                  )}
-                </button>
-              </div>
+              {(() => {
+                const isRoleLimitReached =
+                  Boolean(quotaStatus && (
+                    (formData.role === "AGENT" && !quotaStatus.agents.canCreate) ||
+                    (formData.role === "TEAM_LEAD" && !quotaStatus.teamLeads.canCreate)
+                  ));
+
+                return (
+                  <div className="flex items-center gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsModalOpen(false)}
+                      className="flex-1 h-11 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-all cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={submitting || isRoleLimitReached}
+                      title={isRoleLimitReached ? "Plan limit reached for this role tier" : undefined}
+                      className={`flex-1 h-11 rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 ${
+                        isRoleLimitReached
+                          ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
+                          : "bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg disabled:opacity-50 cursor-pointer"
+                      }`}
+                    >
+                      {submitting ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 animate-spin" />
+                          Creating User...
+                        </>
+                      ) : isRoleLimitReached ? (
+                        <>
+                          <ShieldAlert className="h-4 w-4 text-slate-500" />
+                          Limit Reached
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="h-4 w-4" />
+                          Add User
+                        </>
+                      )}
+                    </button>
+                  </div>
+                );
+              })()}
             </form>
           </div>
         </div>

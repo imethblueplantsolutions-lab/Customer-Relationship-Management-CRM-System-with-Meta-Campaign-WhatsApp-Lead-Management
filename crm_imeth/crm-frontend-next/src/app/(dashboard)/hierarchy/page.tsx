@@ -6,8 +6,9 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { RoleGuard } from "@/components/RoleGuard";
 import { useSocket } from "@/hooks/use-socket";
-import { apiClient } from "@/lib/api-client";
+import { apiClient, ApiError } from "@/lib/api-client";
 import type { User, HierarchyResponse, HierarchyStats } from "@/types";
+import PlanLimitAlert from "@/components/ui/PlanLimitAlert";
 
 const OrgChartTree = dynamic(() => import("@/components/hierarchy/OrgChartTree"), {
   ssr: false,
@@ -172,6 +173,10 @@ export default function UserHierarchyPage() {
   });
   const [quotaMaxTeamLeads, setQuotaMaxTeamLeads] = useState<number>(1);
   const [quotaMaxAgents, setQuotaMaxAgents] = useState<number>(1);
+  const [hierarchyPlanAlert, setHierarchyPlanAlert] = useState<{
+    title: string;
+    message: string;
+  } | null>(null);
 
   useEffect(() => {
     if (reassignModalUser) {
@@ -380,6 +385,7 @@ export default function UserHierarchyPage() {
       return;
     }
     setCreatingUser(true);
+    setHierarchyPlanAlert(null);
     try {
       const res = await apiClient<{
         user: User;
@@ -425,7 +431,15 @@ export default function UserHierarchyPage() {
         toast.error(res.error || "Failed to create user");
       }
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Error creating user");
+      if (err instanceof ApiError && err.code === "PLAN_LIMIT_REACHED") {
+        setHierarchyPlanAlert({
+          title: err.title || "Unavailable with your plan",
+          message: err.message || "Upgrade to a pay-as-you-go account to use this feature.",
+        });
+        toast.error(err.title || "Unavailable with your plan");
+      } else {
+        toast.error(err instanceof Error ? err.message : "Error creating user");
+      }
     } finally {
       setCreatingUser(false);
     }
@@ -1867,6 +1881,15 @@ export default function UserHierarchyPage() {
 
             {/* Modal Form */}
             <form onSubmit={handleCreateMember} className="py-4 space-y-4">
+              {/* Plan Limit Alert Banner */}
+              {hierarchyPlanAlert && (
+                <PlanLimitAlert
+                  title={hierarchyPlanAlert.title}
+                  message={hierarchyPlanAlert.message}
+                  variant="blue"
+                  onClose={() => setHierarchyPlanAlert(null)}
+                />
+              )}
               {/* Full Name */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">

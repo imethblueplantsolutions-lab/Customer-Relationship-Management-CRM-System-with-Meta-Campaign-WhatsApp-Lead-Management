@@ -15,12 +15,31 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
   message?: string;
+  code?: string;
+  title?: string;
+  quota?: Record<string, unknown>;
   pagination?: {
     total: number;
     page: number;
     limit: number;
     totalPages: number;
   };
+}
+
+export class ApiError extends Error {
+  code?: string;
+  title?: string;
+  quota?: Record<string, unknown>;
+  statusCode?: number;
+
+  constructor(message: string, options?: { code?: string; title?: string; quota?: Record<string, unknown>; statusCode?: number }) {
+    super(message);
+    this.name = 'ApiError';
+    this.code = options?.code;
+    this.title = options?.title;
+    this.quota = options?.quota;
+    this.statusCode = options?.statusCode;
+  }
 }
 
 export async function apiClient<T = unknown>(
@@ -57,10 +76,14 @@ export async function apiClient<T = unknown>(
     return { success: false, error: 'Session expired. Please log in again.' } as ApiResponse<T>;
   }
 
-  const data = await response.json();
+  const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(data.error || 'API Request Failed');
+    throw new ApiError(data.error || 'API Request Failed', {
+      code: data.code,
+      title: data.title,
+      quota: data.quota,
+      statusCode: response.status,
+    });
   }
   return data as ApiResponse<T>;
-
 }

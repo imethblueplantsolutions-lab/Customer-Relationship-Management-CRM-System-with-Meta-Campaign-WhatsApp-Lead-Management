@@ -8,6 +8,7 @@ const { authorize, authenticate } = require('../middleware/auth');
 const { sendWelcomeEmail, sendOtpEmail } = require('../services/mailer');
 const { validateHierarchyAssignment, validateBulkHierarchyAssignment } = require('../utils/hierarchyValidation');
 const { logAudit } = require('../utils/auditLogger');
+const { assertCanProvisionRole, getTenantQuotaStatus } = require('../utils/tenantQuota');
 const router = express.Router();
 
 // Helper to calculate SHA-256 hash for OTP codes
@@ -139,38 +140,21 @@ router.post('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, r
       tenantId,
     });
 
-    // Enforce Manager Capacity Quota (hierarchical maxTeamLeads / maxAgents)
-    if (reportsToId) {
-      const manager = await prisma.user.findFirst({
-        where: { id: reportsToId, tenantId },
-        select: { id: true, name: true, email: true, role: true, maxTeamLeads: true, maxAgents: true },
+    // Enforce Tenant-Wide Plan Quota (Mutual Exclusivity) & Manager Capacity
+    try {
+      await assertCanProvisionRole({
+        tenantId,
+        role,
+        managerId: reportsToId,
       });
-
-      if (manager) {
-        if (role === 'TEAM_LEAD' && manager.role === 'ADMIN') {
-          const currentCount = await prisma.user.count({
-            where: { reportsToId: manager.id, role: 'TEAM_LEAD', isActive: true, tenantId },
-          });
-          const limit = manager.maxTeamLeads !== null && manager.maxTeamLeads !== undefined ? manager.maxTeamLeads : 1;
-          if (currentCount >= limit) {
-            return res.status(403).json({
-              success: false,
-              error: `Quota exceeded: ${manager.name || manager.email} can only manage up to ${limit} Team Lead(s) (current active: ${currentCount}). Request a quota increase from Super Admin.`,
-            });
-          }
-        } else if (role === 'AGENT' && manager.role === 'TEAM_LEAD') {
-          const currentCount = await prisma.user.count({
-            where: { reportsToId: manager.id, role: 'AGENT', isActive: true, tenantId },
-          });
-          const limit = manager.maxAgents !== null && manager.maxAgents !== undefined ? manager.maxAgents : 1;
-          if (currentCount >= limit) {
-            return res.status(403).json({
-              success: false,
-              error: `Quota exceeded: ${manager.name || manager.email} can only manage up to ${limit} Sales Agent(s) (current active: ${currentCount}). Request a quota increase from Super Admin.`,
-            });
-          }
-        }
-      }
+    } catch (quotaError) {
+      return res.status(quotaError.statusCode || 403).json({
+        success: false,
+        code: quotaError.code || 'PLAN_LIMIT_REACHED',
+        title: quotaError.title || 'Unavailable with your plan',
+        error: quotaError.message,
+        quota: quotaError.quota || null,
+      });
     }
 
     const initMaxTeamLeads = req.body.maxTeamLeads !== undefined ? parseInt(req.body.maxTeamLeads, 10) : 1;
@@ -261,6 +245,7 @@ router.post('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, r
       if (io) {
         io.to(`tenant:${tenantId}`).emit('user_created', newUser);
         io.to(`tenant:${tenantId}`).emit('hierarchy_updated', { message: 'New member added to hierarchy' });
+        io.to(`tenant:${tenantId}`).emit('quota_updated', { tenantId });
       }
     } catch (socketErr) {
       console.warn('[Socket] Failed to broadcast user_created:', socketErr.message);
@@ -529,6 +514,23 @@ router.put('/profile', async (req, res) => {
   } catch (error) {
     console.error('Error updating profile:', error);
     res.status(500).json({ success: false, error: 'Failed to update user profile' });
+  }
+});
+
+// GET: Fetch current tenant user plan quotas and active usage
+router.get('/quota-status', authenticate, async (req, res) => {
+  try {
+    const store = tenantStorage.getStore();
+    const tenantId = req.user?.tenantId || store?.tenantId;
+    if (!tenantId) {
+      return res.status(400).json({ success: false, error: 'Tenant context is required' });
+    }
+
+    const quotaStatus = await getTenantQuotaStatus(tenantId);
+    res.status(200).json({ success: true, data: quotaStatus });
+  } catch (error) {
+    console.error('Error fetching tenant quota status:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch quota status' });
   }
 });
 
@@ -941,6 +943,31 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
       }
     }
 
+    // Guard against bypassing tenant plan quota during role change or account reactivation
+    const isActivating = isActive === true && !existingUser.isActive;
+    const isChangingRole = role !== undefined && role !== existingUser.role;
+    const effectiveRole = role || existingUser.role;
+    const effectiveIsActive = isActive !== undefined ? isActive : existingUser.isActive;
+
+    if (effectiveIsActive && (isActivating || isChangingRole) && ['TEAM_LEAD', 'AGENT'].includes(effectiveRole)) {
+      try {
+        await assertCanProvisionRole({
+          tenantId: existingUser.tenantId,
+          role: effectiveRole,
+          managerId: reportsToId !== undefined ? reportsToId : existingUser.reportsToId,
+          excludeUserId: existingUser.id,
+        });
+      } catch (quotaError) {
+        return res.status(quotaError.statusCode || 403).json({
+          success: false,
+          code: quotaError.code || 'PLAN_LIMIT_REACHED',
+          title: quotaError.title || 'Unavailable with your plan',
+          error: quotaError.message,
+          quota: quotaError.quota || null,
+        });
+      }
+    }
+
     // Strict Tier-Based Hierarchy & Tenant Validation
     if (reportsToId !== undefined) {
       await validateHierarchyAssignment({
@@ -1253,6 +1280,7 @@ router.delete('/:id', authorize(['SUPER_ADMIN']), async (req, res) => {
       if (io) {
         io.to(`tenant:${tenantId}`).emit('user_deleted', { userId: targetUserId });
         io.to(`tenant:${tenantId}`).emit('hierarchy_updated', { userId: targetUserId, action: 'deleted' });
+        io.to(`tenant:${tenantId}`).emit('quota_updated', { tenantId });
       }
     } catch (socketErr) {
       console.warn('[Socket] Failed to broadcast user_deleted:', socketErr.message);

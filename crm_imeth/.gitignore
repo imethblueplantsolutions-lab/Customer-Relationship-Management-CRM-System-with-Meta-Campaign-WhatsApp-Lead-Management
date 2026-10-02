@@ -2,3 +2,4 @@ g
 node_modules
 .env
 /generated/prisma
+utils_codes
