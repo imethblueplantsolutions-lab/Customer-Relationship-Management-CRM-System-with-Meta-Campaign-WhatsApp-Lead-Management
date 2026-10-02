@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { useSocket } from "@/hooks/use-socket";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Settings, LogOut } from "lucide-react";
 import SidebarNav from "@/components/layout/SidebarNav";
 import NotificationDropdown from "@/components/layout/NotificationDropdown";
 import UserCard from "@/components/layout/UserCard";
@@ -22,6 +22,22 @@ export default function DashboardLayout({
   // State for mobile drawer and desktop collapsed sidebar
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  const roleLabel =
+    user?.role === "SUPER_ADMIN"
+      ? "Super Admin"
+      : user?.role === "ADMIN"
+      ? "Admin"
+      : user?.role === "TEAM_LEAD"
+      ? "Team Lead"
+      : "Sales Agent";
+
+  const handleLogout = () => {
+    setIsProfileOpen(false);
+    logout();
+  };
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -29,9 +45,28 @@ export default function DashboardLayout({
     }
   }, [isAuthenticated, isLoading, router]);
 
-  // Close mobile drawer on route change
+  // Close profile dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileOpen(false);
+      }
+    }
+    if (isProfileOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isProfileOpen]);
+
+  // Close mobile drawer and profile dropdown on route change
   useEffect(() => {
     setMobileOpen(false);
+    setIsProfileOpen(false);
   }, [pathname]);
 
   if (isLoading || !isAuthenticated) {
@@ -160,24 +195,72 @@ export default function DashboardLayout({
               {isConnected ? "Live" : "Offline"}
             </span>
 
-            <button
-              type="button"
-              onClick={() => router.push("/settings")}
-              className="shrink-0 cursor-pointer active:scale-95 transition-transform"
-              title="View Profile Settings"
-            >
-              {user?.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt={user.name || "Avatar"}
-                  className="h-8 w-8 rounded-lg object-cover ring-1 ring-slate-200 shadow-xs"
-                />
-              ) : (
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#0F4C75] to-[#3282B8] text-[11px] font-bold text-white shadow-xs">
-                  {user?.name ? user.name.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || "A"}
+            {/* User Profile Avatar with Dropdown Menu */}
+            <div className="relative" ref={profileMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsProfileOpen((prev) => !prev)}
+                className="shrink-0 cursor-pointer active:scale-95 transition-transform"
+                title="Account Menu"
+                aria-label="Account menu"
+                aria-expanded={isProfileOpen}
+              >
+                {user?.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={user.name || "Avatar"}
+                    className="h-8 w-8 rounded-lg object-cover ring-1 ring-slate-200 shadow-xs"
+                  />
+                ) : (
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#0F4C75] to-[#3282B8] text-[11px] font-bold text-white shadow-xs">
+                    {user?.name ? user.name.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || "A"}
+                  </div>
+                )}
+              </button>
+
+              {/* Mobile Account Popover Dropdown */}
+              {isProfileOpen && (
+                <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white p-2 shadow-xl ring-1 ring-black/5 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  {/* Header: User details & Role */}
+                  <div className="px-3 py-2.5">
+                    <p className="text-sm font-bold text-slate-800 truncate">
+                      {user?.name || "User"}
+                    </p>
+                    <p className="text-xs text-slate-500 truncate mb-1.5">
+                      {user?.email || "user@crm.com"}
+                    </p>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                      {roleLabel}
+                    </span>
+                  </div>
+
+                  <div className="my-1 border-b border-slate-100" />
+
+                  {/* Account Settings Link */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      router.push("/settings");
+                    }}
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer"
+                  >
+                    <Settings className="h-4 w-4 text-slate-400" />
+                    Account Settings
+                  </button>
+
+                  {/* Exit / Log Out Link */}
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
+                  >
+                    <LogOut className="h-4 w-4 text-red-500" />
+                    Exit / Log Out
+                  </button>
                 </div>
               )}
-            </button>
+            </div>
           </div>
         </header>
 

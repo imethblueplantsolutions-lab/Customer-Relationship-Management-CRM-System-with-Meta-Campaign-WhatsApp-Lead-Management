@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/hooks/use-auth";
 import type { User } from "@/types";
@@ -24,6 +25,7 @@ import {
   Phone,
   Upload,
   History,
+  ArrowLeft,
 } from "lucide-react";
 import ActivityFeed from "@/components/hierarchy/ActivityFeed";
 
@@ -784,6 +786,7 @@ function MetaSettingsTab() {
 // ═══════════════════════════════════════════════════════════
 export default function AccountSettingsPage() {
   const { user, updateUser, setSession, logout } = useAuth();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
 
   const isPrivileged = ["SUPER_ADMIN", "ADMIN", "TEAM_LEAD"].includes(user?.role || "");
@@ -810,6 +813,18 @@ export default function AccountSettingsPage() {
 
   return (
     <div className="max-w-6xl mx-auto pb-16">
+      {/* Mobile Contextual Back Button */}
+      <div className="md:hidden mb-4">
+        <button
+          type="button"
+          onClick={() => router.push("/dashboard")}
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 active:scale-95 transition-all shadow-xs cursor-pointer"
+        >
+          <ArrowLeft className="h-4 w-4 text-slate-500" />
+          Back to Dashboard
+        </button>
+      </div>
+
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
@@ -896,13 +911,6 @@ export default function AccountSettingsPage() {
                   </button>
                 );
               })}
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap bg-white text-red-600 border border-red-200 hover:bg-red-50 transition-all shrink-0 cursor-pointer"
-              >
-                <LogOut className="h-3.5 w-3.5" />
-                Log Out
-              </button>
             </div>
           </div>
         </nav>
