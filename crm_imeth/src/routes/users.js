@@ -215,6 +215,7 @@ router.post('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, r
         maxTeamLeads: true,
         maxAgents: true,
         createdAt: true,
+        reportsToId: true,
       },
     });
 
@@ -237,6 +238,30 @@ router.post('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, r
       await sendWelcomeEmail(cleanEmail, name, tempPassword, role);
     } catch (mailErr) {
       console.warn('[Mailer] Failed to send welcome email:', mailErr.message);
+    }
+
+    // Trigger in-app notification for assigned manager
+    if (newUser.reportsToId || reportsToId) {
+      const targetManagerId = newUser.reportsToId || reportsToId;
+      try {
+        const memberDisplayName = newUser.name || newUser.email || 'A team member';
+        const notification = await prisma.notification.create({
+          data: {
+            userId: targetManagerId,
+            type: 'TEAM_MEMBER_ASSIGNED',
+            title: 'New Team Member Assigned',
+            body: `${memberDisplayName} (${newUser.role}) has been assigned to your team.`,
+            message: `${memberDisplayName} (${newUser.role}) has been assigned to your team.`,
+            linkUrl: '/hierarchy',
+          },
+        });
+        const { io } = require('../index');
+        if (io) {
+          io.to(`user:${targetManagerId}`).emit('new_notification', notification);
+        }
+      } catch (notifErr) {
+        console.warn('[Notification] Failed to notify manager on member assignment:', notifErr.message);
+      }
     }
 
     // Socket.IO broadcast user creation
@@ -1177,6 +1202,31 @@ router.put('/:id', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req,
           newRole: updatedUser.role,
         },
       });
+    }
+
+    // Trigger in-app notification for new manager on reassignment
+    const newManagerId = updatedUser.reportsToId;
+    if (reportsToChanged && newManagerId) {
+      try {
+        const memberDisplayName = existingUser.name || updatedUser.name || existingUser.email || updatedUser.email;
+        const memberRole = existingUser.role || updatedUser.role;
+        const notification = await prisma.notification.create({
+          data: {
+            userId: newManagerId,
+            type: 'TEAM_MEMBER_ASSIGNED',
+            title: 'New Team Member Reassigned',
+            body: `${memberDisplayName} (${memberRole}) has been reassigned to your team.`,
+            message: `${memberDisplayName} (${memberRole}) has been assigned to your team.`,
+            linkUrl: '/hierarchy',
+          },
+        });
+        const { io } = require('../index');
+        if (io) {
+          io.to(`user:${newManagerId}`).emit('new_notification', notification);
+        }
+      } catch (notifErr) {
+        console.warn('[Notification] Failed to notify manager on member reassignment:', notifErr.message);
+      }
     }
 
     // Broadcast user update & account blocked socket notification
