@@ -1,1 +1,5 @@
 utils_codes
+.env
+*.env
+*.env.*
+node_modules
