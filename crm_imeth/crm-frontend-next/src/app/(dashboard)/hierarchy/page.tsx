@@ -1568,9 +1568,15 @@ export default function UserHierarchyPage() {
 
       {/* ================= MODAL: ASSIGN / CHANGE MANAGER ================= */}
       {reassignModalUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+        <div
+          onClick={() => setReassignModalUser(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md max-h-[calc(100dvh-2rem)] flex flex-col my-auto overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
+          >
+            <div className="shrink-0 flex items-center justify-between p-6 pb-4 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-2.5">
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/60 dark:text-blue-300">
                   <SlidersHorizontal className="h-4 w-4" />
@@ -1587,7 +1593,7 @@ export default function UserHierarchyPage() {
               </button>
             </div>
 
-            <div className="py-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-6 py-4 space-y-4">
               {/* Target User Info */}
               <div className="rounded-xl bg-slate-50 p-3.5 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700">
                 <span className="text-[11px] font-semibold text-slate-400 block mb-1">Target Employee</span>
@@ -1692,7 +1698,7 @@ export default function UserHierarchyPage() {
             </div>
 
             {/* Modal Actions */}
-            <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-200 dark:border-slate-800">
+            <div className="shrink-0 p-6 pt-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 mt-auto flex items-center justify-end gap-2.5">
               <button
                 type="button"
                 onClick={() => setReassignModalUser(null)}
@@ -1727,8 +1733,14 @@ export default function UserHierarchyPage() {
 
       {/* ================= MODAL: CONFIRM AUTO-LINK ================= */}
       {confirmAutoLinkOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+        <div
+          onClick={() => setConfirmAutoLinkOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto my-auto rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
+          >
             <div className="flex items-center gap-3 mb-4">
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-600 dark:bg-blue-900/60 dark:text-blue-300">
                 <Sparkles className="h-5 w-5" />
@@ -1786,8 +1798,17 @@ export default function UserHierarchyPage() {
 
       {/* ================= MODAL: CONFIRM USER DELETION ================= */}
       {isDeleteModalOpen && userToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+        <div
+          onClick={() => {
+            setIsDeleteModalOpen(false);
+            setUserToDelete(null);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto my-auto rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
+          >
             {/* Modal Header */}
             <div className="flex items-center gap-3 mb-4">
               <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-100 text-red-600 dark:bg-red-950/60 dark:text-red-400 shrink-0 border border-red-200 dark:border-red-900">
@@ -1856,10 +1877,16 @@ export default function UserHierarchyPage() {
 
       {/* ================= MODAL: ADD NEW TEAM MEMBER ================= */}
       {isAddUserModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+        <div
+          onClick={() => setIsAddUserModalOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-lg max-h-[calc(100dvh-2rem)] flex flex-col my-auto overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
+          >
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+            <div className="shrink-0 flex items-center justify-between p-6 pb-4 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 text-purple-600 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
                   <UserPlus className="h-5 w-5" />
@@ -1883,8 +1910,9 @@ export default function UserHierarchyPage() {
             </div>
 
             {/* Modal Form */}
-            <form onSubmit={handleCreateMember} className="py-4 space-y-4">
-              {/* Plan Limit Alert Banner */}
+            <form onSubmit={handleCreateMember} className="flex-1 min-h-0 flex flex-col overflow-hidden">
+              <div className="flex-1 overflow-y-auto p-6 py-4 space-y-4">
+                {/* Plan Limit Alert Banner */}
               {hierarchyPlanAlert && (
                 <PlanLimitAlert
                   title={hierarchyPlanAlert.title}
@@ -2091,8 +2119,10 @@ export default function UserHierarchyPage() {
                 </p>
               </div>
 
+              </div>
+
               {/* Modal Actions */}
-              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-200 dark:border-slate-800">
+              <div className="shrink-0 p-6 pt-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 mt-auto flex items-center justify-end gap-2.5">
                 <button
                   type="button"
                   disabled={creatingUser}
@@ -2126,63 +2156,79 @@ export default function UserHierarchyPage() {
 
       {/* ================= MODAL: TEMPORARY CREDENTIALS PREVIEW ================= */}
       {createdTempModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900 p-6 text-center space-y-4">
-            <div className="w-12 h-12 mx-auto rounded-2xl bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-300 flex items-center justify-center border border-emerald-200 dark:border-emerald-800 shadow-inner">
-              <CheckCircle2 className="h-6 w-6" />
-            </div>
-
-            <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                Member Provisioned Successfully!
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Account created for <strong>{createdTempModal.email}</strong> ({createdTempModal.role})
-              </p>
-            </div>
-
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2 text-left">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                Initial Temporary Password
-              </p>
-              <div className="flex items-center justify-between bg-white dark:bg-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 font-mono text-sm font-bold text-purple-600 dark:text-purple-400">
-                <span>{createdTempModal.tempPasswordPreview}</span>
-                <button
-                  type="button"
-                  onClick={() => copyToClipboard(createdTempModal.tempPasswordPreview)}
-                  className="p-1 text-slate-400 hover:text-purple-600 transition-colors cursor-pointer"
-                  title="Copy password"
-                >
-                  {copiedTempPass ? (
-                    <Check className="h-4 w-4 text-emerald-600" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                </button>
+        <div
+          onClick={() => setCreatedTempModal(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md max-h-[calc(100dvh-2rem)] flex flex-col my-auto overflow-hidden rounded-2xl bg-white shadow-2xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900"
+          >
+            <div className="flex-1 overflow-y-auto p-6 text-center space-y-4">
+              <div className="w-12 h-12 mx-auto rounded-2xl bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-300 flex items-center justify-center border border-emerald-200 dark:border-emerald-800 shadow-inner">
+                <CheckCircle2 className="h-6 w-6" />
               </div>
+
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                  Member Provisioned Successfully!
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Account created for <strong>{createdTempModal.email}</strong> ({createdTempModal.role})
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2 text-left">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Initial Temporary Password
+                </p>
+                <div className="flex items-center justify-between bg-white dark:bg-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 font-mono text-sm font-bold text-purple-600 dark:text-purple-400">
+                  <span>{createdTempModal.tempPasswordPreview}</span>
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(createdTempModal.tempPasswordPreview)}
+                    className="p-1 text-slate-400 hover:text-purple-600 transition-colors cursor-pointer"
+                    title="Copy password"
+                  >
+                    {copiedTempPass ? (
+                      <Check className="h-4 w-4 text-emerald-600" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                A welcome email has been dispatched with login instructions. You can also copy and provide the temporary password above directly.
+              </p>
             </div>
 
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              A welcome email has been dispatched with login instructions. You can also copy and provide the temporary password above directly.
-            </p>
-
-            <button
-              type="button"
-              onClick={() => setCreatedTempModal(null)}
-              className="w-full h-10 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-purple-600 dark:hover:bg-purple-700 text-white font-bold text-xs transition-all cursor-pointer shadow-xs"
-            >
-              Done & View Hierarchy
-            </button>
+            <div className="shrink-0 p-6 pt-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 mt-auto">
+              <button
+                type="button"
+                onClick={() => setCreatedTempModal(null)}
+                className="w-full h-10 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-purple-600 dark:hover:bg-purple-700 text-white font-bold text-xs transition-all cursor-pointer shadow-xs"
+              >
+                Done & View Hierarchy
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* ================= MODAL: BULK REASSIGN MANAGER ================= */}
       {isBulkReassignModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+        <div
+          onClick={() => setIsBulkReassignModalOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md max-h-[calc(100dvh-2rem)] flex flex-col my-auto overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
+          >
             {/* Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+            <div className="shrink-0 flex items-center justify-between p-6 pb-4 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-2.5">
                 <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/60 dark:text-blue-300">
                   <Users className="h-4.5 w-4.5" />
@@ -2204,7 +2250,7 @@ export default function UserHierarchyPage() {
               </button>
             </div>
 
-            <div className="py-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-6 py-4 space-y-4">
               {/* Mixed-Role Tier Warning Banner */}
               {isMixedRoleSelection && (
                 <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50/80 p-3.5 text-xs text-amber-800 dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-300 animate-in fade-in duration-200">
@@ -2271,7 +2317,7 @@ export default function UserHierarchyPage() {
             </div>
 
             {/* Modal Actions */}
-            <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-200 dark:border-slate-800">
+            <div className="shrink-0 p-6 pt-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 mt-auto flex items-center justify-end gap-2.5">
               <button
                 type="button"
                 disabled={bulkReassigning}
@@ -2296,8 +2342,17 @@ export default function UserHierarchyPage() {
       )}
       {/* ================= BLOCK / ACTIVATION CONFIRMATION MODAL ================= */}
       {isBlockModalOpen && userToBlock && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-5">
+        <div
+          onClick={() => {
+            setIsBlockModalOpen(false);
+            setUserToBlock(null);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto my-auto rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-5"
+          >
             <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 dark:bg-red-950/60 shrink-0">
                 <Lock className="h-5 w-5 text-red-600" />
