@@ -525,7 +525,7 @@ export default function FlowEditorContent() {
                     autoFocus
                   />
                   <p className="mt-1.5 text-[11px] text-slate-500 leading-normal">
-                    If the customer's reply matches this text, the flow branches out through the 🟢 <strong>Green (Yes)</strong> handle. Otherwise, it routes through the 🔴 <strong>Red (No)</strong> handle.
+                    If the customer&apos;s reply matches this text, the flow branches out through the 🟢 <strong>Green (Yes)</strong> handle. Otherwise, it routes through the 🔴 <strong>Red (No)</strong> handle.
                   </p>
                 </div>
               </div>
@@ -548,7 +548,7 @@ export default function FlowEditorContent() {
                     autoFocus
                   />
                   <p className="mt-1.5 text-[11px] text-slate-500 leading-normal">
-                    This message will be sent automatically to the customer's WhatsApp chat.
+                    This message will be sent automatically to the customer&apos;s WhatsApp chat.
                   </p>
                 </div>
               </div>

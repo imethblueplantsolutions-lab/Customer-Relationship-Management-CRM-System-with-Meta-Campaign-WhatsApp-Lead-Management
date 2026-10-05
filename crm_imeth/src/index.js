@@ -21,8 +21,10 @@ const ALLOWED_ORIGINS = [
   process.env.FRONTEND_URL || 'https://customer-relationship-management-cr-eight.vercel.app',
   'https://customer-relationship-management-crm-system-with-ojf1z9i48.vercel.app', // legacy preview URL
   'http://localhost:3000',
+  'http://localhost:3001',
   'http://localhost:4000',
   'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001',
 ];
 
 function corsOriginHandler(origin, callback) {
@@ -138,10 +140,10 @@ app.use(cors({
   credentials: true,
 }));
 
-// Global Rate Limiter: 100 requests per 15 minutes on all /api/* routes (DDoS mitigation)
+// Global Rate Limiter: 1000 requests per 15 minutes on all /api/* routes (DDoS mitigation & burst-safe)
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 1000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: 'Too many requests. Please try again later.' },

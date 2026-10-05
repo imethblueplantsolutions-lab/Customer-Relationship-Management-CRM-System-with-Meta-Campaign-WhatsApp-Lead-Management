@@ -23,6 +23,7 @@ const extractTenantMiddleware = (req, res, next) => {
       }
     } catch (err) {
       console.warn('[Tenant Middleware] Invalid or expired JWT token:', err.message);
+      return res.status(401).json({ success: false, error: 'Invalid or expired authentication token. Please log in again.' });
     }
   }
 

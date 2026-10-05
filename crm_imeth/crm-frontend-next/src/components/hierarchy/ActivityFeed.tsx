@@ -36,6 +36,41 @@ interface ActivityFeedProps {
   subtitle?: string;
 }
 
+function formatTimestamp(dateStr: string) {
+  try {
+    const date = new Date(dateStr);
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+      hour12: true,
+    }).format(date);
+  } catch {
+    return dateStr;
+  }
+}
+
+function getRelativeTime(dateStr: string) {
+  try {
+    const now = Date.now();
+    const past = new Date(dateStr).getTime();
+    const diffMs = now - past;
+    const diffSec = Math.floor(diffMs / 1000);
+    if (diffSec < 60) return "Just now";
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return `${diffHr}h ago`;
+    const diffDays = Math.floor(diffHr / 24);
+    return `${diffDays}d ago`;
+  } catch {
+    return "";
+  }
+}
+
 export function ActivityFeed({ users = [], title = "Enterprise Audit Trail", subtitle = "Immutable record of organization hierarchy, user provisioning, and role modifications" }: ActivityFeedProps) {
   const { socket } = useSocket();
   const [logs, setLogs] = useState<AuditLog[]>([]);
@@ -170,40 +205,7 @@ export function ActivityFeed({ users = [], title = "Enterprise Audit Trail", sub
     }
   };
 
-  const formatTimestamp = (dateStr: string) => {
-    try {
-      const date = new Date(dateStr);
-      return new Intl.DateTimeFormat("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-        hour: "numeric",
-        minute: "numeric",
-        second: "numeric",
-        hour12: true,
-      }).format(date);
-    } catch {
-      return dateStr;
-    }
-  };
 
-  const getRelativeTime = (dateStr: string) => {
-    try {
-      const now = Date.now();
-      const past = new Date(dateStr).getTime();
-      const diffMs = now - past;
-      const diffSec = Math.floor(diffMs / 1000);
-      if (diffSec < 60) return "Just now";
-      const diffMin = Math.floor(diffSec / 60);
-      if (diffMin < 60) return `${diffMin}m ago`;
-      const diffHr = Math.floor(diffMin / 60);
-      if (diffHr < 24) return `${diffHr}h ago`;
-      const diffDays = Math.floor(diffHr / 24);
-      return `${diffDays}d ago`;
-    } catch {
-      return "";
-    }
-  };
 
   return (
     <div className="space-y-6">
