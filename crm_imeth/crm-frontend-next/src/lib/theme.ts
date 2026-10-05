@@ -374,7 +374,15 @@ export function applyTheme(themeId: ThemeId, userId?: string | null): void {
   root.setAttribute("data-theme", theme.id);
   root.setAttribute("data-theme-mode", theme.category);
 
-  // Apply semantic tokens
+  // Apply dynamic semantic brand tokens
+  root.style.setProperty("--brand-primary", theme.colors.primary);
+  root.style.setProperty("--brand-accent", theme.colors.accent);
+  root.style.setProperty("--brand-muted", theme.colors.textSecondary);
+  root.style.setProperty("--brand-surface", theme.colors.surface);
+  root.style.setProperty("--brand-bg", theme.colors.background);
+  root.style.setProperty("--brand-text", theme.colors.textPrimary);
+
+  // Apply legacy semantic tokens for backward compatibility
   root.style.setProperty("--color-bg", theme.colors.background);
   root.style.setProperty("--color-bg-card", theme.colors.surface);
   root.style.setProperty("--color-bg-sidebar", theme.colors.sidebar);

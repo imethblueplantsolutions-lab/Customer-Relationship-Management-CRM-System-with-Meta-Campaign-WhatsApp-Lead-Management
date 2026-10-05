@@ -1,7 +1,24 @@
 @import "tailwindcss";
 
+@theme {
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-muted: var(--brand-muted);
+  --color-brand-surface: var(--brand-surface);
+  --color-brand-bg: var(--brand-bg);
+  --color-brand-text: var(--brand-text);
+}
+
 :root {
-  /* Theme Palette: #1B262C, #0F4C75, #3282B8, #BBE1FA */
+  /* Dynamic Semantic Brand Tokens */
+  --brand-primary: #2563EB;
+  --brand-accent: #1D4ED8;
+  --brand-muted: #64748b;
+  --brand-surface: #ffffff;
+  --brand-bg: #f8fafc;
+  --brand-text: #0f172a;
+
+  /* WhatsApp Palette Tokens */
   --wa-dark-teal: #1B262C;
   --wa-teal: #3282B8;
   --wa-green: #0F4C75;
@@ -9,16 +26,116 @@
   --wa-cream: #f0f7fc;
   --wa-chat-bg: #e2f1fd;
 
-  /* Semantic tokens */
-  --color-bg: #f8fafc;
+  /* Legacy Semantic Token Aliases */
+  --color-bg: var(--brand-bg);
   --color-bg-gradient: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 50%, #EEF2F6 100%);
-  --color-bg-card: #ffffff;
+  --color-bg-card: var(--brand-surface);
   --color-bg-sidebar: #1B262C;
-  --color-text: #1B262C;
-  --color-text-muted: #64748b;
+  --color-text: var(--brand-text);
+  --color-text-muted: var(--brand-muted);
   --color-border: #e2e8f0;
-  --color-primary: #2563EB;
-  --color-primary-hover: #1D4ED8;
+  --color-primary: var(--brand-primary);
+  --color-primary-hover: var(--brand-accent);
+}
+
+/* ─── 10 Theme CSS Variable Mappings ─── */
+[data-theme="graphite"] {
+  --brand-primary: #ebedf1;
+  --brand-accent: #ffffff;
+  --brand-muted: #acadb1;
+  --brand-surface: #353536;
+  --brand-bg: #080808;
+  --brand-text: #ebedf1;
+}
+
+[data-theme="ocean-blue"] {
+  --brand-primary: #0149f9;
+  --brand-accent: #2665f9;
+  --brand-muted: #475569;
+  --brand-surface: #ffffff;
+  --brand-bg: #fdfdfd;
+  --brand-text: #0f172a;
+}
+
+[data-theme="coral-charcoal"] {
+  --brand-primary: #f87941;
+  --brand-accent: #f9b095;
+  --brand-muted: #acadb1;
+  --brand-surface: #3a3c42;
+  --brand-bg: #2f3035;
+  --brand-text: #fdfcfc;
+}
+
+[data-theme="midnight-slate"] {
+  --brand-primary: #958f9e;
+  --brand-accent: #b3adc2;
+  --brand-muted: #665f5f;
+  --brand-surface: #1e1e1f;
+  --brand-bg: #0b0b0b;
+  --brand-text: #cdd0dc;
+}
+
+[data-theme="sage-green"] {
+  --brand-primary: #476e66;
+  --brand-accent: #708a83;
+  --brand-muted: #52605d;
+  --brand-surface: #ffffff;
+  --brand-bg: #fefefe;
+  --brand-text: #1c2a27;
+}
+
+[data-theme="cyber-neon"] {
+  --brand-primary: #8b5cf6;
+  --brand-accent: #d946ef;
+  --brand-muted: #71717a;
+  --brand-surface: #18181b;
+  --brand-bg: #09090b;
+  --brand-text: #fafafa;
+}
+
+[data-theme="arctic-frost"] {
+  --brand-primary: #0f172a;
+  --brand-accent: #334155;
+  --brand-muted: #64748b;
+  --brand-surface: #f8fafc;
+  --brand-bg: #ffffff;
+  --brand-text: #020617;
+}
+
+[data-theme="emerald-mint"] {
+  --brand-primary: #10b981;
+  --brand-accent: #059669;
+  --brand-muted: #4b5563;
+  --brand-surface: #ffffff;
+  --brand-bg: #f0fdf4;
+  --brand-text: #064e3b;
+}
+
+[data-theme="crimson-sunset"] {
+  --brand-primary: #e11d48;
+  --brand-accent: #be123c;
+  --brand-muted: #6b7280;
+  --brand-surface: #ffffff;
+  --brand-bg: #fef2f2;
+  --brand-text: #4c0519;
+}
+
+[data-theme="obsidian-gold"] {
+  --brand-primary: #d4af37;
+  --brand-accent: #f3e5ab;
+  --brand-muted: #888888;
+  --brand-surface: #1f1f1f;
+  --brand-bg: #111111;
+  --brand-text: #fdfdfd;
+}
+
+[data-theme="default-crm"] {
+  --brand-primary: #2563EB;
+  --brand-accent: #1D4ED8;
+  --brand-muted: #64748b;
+  --brand-surface: #ffffff;
+  --brand-bg: #f8fafc;
+  --brand-text: #0f172a;
 }
 
 .text-fluid-nav {
