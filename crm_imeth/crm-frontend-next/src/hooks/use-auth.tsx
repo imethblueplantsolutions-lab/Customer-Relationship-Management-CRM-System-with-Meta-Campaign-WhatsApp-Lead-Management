@@ -5,6 +5,7 @@ import { apiClient } from "@/lib/api-client";
 import { useSocket } from "@/hooks/use-socket";
 import { toast } from "sonner";
 import type { User } from "@/types";
+import { applyTheme } from "@/lib/theme";
 
 export interface LoginResult {
   requireOtp?: boolean;
@@ -33,7 +34,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { socket } = useSocket();
 
   const logout = useCallback(() => {
-    localStorage.clear();
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    applyTheme("default-crm", null);
     setToken(null);
     setUser(null);
     window.location.href = "/login";

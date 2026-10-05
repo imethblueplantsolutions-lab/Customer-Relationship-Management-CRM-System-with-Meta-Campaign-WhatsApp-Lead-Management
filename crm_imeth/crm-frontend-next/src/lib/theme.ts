@@ -180,15 +180,39 @@ export const THEMES: ThemeConfig[] = [
   },
 ];
 
-export const THEME_STORAGE_KEY = "crm_active_theme";
+/**
+ * Helper to get the user-scoped storage key
+ */
+export function getThemeStorageKey(userId?: string | null): string {
+  if (userId) {
+    return `crm_theme_${userId}`;
+  }
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem("user");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed?.id) {
+          return `crm_theme_${parsed.id}`;
+        }
+      }
+    } catch {
+      // Ignore
+    }
+  }
+  return "crm_theme_default";
+}
 
 /**
- * Returns the currently active theme from localStorage or default
+ * Returns the currently active theme strictly for the specified user.
+ * If user has no saved theme, defaults to 'default-crm'.
+ * Never returns another user's theme!
  */
-export function getActiveThemeId(): ThemeId {
+export function getActiveThemeId(userId?: string | null): ThemeId {
   if (typeof window === "undefined") return "default-crm";
   try {
-    const saved = localStorage.getItem(THEME_STORAGE_KEY) as ThemeId;
+    const key = getThemeStorageKey(userId);
+    const saved = localStorage.getItem(key) as ThemeId;
     if (saved && THEMES.some((t) => t.id === saved)) {
       return saved;
     }
@@ -203,16 +227,21 @@ export function getThemeById(id: string): ThemeConfig {
 }
 
 /**
- * Applies the CSS variables to document.documentElement
+ * Applies the CSS variables to document.documentElement and saves strictly to this user's storage key.
  */
-export function applyTheme(themeId: ThemeId): void {
+export function applyTheme(themeId: ThemeId, userId?: string | null): void {
   if (typeof window === "undefined") return;
 
   const theme = getThemeById(themeId);
   const root = document.documentElement;
 
   try {
-    localStorage.setItem(THEME_STORAGE_KEY, themeId);
+    const key = getThemeStorageKey(userId);
+    if (key !== "crm_theme_default") {
+      localStorage.setItem(key, themeId);
+    }
+    // Remove deprecated global key to prevent cross-account leakage
+    localStorage.removeItem("crm_active_theme");
   } catch {
     // Ignore
   }
@@ -232,6 +261,6 @@ export function applyTheme(themeId: ThemeId): void {
 
   // Dispatch custom event for real-time listener updates
   window.dispatchEvent(
-    new CustomEvent("crm-theme-changed", { detail: { themeId, theme } })
+    new CustomEvent("crm-theme-changed", { detail: { themeId, theme, userId } })
   );
 }
