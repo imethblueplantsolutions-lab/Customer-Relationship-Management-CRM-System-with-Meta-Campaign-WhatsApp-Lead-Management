@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { LogOut } from "lucide-react";
 import type { User as UserType } from "@/types";
 
@@ -25,34 +26,40 @@ export default function UserCard({ user, isCollapsed, onLogout }: UserCardProps)
 
   return (
     <div
-      className={`flex items-center gap-4 rounded-xl bg-white/5 p-3 ${
+      className={`flex items-center gap-3 rounded-xl bg-white/5 p-2.5 transition-colors hover:bg-white/10 ${
         isCollapsed ? "justify-center flex-col gap-4" : ""
       }`}
     >
-      {user?.avatar ? (
-        <img
-          src={user.avatar}
-          alt={user.name || "Avatar"}
-          className="h-9 w-9 shrink-0 rounded-xl object-cover shadow-sm"
-        />
-      ) : (
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#0F4C75] to-[#3282B8] text-xs font-bold text-white shadow-sm">
-          {userInitial}
-        </div>
-      )}
-      {!isCollapsed && (
-        <div className="flex-1 min-w-0">
-          <p className="truncate text-fluid-title font-semibold text-white leading-tight">
-            {user?.name || user?.email || "admin@crm.com"}
-          </p>
-          <p className="text-fluid-meta text-slate-400 truncate">
-            {roleLabel}
-            {user?.name && (
-              <span className="text-[10px] text-slate-500 block truncate">{user.email}</span>
-            )}
-          </p>
-        </div>
-      )}
+      <Link
+        href="/settings"
+        className="flex items-center gap-3 min-w-0 flex-1 group cursor-pointer"
+        title="Account Settings & Theme Options"
+      >
+        {user?.avatar ? (
+          <img
+            src={user.avatar}
+            alt={user.name || "Avatar"}
+            className="h-9 w-9 shrink-0 rounded-xl object-cover shadow-sm group-hover:ring-2 group-hover:ring-blue-400/50 transition-all"
+          />
+        ) : (
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#0F4C75] to-[#3282B8] text-xs font-bold text-white shadow-sm group-hover:ring-2 group-hover:ring-blue-400/50 transition-all">
+            {userInitial}
+          </div>
+        )}
+        {!isCollapsed && (
+          <div className="flex-1 min-w-0">
+            <p className="truncate text-fluid-title font-semibold text-white leading-tight group-hover:text-blue-200 transition-colors">
+              {user?.name || user?.email || "admin@crm.com"}
+            </p>
+            <p className="text-fluid-meta text-slate-400 truncate">
+              {roleLabel}
+              {user?.name && (
+                <span className="text-[10px] text-slate-500 block truncate">{user.email}</span>
+              )}
+            </p>
+          </div>
+        )}
+      </Link>
       <button
         onClick={onLogout}
         className="rounded-lg p-2 text-slate-400 hover:bg-red-500/20 hover:text-red-400 transition-colors cursor-pointer"
