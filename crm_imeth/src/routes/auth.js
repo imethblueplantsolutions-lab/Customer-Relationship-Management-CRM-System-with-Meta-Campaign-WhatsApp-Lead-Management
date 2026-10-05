@@ -745,6 +745,30 @@ router.post('/seed', async (req, res) => {
       },
     });
 
+    // OTP Test User: isFirstLogin=true triggers full OTP flow
+    // Email = Resend-registered Gmail so OTP email actually arrives in inbox
+    const otpTestPassword = await bcrypt.hash('Test@1234', 10);
+    const otpTestUser = await prisma.user.upsert({
+      where: { email: 'imethblueplantsolutions@gmail.com' },
+      update: {
+        password: otpTestPassword,
+        tenantId: tenant.id,
+        role: 'ADMIN',
+        isActive: true,
+        isFirstLogin: true,
+        name: 'OTP Test Admin',
+      },
+      create: {
+        email: 'imethblueplantsolutions@gmail.com',
+        name: 'OTP Test Admin',
+        password: otpTestPassword,
+        role: 'ADMIN',
+        tenantId: tenant.id,
+        isActive: true,
+        isFirstLogin: true,
+      },
+    });
+
     res.status(201).json({
       success: true,
       message: 'Super Admin, Admin, Team Lead, and Sales Agent seeded successfully',
