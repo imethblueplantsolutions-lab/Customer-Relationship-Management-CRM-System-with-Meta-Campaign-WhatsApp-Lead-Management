@@ -175,6 +175,7 @@ export const THEMES: ThemeConfig[] = [
       { label: "Brand Navy", hex: "#0F4C75" },
       { label: "Accent Blue", hex: "#3282B8" },
       { label: "Light Blue", hex: "#BBE1FA" },
+      { label: "Surface Light", hex: "#F8FAFC" },
     ],
   },
 ];
