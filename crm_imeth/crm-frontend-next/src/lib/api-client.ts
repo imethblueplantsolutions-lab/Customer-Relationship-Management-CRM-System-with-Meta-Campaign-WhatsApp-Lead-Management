@@ -65,7 +65,12 @@ export async function apiClient<T = unknown>(
     headers,
   });
 
-  if (response.status === 401) {
+  // Only redirect to /login on 401 if it's a protected session endpoint (not /auth/* endpoints like login/register)
+  // and the user is not already on the login page
+  const isAuthEndpoint = cleanEndpoint.startsWith('/auth/');
+  const isAlreadyOnLoginPage = typeof window !== 'undefined' && window.location.pathname === '/login';
+
+  if (response.status === 401 && !isAuthEndpoint && !isAlreadyOnLoginPage) {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token');
       localStorage.removeItem('tenantId');
