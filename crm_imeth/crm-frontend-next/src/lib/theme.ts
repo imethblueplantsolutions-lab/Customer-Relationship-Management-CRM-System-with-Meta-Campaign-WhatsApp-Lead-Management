@@ -4,6 +4,11 @@ export type ThemeId =
   | "coral-charcoal"
   | "midnight-slate"
   | "sage-green"
+  | "cyber-neon"
+  | "arctic-frost"
+  | "emerald-mint"
+  | "crimson-sunset"
+  | "obsidian-gold"
   | "default-crm";
 
 export interface ColorSwatch {
@@ -152,6 +157,126 @@ export const THEMES: ThemeConfig[] = [
       { label: "Surface (Soft)", hex: "#dfdfe2" },
       { label: "Background (Light)", hex: "#f4f4f4" },
       { label: "Background (Pure)", hex: "#fefefe" },
+    ],
+  },
+  {
+    id: "cyber-neon",
+    name: "Cyber Neon",
+    category: "dark",
+    tagline: "Modern Dark Mode",
+    description: "Futuristic dark theme with neon violet accents and electric magenta highlights.",
+    colors: {
+      background: "#09090b",
+      surface: "#18181b",
+      border: "#3f3f46",
+      textPrimary: "#fafafa",
+      textSecondary: "#a1a1aa",
+      primary: "#8b5cf6",
+      accent: "#d946ef",
+      sidebar: "#101014",
+    },
+    swatches: [
+      { label: "Background (Deep)", hex: "#09090b" },
+      { label: "Surface / Card", hex: "#18181b" },
+      { label: "Primary (Brand)", hex: "#8b5cf6" },
+      { label: "Accent (Vibrant)", hex: "#d946ef" },
+      { label: "Border / Muted", hex: "#3f3f46" },
+    ],
+  },
+  {
+    id: "arctic-frost",
+    name: "Arctic Frost",
+    category: "light",
+    tagline: "Ultra-Minimalist Light",
+    description: "Pure alabaster clean canvas with dark slate text and refined frost-blue borders.",
+    colors: {
+      background: "#ffffff",
+      surface: "#f8fafc",
+      border: "#e2e8f0",
+      textPrimary: "#020617",
+      textSecondary: "#64748b",
+      primary: "#0f172a",
+      accent: "#334155",
+      sidebar: "#0f172a",
+    },
+    swatches: [
+      { label: "Background (Pure)", hex: "#ffffff" },
+      { label: "Surface / Card", hex: "#f8fafc" },
+      { label: "Primary (Brand)", hex: "#0f172a" },
+      { label: "Accent / Hover", hex: "#334155" },
+      { label: "Border / Muted", hex: "#e2e8f0" },
+    ],
+  },
+  {
+    id: "emerald-mint",
+    name: "Emerald Mint",
+    category: "light",
+    tagline: "Finance / Growth",
+    description: "Crisp mint-tinted workspace designed for fintech clarity and high-growth sales.",
+    colors: {
+      background: "#f0fdf4",
+      surface: "#ffffff",
+      border: "#bbf7d0",
+      textPrimary: "#064e3b",
+      textSecondary: "#047857",
+      primary: "#10b981",
+      accent: "#059669",
+      sidebar: "#064e3b",
+    },
+    swatches: [
+      { label: "Background (Light)", hex: "#f0fdf4" },
+      { label: "Surface / Card", hex: "#ffffff" },
+      { label: "Primary (Brand)", hex: "#10b981" },
+      { label: "Accent / Hover", hex: "#059669" },
+      { label: "Border / Muted", hex: "#bbf7d0" },
+    ],
+  },
+  {
+    id: "crimson-sunset",
+    name: "Crimson Sunset",
+    category: "light",
+    tagline: "Bold & Energetic",
+    description: "High-energy rose and ruby tones with soft warm surfaces for active lead conversions.",
+    colors: {
+      background: "#fef2f2",
+      surface: "#ffffff",
+      border: "#fecdd3",
+      textPrimary: "#4c0519",
+      textSecondary: "#9f1239",
+      primary: "#e11d48",
+      accent: "#be123c",
+      sidebar: "#4c0519",
+    },
+    swatches: [
+      { label: "Background (Warm)", hex: "#fef2f2" },
+      { label: "Surface / Card", hex: "#ffffff" },
+      { label: "Primary (Brand)", hex: "#e11d48" },
+      { label: "Accent / Hover", hex: "#be123c" },
+      { label: "Border / Muted", hex: "#fecdd3" },
+    ],
+  },
+  {
+    id: "obsidian-gold",
+    name: "Obsidian Gold",
+    category: "dark",
+    tagline: "Executive / Luxury Dark",
+    description: "Refined charcoal-black aesthetic embellished with warm metallic gold accents.",
+    colors: {
+      background: "#111111",
+      surface: "#1f1f1f",
+      border: "#333333",
+      textPrimary: "#f5f5f5",
+      textSecondary: "#a3a3a3",
+      primary: "#d4af37",
+      accent: "#f3e5ab",
+      sidebar: "#181818",
+    },
+    swatches: [
+      { label: "Background (Deep)", hex: "#111111" },
+      { label: "Surface / Card", hex: "#1f1f1f" },
+      { label: "Primary (Gold)", hex: "#d4af37" },
+      { label: "Accent (Soft)", hex: "#f3e5ab" },
+      { label: "Border / Muted", hex: "#333333" },
     ],
   },
   {
