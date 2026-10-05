@@ -61,7 +61,7 @@ async function sendOtpEmail(email, otpCode, title = 'Security Verification Code'
   // 1. Prioritize Resend HTTPS API if configured (bypasses all cloud SMTP port restrictions)
   if (process.env.RESEND_API_KEY) {
     try {
-      await axios.post('https://api.resend.com/emails', {
+      const resendResponse = await axios.post('https://api.resend.com/emails', {
         from: `${process.env.EMAIL_FROM_NAME || 'MyCRM Security'} <${process.env.RESEND_FROM || 'onboarding@resend.dev'}>`,
         to: [email],
         subject,
@@ -70,13 +70,30 @@ async function sendOtpEmail(email, otpCode, title = 'Security Verification Code'
         headers: {
           Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
           'Content-Type': 'application/json',
-        }
+        },
+        timeout: 8000, // 8 second timeout to prevent Railway worker thread hanging
       });
-      console.log(`[Mailer - Resend API] OTP email successfully sent to ${email}`);
+      console.log(`[Mailer - Resend API] OTP email successfully sent to ${email} (id: ${resendResponse.data?.id})`);
       return;
     } catch (err) {
-      console.error(`[Mailer Error - Resend] Failed to send OTP to ${email}:`, err.response?.data || err.message);
-      throw new Error(`Email delivery failed via Resend API: ${err.response?.data?.message || err.message}`);
+      const status = err.response?.status;
+      const resendError = err.response?.data;
+      let friendlyError = err.message;
+
+      if (status === 401) {
+        friendlyError = 'RESEND_API_KEY is invalid or expired. Check Railway environment variables.';
+      } else if (status === 403) {
+        friendlyError = `Resend rejected recipient "${email}". When using onboarding@resend.dev, you may only send to your Resend-registered email. Verify a custom domain at resend.com/domains.`;
+      } else if (status === 422) {
+        friendlyError = `Resend validation error: ${resendError?.message}. Check RESEND_FROM sender address.`;
+      } else if (status === 429) {
+        friendlyError = 'Resend rate limit exceeded. Reduce OTP dispatch frequency.';
+      } else if (resendError?.message) {
+        friendlyError = resendError.message;
+      }
+
+      console.error(`[Mailer Error - Resend] HTTP ${status || 'N/A'} - ${friendlyError}`);
+      throw new Error(`Email delivery failed via Resend API: ${friendlyError}`);
     }
   }
 

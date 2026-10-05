@@ -51,7 +51,13 @@ router.post('/login', async (req, res) => {
       // Send OTP via Mailer
       await sendOtpEmail(user.email, otpCode, 'First-Time Account Login Verification');
 
-      const otpPreview = !process.env.EMAIL_USER ? otpCode : undefined;
+      // SECURITY: Only expose otpPreview in fully offline local dev (no cloud env, no email provider)
+      const isDevOffline =
+        process.env.NODE_ENV !== 'production' &&
+        !process.env.RAILWAY_ENVIRONMENT &&
+        !process.env.RESEND_API_KEY &&
+        !process.env.EMAIL_USER;
+      const otpPreview = isDevOffline ? otpCode : undefined;
 
       return res.status(200).json({
         success: true,
@@ -356,7 +362,13 @@ router.post('/resend-otp', async (req, res) => {
 
     await sendOtpEmail(cleanEmail, otpCode, 'Resent Security Verification Code');
 
-    const otpPreview = !process.env.EMAIL_USER ? otpCode : undefined;
+    // SECURITY: Only expose otpPreview in fully offline local dev (no cloud env, no email provider)
+    const isDevOffline =
+      process.env.NODE_ENV !== 'production' &&
+      !process.env.RAILWAY_ENVIRONMENT &&
+      !process.env.RESEND_API_KEY &&
+      !process.env.EMAIL_USER;
+    const otpPreview = isDevOffline ? otpCode : undefined;
 
     res.status(200).json({
       success: true,

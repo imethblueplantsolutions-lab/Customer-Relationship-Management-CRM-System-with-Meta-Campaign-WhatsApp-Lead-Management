@@ -45,6 +45,10 @@ export default function OtpLoginModal({
   const [resendCooldown, setResendCooldown] = useState(0);
   const [currentOtpPreview, setCurrentOtpPreview] = useState<string | undefined>(otpPreview);
 
+  // Only show Dev OTP autofill badge in local development, never on Vercel or any cloud host
+  const isLocalhost = typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
   useEffect(() => {
     if (otpPreview) {
       setCurrentOtpPreview(otpPreview);
@@ -241,8 +245,8 @@ export default function OtpLoginModal({
             )}
           </div>
 
-          {/* Dev Mode OTP Banner (When SMTP is not configured) */}
-          {currentOtpPreview && (
+          {/* Dev Mode OTP Banner (Local development only - never shown on cloud/Vercel) */}
+          {currentOtpPreview && isLocalhost && (
             <div
               onClick={() => handleAutofillDevOtp(currentOtpPreview)}
               className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-center cursor-pointer hover:bg-amber-100 transition-colors shadow-xs"
