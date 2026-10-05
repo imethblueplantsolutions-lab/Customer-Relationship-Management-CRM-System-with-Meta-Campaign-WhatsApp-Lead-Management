@@ -914,9 +914,8 @@ export default function AccountSettingsPage() {
     {
       id: "theme",
       label: "Theme Options",
-      description: "5 Curated Color Themes",
+      description: "Color schemes & styling",
       icon: Palette,
-      badge: "5 Themes",
       allowed: true,
     },
     {
