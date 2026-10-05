@@ -165,3 +165,105 @@ td {
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
+
+/* =========================================================
+   DYNAMIC THEME CONTRAST & TYPOGRAPHY ENGINE
+   ========================================================= */
+
+/* Dark Category Theme: Headings, text, cards & form controls */
+[data-theme-mode="dark"] {
+  color-scheme: dark;
+}
+
+[data-theme-mode="dark"] body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* Headings in Dark Mode must be crisp, high-contrast light/white */
+[data-theme-mode="dark"] h1,
+[data-theme-mode="dark"] h2,
+[data-theme-mode="dark"] h3,
+[data-theme-mode="dark"] h4,
+[data-theme-mode="dark"] h5,
+[data-theme-mode="dark"] h6 {
+  color: var(--color-text, #fafafa) !important;
+}
+
+/* Common text utilities mapped to theme tokens in Dark Mode */
+[data-theme-mode="dark"] .text-slate-900,
+[data-theme-mode="dark"] .text-slate-800,
+[data-theme-mode="dark"] .text-slate-700 {
+  color: var(--color-text, #fafafa) !important;
+}
+
+[data-theme-mode="dark"] .text-slate-600,
+[data-theme-mode="dark"] .text-slate-500 {
+  color: var(--color-text-muted, #a1a1aa) !important;
+}
+
+/* Card surfaces & panels in Dark Mode */
+[data-theme-mode="dark"] .bg-white {
+  background-color: var(--color-bg-card, #18181b) !important;
+}
+
+[data-theme-mode="dark"] .bg-slate-50,
+[data-theme-mode="dark"] .bg-slate-50\/50,
+[data-theme-mode="dark"] .bg-slate-50\/60,
+[data-theme-mode="dark"] .bg-slate-100 {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+[data-theme-mode="dark"] .bg-slate-200\/90 {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+[data-theme-mode="dark"] .border-slate-200,
+[data-theme-mode="dark"] .border-slate-200\/80,
+[data-theme-mode="dark"] .border-slate-200\/60,
+[data-theme-mode="dark"] .border-slate-100 {
+  border-color: var(--color-border, #27272a) !important;
+}
+
+/* Form inputs & textareas in Dark Mode */
+[data-theme-mode="dark"] input:not([type="checkbox"]):not([type="radio"]),
+[data-theme-mode="dark"] textarea,
+[data-theme-mode="dark"] select {
+  background-color: var(--color-bg-card, #18181b) !important;
+  color: var(--color-text, #fafafa) !important;
+  border-color: var(--color-border, #3f3f46) !important;
+}
+
+[data-theme-mode="dark"] input::placeholder,
+[data-theme-mode="dark"] textarea::placeholder {
+  color: var(--color-text-muted, #71717a) !important;
+}
+
+/* Light Category Theme: Ensure headings are crisp dark slate */
+[data-theme-mode="light"] {
+  color-scheme: light;
+}
+
+[data-theme-mode="light"] body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+[data-theme-mode="light"] h1,
+[data-theme-mode="light"] h2,
+[data-theme-mode="light"] h3,
+[data-theme-mode="light"] h4,
+[data-theme-mode="light"] h5,
+[data-theme-mode="light"] h6 {
+  color: var(--color-text, #0f172a);
+}
+
+[data-theme-mode="light"] .text-slate-900,
+[data-theme-mode="light"] .text-slate-800 {
+  color: var(--color-text, #0f172a);
+}
+
+[data-theme-mode="light"] .text-slate-600,
+[data-theme-mode="light"] .text-slate-500 {
+  color: var(--color-text-muted, #475569);
+}
