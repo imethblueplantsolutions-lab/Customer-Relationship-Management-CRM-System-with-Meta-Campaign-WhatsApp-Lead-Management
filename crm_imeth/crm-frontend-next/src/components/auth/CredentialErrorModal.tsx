@@ -18,14 +18,22 @@ export default function CredentialErrorModal({
   message = "The email and password you entered did not match our records. Please double-check and try again.",
 }: CredentialErrorModalProps) {
   const okButtonRef = useRef<HTMLButtonElement>(null);
+  const openTimestampRef = useRef<number>(0);
 
   useEffect(() => {
     if (!isOpen) return;
 
-    // Focus OK button for quick keyboard navigation
-    okButtonRef.current?.focus();
+    openTimestampRef.current = Date.now();
+
+    // Delay focusing the button to prevent the form submission 'Enter' key from immediately activating it
+    const timer = setTimeout(() => {
+      okButtonRef.current?.focus();
+    }, 350);
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore any keystrokes during the first 350ms to prevent enter-key bleed from form submit
+      if (Date.now() - openTimestampRef.current < 350) return;
+
       if (e.key === "Escape") {
         e.preventDefault();
         onClose();
@@ -40,17 +48,27 @@ export default function CredentialErrorModal({
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [isOpen, onClose, onConfirm]);
 
   if (!isOpen) return null;
 
   const handleConfirm = () => {
+    // Prevent accidental double clicks right as modal mounts
+    if (Date.now() - openTimestampRef.current < 250) return;
     if (onConfirm) {
       onConfirm();
     } else {
       onClose();
     }
+  };
+
+  const handleCancel = () => {
+    if (Date.now() - openTimestampRef.current < 250) return;
+    onClose();
   };
 
   return (
@@ -60,7 +78,8 @@ export default function CredentialErrorModal({
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4 transition-opacity duration-150 animate-in fade-in"
-      onClick={onClose}
+      // Intentionally no onClick={onClose} here: mimics native iOS alert dialog behavior
+      // and prevents stray clicks or pointerup events from dismissing the modal instantly
     >
       <div
         className="w-full max-w-[280px] sm:max-w-[295px] rounded-2xl bg-white dark:bg-slate-800 shadow-2xl border border-slate-100 dark:border-slate-700/60 overflow-hidden text-center transition-all transform scale-100 animate-in zoom-in-95 duration-150"
@@ -86,7 +105,7 @@ export default function CredentialErrorModal({
         <div className="grid grid-cols-2 border-t border-slate-200/90 dark:border-slate-700">
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleCancel}
             className="py-3 text-[15px] font-normal text-[#007AFF] dark:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 active:bg-slate-100 dark:active:bg-slate-700 transition-colors border-r border-slate-200/90 dark:border-slate-700 cursor-pointer focus:outline-hidden"
           >
             Cancel

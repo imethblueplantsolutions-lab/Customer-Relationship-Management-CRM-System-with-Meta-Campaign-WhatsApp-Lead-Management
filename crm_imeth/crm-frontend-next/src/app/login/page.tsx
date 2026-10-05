@@ -73,6 +73,8 @@ export default function LoginPage() {
   const [hasAuthError, setHasAuthError] = useState(false);
   const emailInputRef = useRef<HTMLInputElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
+  const lastAttemptedEmailRef = useRef("");
+  const lastAttemptedPasswordRef = useRef("");
 
   const handleDismissCredentialModal = (focusField = true) => {
     setShowCredentialModal(false);
@@ -80,7 +82,7 @@ export default function LoginPage() {
       setTimeout(() => {
         passwordInputRef.current?.focus();
         passwordInputRef.current?.select();
-      }, 50);
+      }, 100);
     }
   };
 
@@ -162,6 +164,8 @@ export default function LoginPage() {
     setSuccessMsg("");
     setHasAuthError(false);
     setLoading(true);
+    lastAttemptedEmailRef.current = email;
+    lastAttemptedPasswordRef.current = password;
     try {
       const res = await login(email, password);
       if (res?.requireOtp) {
@@ -533,8 +537,10 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
-                    if (hasAuthError) setHasAuthError(false);
-                    if (error) setError("");
+                    if (hasAuthError && e.target.value !== lastAttemptedEmailRef.current) {
+                      setHasAuthError(false);
+                      setError("");
+                    }
                   }}
                   required
                   placeholder="Your email address"
@@ -558,8 +564,10 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
-                    if (hasAuthError) setHasAuthError(false);
-                    if (error) setError("");
+                    if (hasAuthError && e.target.value !== lastAttemptedPasswordRef.current) {
+                      setHasAuthError(false);
+                      setError("");
+                    }
                   }}
                   required
                   placeholder="Your password"
