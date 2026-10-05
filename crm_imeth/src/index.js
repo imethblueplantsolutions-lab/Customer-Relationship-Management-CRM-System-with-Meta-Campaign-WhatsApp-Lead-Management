@@ -17,7 +17,8 @@ const { extractTenantMiddleware } = require('./middleware/tenant');
 
 // Allowed origins: Vercel production + local dev
 const ALLOWED_ORIGINS = [
-  process.env.FRONTEND_URL || 'https://customer-relationship-management-crm-system-with-ojf1z9i48.vercel.app',
+  process.env.FRONTEND_URL || 'https://customer-relationship-management-cr-eight.vercel.app',
+  'https://customer-relationship-management-crm-system-with-ojf1z9i48.vercel.app', // legacy preview URL
   'http://localhost:3000',
   'http://localhost:4000',
   'http://127.0.0.1:3000',
