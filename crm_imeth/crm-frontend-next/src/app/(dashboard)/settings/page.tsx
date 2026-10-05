@@ -26,11 +26,21 @@ import {
   Upload,
   History,
   ArrowLeft,
+  Palette,
+  Bell,
+  Sliders,
+  AlertTriangle,
+  Webhook,
 } from "lucide-react";
 import ActivityFeed from "@/components/hierarchy/ActivityFeed";
+import ThemeOptionsTab from "@/components/settings/ThemeOptionsTab";
+import NotificationPreferencesTab from "@/components/settings/NotificationPreferencesTab";
+import IntegrationsTab from "@/components/settings/IntegrationsTab";
+import DangerZoneTab from "@/components/settings/DangerZoneTab";
 
 // ─── Types ─────────────────────────────────────────────────
-type SettingsTab = "profile" | "security" | "meta" | "audit";
+export type SettingsTab = "account" | "theme" | "meta" | "audit";
+export type AccountSubTab = "profile" | "security" | "notifications" | "integrations" | "danger";
 
 interface TenantSettings {
   id: string;
@@ -782,25 +792,147 @@ function MetaSettingsTab() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// MAIN ACCOUNT SETTINGS PAGE (Tabbed Sidebar Layout)
+// ACCOUNT SETTINGS TAB CONTAINER (With Inner Sub-Tabs)
+// ═══════════════════════════════════════════════════════════
+function AccountSettingsTab({
+  user,
+  updateUser,
+  setSession,
+  onNavigateToMeta,
+  onLogout,
+  initialSubTab = "profile",
+}: {
+  user: User | null;
+  updateUser: (data: Partial<User>) => void;
+  setSession: (token: string, user: User) => void;
+  onNavigateToMeta: () => void;
+  onLogout: () => void;
+  initialSubTab?: AccountSubTab;
+}) {
+  const [subTab, setSubTab] = useState<AccountSubTab>(initialSubTab);
+
+  const subTabs: {
+    id: AccountSubTab;
+    label: string;
+    icon: typeof UserIcon;
+    badge?: string;
+  }[] = [
+    { id: "profile", label: "Profile Data", icon: UserIcon },
+    { id: "security", label: "Security & Passwords", icon: Lock },
+    { id: "notifications", label: "Notifications", icon: Bell },
+    { id: "integrations", label: "Connected Accounts", icon: Webhook },
+    { id: "danger", label: "Danger Zone & Export", icon: AlertTriangle },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Sub-Tabs Pill Navigation */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-3 border-b border-slate-200/80 -mx-1 px-1 scrollbar-none">
+        {subTabs.map((t) => {
+          const Icon = t.icon;
+          const isActive = subTab === t.id;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setSubTab(t.id)}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                isActive
+                  ? "bg-blue-600 text-white shadow-xs shadow-blue-600/20"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 bg-slate-50 border border-slate-200/60"
+              }`}
+            >
+              <Icon className={`h-3.5 w-3.5 ${isActive ? "text-white" : "text-slate-500"}`} />
+              <span>{t.label}</span>
+              {t.badge && (
+                <span
+                  className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold ${
+                    isActive ? "bg-white/20 text-white" : "bg-blue-50 text-blue-600"
+                  }`}
+                >
+                  {t.badge}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Sub-tab view render */}
+      <div className="pt-1">
+        {subTab === "profile" && <ProfileTab user={user} updateUser={updateUser} />}
+        {subTab === "security" && <SecurityTab user={user} setSession={setSession} />}
+        {subTab === "notifications" && <NotificationPreferencesTab />}
+        {subTab === "integrations" && <IntegrationsTab onNavigateToMeta={onNavigateToMeta} />}
+        {subTab === "danger" && <DangerZoneTab user={user} onLogout={onLogout} />}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// MAIN SETTINGS PAGE (Account Settings + Theme Options Hub)
 // ═══════════════════════════════════════════════════════════
 export default function AccountSettingsPage() {
   const { user, updateUser, setSession, logout } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
+  const [activeTab, setActiveTab] = useState<SettingsTab>("account");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab");
+      if (tabParam === "theme") {
+        setActiveTab("theme");
+      } else if (tabParam === "meta") {
+        setActiveTab("meta");
+      } else if (tabParam === "audit") {
+        setActiveTab("audit");
+      } else if (tabParam === "account" || tabParam === "profile" || tabParam === "security") {
+        setActiveTab("account");
+      }
+    }
+  }, []);
 
   const isPrivileged = ["SUPER_ADMIN", "ADMIN", "TEAM_LEAD"].includes(user?.role || "");
 
   const tabs: {
     id: SettingsTab;
     label: string;
+    description: string;
     icon: typeof UserIcon;
+    badge?: string;
     allowed: boolean;
   }[] = [
-    { id: "profile", label: "Profile Data", icon: UserIcon, allowed: true },
-    { id: "security", label: "Security", icon: Lock, allowed: true },
-    { id: "meta", label: "Meta Settings", icon: Smartphone, allowed: isPrivileged },
-    { id: "audit", label: "Audit Logs", icon: History, allowed: ["SUPER_ADMIN", "ADMIN"].includes(user?.role || "") },
+    {
+      id: "account",
+      label: "Account Settings",
+      description: "Profile, Security & Preferences",
+      icon: Sliders,
+      allowed: true,
+    },
+    {
+      id: "theme",
+      label: "Theme Options",
+      description: "5 Curated Color Themes",
+      icon: Palette,
+      badge: "5 Themes",
+      allowed: true,
+    },
+    {
+      id: "meta",
+      label: "Meta Settings",
+      description: "WhatsApp Business API",
+      icon: Smartphone,
+      allowed: isPrivileged,
+    },
+    {
+      id: "audit",
+      label: "Audit Logs",
+      description: "Activity & Security Trail",
+      icon: History,
+      allowed: ["SUPER_ADMIN", "ADMIN"].includes(user?.role || ""),
+    },
   ];
 
   const visibleTabs = tabs.filter((t) => t.allowed);
@@ -826,26 +958,28 @@ export default function AccountSettingsPage() {
       </div>
 
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
-          <Shield className="h-6 w-6 text-blue-600" />
-          Account Settings
-        </h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Manage your profile, security credentials, and CRM configurations
-        </p>
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <Shield className="h-6 w-6 text-blue-600" />
+            CRM Settings & Workspace Options
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Manage your account credentials, workspace color themes, and WhatsApp API configurations
+          </p>
+        </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-8">
         {/* ─── Left Sidebar Tab Navigation ─── */}
-        <nav className="w-full md:w-56 flex-shrink-0">
+        <nav className="w-full md:w-64 flex-shrink-0">
           <div className="md:sticky md:top-8">
             {/* Desktop: Vertical tab list */}
             <div className="hidden md:block">
               <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 px-3">
-                Account
+                Workspace Preferences
               </h2>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 {visibleTabs.map((tab) => {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.id;
@@ -853,19 +987,37 @@ export default function AccountSettingsPage() {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-xl text-left transition-all group cursor-pointer ${
+                      className={`flex items-center justify-between w-full gap-3 px-3.5 py-3 rounded-xl text-left transition-all group cursor-pointer ${
                         isActive
-                          ? "bg-blue-50 text-blue-700 border-l-[3px] border-blue-600 shadow-sm"
-                          : "text-slate-600 border-l-[3px] border-transparent hover:bg-slate-50 hover:text-slate-800"
+                          ? "bg-blue-50 text-blue-700 border-l-[3px] border-blue-600 shadow-xs"
+                          : "text-slate-600 border-l-[3px] border-transparent hover:bg-slate-50 hover:text-slate-900"
                       }`}
                     >
-                      <div className="flex items-center gap-2.5">
+                      <div className="flex items-center gap-3 min-w-0">
                         <Icon
-                          className={`h-[18px] w-[18px] shrink-0 transition-colors ${
+                          className={`h-5 w-5 shrink-0 transition-colors ${
                             isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600"
                           }`}
                         />
-                        <span className="text-sm font-semibold">{tab.label}</span>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-semibold truncate">{tab.label}</span>
+                            {tab.badge && (
+                              <span
+                                className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold uppercase tracking-wider ${
+                                  isActive
+                                    ? "bg-blue-600 text-white"
+                                    : "bg-blue-100 text-blue-700"
+                                }`}
+                              >
+                                {tab.badge}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                            {tab.description}
+                          </p>
+                        </div>
                       </div>
                       <ChevronRight
                         className={`h-3.5 w-3.5 shrink-0 transition-all ${
@@ -878,11 +1030,11 @@ export default function AccountSettingsPage() {
                   );
                 })}
 
-                {/* Log Out Button (separate styling) */}
+                {/* Log Out Button */}
                 <div className="pt-3 mt-3 border-t border-slate-100">
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl text-red-600 hover:bg-red-50 transition-all cursor-pointer group"
+                    className="flex items-center gap-2.5 w-full px-3.5 py-2.5 rounded-xl text-red-600 hover:bg-red-50 transition-all cursor-pointer group"
                   >
                     <LogOut className="h-[18px] w-[18px] shrink-0 text-red-400 group-hover:text-red-600 transition-colors" />
                     <span className="text-sm font-semibold">Log Out</span>
@@ -892,7 +1044,7 @@ export default function AccountSettingsPage() {
             </div>
 
             {/* Mobile: Horizontal scrollable pills */}
-            <div className="md:hidden flex items-center gap-2 overflow-x-auto pb-2 -mx-1 px-1">
+            <div className="md:hidden flex items-center gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-none">
               {visibleTabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -900,14 +1052,19 @@ export default function AccountSettingsPage() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
                       isActive
                         ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
                         : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
                     }`}
                   >
                     <Icon className="h-3.5 w-3.5" />
-                    {tab.label}
+                    <span>{tab.label}</span>
+                    {tab.badge && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold bg-white/20 text-white">
+                        {tab.badge}
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -918,12 +1075,16 @@ export default function AccountSettingsPage() {
         {/* ─── Right Content Panel ─── */}
         <main className="flex-1 min-w-0">
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 sm:p-8">
-            {activeTab === "profile" && (
-              <ProfileTab user={user} updateUser={updateUser} />
+            {activeTab === "account" && (
+              <AccountSettingsTab
+                user={user}
+                updateUser={updateUser}
+                setSession={setSession}
+                onNavigateToMeta={() => setActiveTab("meta")}
+                onLogout={handleLogout}
+              />
             )}
-            {activeTab === "security" && (
-              <SecurityTab user={user} setSession={setSession} />
-            )}
+            {activeTab === "theme" && <ThemeOptionsTab />}
             {activeTab === "meta" && <MetaSettingsTab />}
             {activeTab === "audit" && <ActivityFeed />}
           </div>
