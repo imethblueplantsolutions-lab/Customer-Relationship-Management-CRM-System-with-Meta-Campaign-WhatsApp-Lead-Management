@@ -14,6 +14,7 @@ const rateLimit = require('express-rate-limit');
 const redisClient = require('./config/redis');
 const { isRedisAvailable } = require('./config/redis');
 const { extractTenantMiddleware } = require('./middleware/tenant');
+const sanitizeMiddleware = require('./middleware/sanitize');
 
 // Allowed origins: Vercel production + local dev
 const ALLOWED_ORIGINS = [
@@ -165,6 +166,7 @@ app.use(compression());
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+app.use(sanitizeMiddleware);
 
 // Health Check
 app.get('/health', (req, res) => res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() }));
