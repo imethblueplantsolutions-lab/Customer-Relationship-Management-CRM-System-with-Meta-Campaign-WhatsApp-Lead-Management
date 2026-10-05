@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { apiClient } from "@/lib/api-client";
 import OtpLoginModal from "@/components/auth/OtpLoginModal";
+import CredentialErrorModal from "@/components/auth/CredentialErrorModal";
 import type { User } from "@/types";
 import {
   Lock,
@@ -66,6 +67,22 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Credential Error Modal state & Input Error state
+  const [showCredentialModal, setShowCredentialModal] = useState(false);
+  const [hasAuthError, setHasAuthError] = useState(false);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
+
+  const handleDismissCredentialModal = (focusField = true) => {
+    setShowCredentialModal(false);
+    if (focusField) {
+      setTimeout(() => {
+        passwordInputRef.current?.focus();
+        passwordInputRef.current?.select();
+      }, 50);
+    }
+  };
 
   // Sign Up Form state
   const [signUpName, setSignUpName] = useState("");
@@ -143,6 +160,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setSuccessMsg("");
+    setHasAuthError(false);
     setLoading(true);
     try {
       const res = await login(email, password);
@@ -157,11 +175,13 @@ export default function LoginPage() {
         router.push(parsed?.role === "SUPER_ADMIN" ? "/hierarchy" : "/dashboard");
       }
     } catch (err: unknown) {
-      setError(
+      const msg =
         err instanceof Error
           ? err.message
-          : "Authentication failed. Please check credentials or backend server."
-      );
+          : "Authentication failed. Please check credentials or backend server.";
+      setError(msg);
+      setHasAuthError(true);
+      setShowCredentialModal(true);
     } finally {
       setLoading(false);
     }
@@ -503,30 +523,52 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-2">
               <div className="relative flex items-center w-full">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
+                <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none z-10 transition-colors ${
+                  hasAuthError ? "text-red-400" : "text-slate-400"
+                }`} />
                 <input
+                  ref={emailInputRef}
                   suppressHydrationWarning
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (hasAuthError) setHasAuthError(false);
+                    if (error) setError("");
+                  }}
                   required
                   placeholder="Your email address"
                   style={{ paddingLeft: "38px", paddingRight: "12px" }}
-                  className="w-full h-10 rounded-xl bg-[#f4f7f6] border border-transparent text-xs text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-hidden"
+                  className={`w-full h-10 rounded-xl text-xs transition-all focus:bg-white focus:outline-hidden ${
+                    hasAuthError
+                      ? "bg-red-50/30 border border-red-500 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-500/15"
+                      : "bg-[#f4f7f6] border border-transparent text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                  }`}
                 />
               </div>
 
               <div className="relative flex items-center w-full">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
+                <Lock className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none z-10 transition-colors ${
+                  hasAuthError ? "text-red-400" : "text-slate-400"
+                }`} />
                 <input
+                  ref={passwordInputRef}
                   suppressHydrationWarning
                   type={showPassword ? "text" : "password"}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (hasAuthError) setHasAuthError(false);
+                    if (error) setError("");
+                  }}
                   required
                   placeholder="Your password"
                   style={{ paddingLeft: "38px", paddingRight: "38px" }}
-                  className="w-full h-10 rounded-xl bg-[#f4f7f6] border border-transparent text-xs text-slate-800 placeholder-slate-400 transition-all focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-hidden"
+                  className={`w-full h-10 rounded-xl text-xs transition-all focus:bg-white focus:outline-hidden ${
+                    hasAuthError
+                      ? "bg-red-50/30 border border-red-500 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-500/15"
+                      : "bg-[#f4f7f6] border border-transparent text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                  }`}
                 />
                 <button
                   suppressHydrationWarning
@@ -537,6 +579,13 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+
+              {hasAuthError && (
+                <div className="flex items-center gap-1.5 px-1 py-0.5 text-[11px] text-red-600 font-medium animate-in fade-in slide-in-from-top-1 duration-150">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0 text-red-500" />
+                  <span>The email and password you entered did not match our records.</span>
+                </div>
+              )}
 
               <div className="flex items-center justify-between text-[11px] px-0.5">
                 <span className="text-slate-400">Protected by Role Auth</span>
@@ -906,6 +955,13 @@ export default function LoginPage() {
         otpPreview={otpPreview}
         onSuccess={handleOtpSuccess}
         onCancel={() => setShowOtpModal(false)}
+      />
+
+      {/* Incorrect Credential Alert Modal (matching screenshot) */}
+      <CredentialErrorModal
+        isOpen={showCredentialModal}
+        onClose={() => handleDismissCredentialModal(false)}
+        onConfirm={() => handleDismissCredentialModal(true)}
       />
 
       {/* Self-Service Password Recovery Modal */}
