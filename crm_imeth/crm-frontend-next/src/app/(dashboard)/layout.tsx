@@ -71,16 +71,15 @@ export default function DashboardLayout({
 
   if (isLoading || !isAuthenticated) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-900">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent shadow-lg" />
+      <div className="flex h-screen items-center justify-center bg-brand-bg">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-primary border-t-transparent shadow-lg" />
       </div>
     );
   }
 
   return (
     <div
-      className="flex h-screen overflow-hidden transition-colors duration-200"
-      style={{ backgroundColor: "var(--color-bg, #f8fafc)" }}
+      className="flex h-screen overflow-hidden transition-colors duration-200 bg-brand-bg text-brand-text"
     >
       {/* ================= MOBILE BACKDROP OVERLAY ================= */}
       {mobileOpen && (
@@ -153,16 +152,16 @@ export default function DashboardLayout({
       {/* ================= MAIN CONTENT AREA ================= */}
       <div className="flex flex-1 flex-col overflow-hidden min-w-0">
         {/* Sticky Top Header with 4-Line Hamburger Menu Icon for Mobile */}
-        <header className="flex h-16 items-center justify-between border-b border-slate-200/80 bg-white px-4 sm:px-6 md:hidden shadow-xs">
+        <header className="flex h-16 items-center justify-between border-b border-brand-muted/30 bg-brand-surface px-4 sm:px-6 md:hidden shadow-xs">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
-              className="flex items-center justify-center rounded-xl p-2 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer active:scale-95"
+              className="flex items-center justify-center rounded-xl p-2 text-brand-text hover:bg-brand-bg transition-all cursor-pointer active:scale-95"
               aria-label="Open navigation menu"
             >
               <svg
-                className="w-6 h-6 text-[#0F4C75]"
+                className="w-6 h-6 text-brand-primary"
                 viewBox="0 0 24 24"
                 fill="currentColor"
               >
@@ -177,7 +176,7 @@ export default function DashboardLayout({
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-[#0F4C75] to-[#3282B8] text-sm text-white">
                 💬
               </span>
-              <span className="text-sm font-bold text-slate-900 tracking-tight">
+              <span className="text-sm font-bold text-brand-text tracking-tight">
                 MyCRM
               </span>
             </div>
@@ -199,7 +198,7 @@ export default function DashboardLayout({
                   <img
                     src={user.avatar}
                     alt={user.name || "Avatar"}
-                    className="h-8 w-8 rounded-lg object-cover ring-1 ring-slate-200 shadow-xs"
+                    className="h-8 w-8 rounded-lg object-cover ring-1 ring-brand-muted/30 shadow-xs"
                   />
                 ) : (
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#0F4C75] to-[#3282B8] text-[11px] font-bold text-white shadow-xs">
@@ -210,21 +209,21 @@ export default function DashboardLayout({
 
               {/* Mobile Account Popover Dropdown */}
               {isProfileOpen && (
-                <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white p-2 shadow-xl ring-1 ring-black/5 z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-brand-surface p-2 shadow-xl ring-1 ring-brand-muted/20 border border-brand-muted/20 z-50 animate-in fade-in zoom-in-95 duration-150">
                   {/* Header: User details & Role */}
                   <div className="px-3 py-2.5">
-                    <p className="text-sm font-bold text-slate-800 truncate">
+                    <p className="text-sm font-bold text-brand-text truncate">
                       {user?.name || "User"}
                     </p>
-                    <p className="text-xs text-slate-500 truncate mb-1.5">
+                    <p className="text-xs text-brand-muted truncate mb-1.5">
                       {user?.email || "user@crm.com"}
                     </p>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-brand-primary/10 text-brand-primary border border-brand-primary/30">
                       {roleLabel}
                     </span>
                   </div>
 
-                  <div className="my-1 border-b border-slate-100" />
+                  <div className="my-1 border-b border-brand-muted/20" />
 
                   {/* Account Settings Link */}
                   <button
@@ -233,9 +232,9 @@ export default function DashboardLayout({
                       setIsProfileOpen(false);
                       router.push("/settings");
                     }}
-                    className="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer"
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-semibold text-brand-text hover:bg-brand-bg rounded-xl transition-colors cursor-pointer"
                   >
-                    <Settings className="h-4 w-4 text-slate-400" />
+                    <Settings className="h-4 w-4 text-brand-muted" />
                     Account Settings
                   </button>
 
@@ -246,9 +245,9 @@ export default function DashboardLayout({
                       setIsProfileOpen(false);
                       router.push("/settings?tab=theme");
                     }}
-                    className="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer"
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-semibold text-brand-text hover:bg-brand-bg rounded-xl transition-colors cursor-pointer"
                   >
-                    <Palette className="h-4 w-4 text-purple-500" />
+                    <Palette className="h-4 w-4 text-brand-primary" />
                     Theme Options
                   </button>
 
@@ -256,7 +255,7 @@ export default function DashboardLayout({
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-500/10 rounded-xl transition-colors cursor-pointer"
                   >
                     <LogOut className="h-4 w-4 text-red-500" />
                     Exit / Log Out
@@ -269,8 +268,7 @@ export default function DashboardLayout({
 
         {/* Page Content */}
         <main
-          className="flex-1 overflow-y-auto overflow-x-hidden transition-colors duration-200"
-          style={{ backgroundColor: "var(--color-bg, #F8FAFC)" }}
+          className="flex-1 overflow-y-auto overflow-x-hidden transition-colors duration-200 bg-brand-bg text-brand-text"
         >
           <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:px-10">
             {children}

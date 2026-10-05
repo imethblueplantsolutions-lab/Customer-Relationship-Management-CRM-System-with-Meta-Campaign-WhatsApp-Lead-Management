@@ -1,6 +1,6 @@
 "use client";
 
-import { THEMES, ThemeId } from "@/lib/theme";
+import { THEMES } from "@/lib/theme";
 import { useTheme } from "@/hooks/use-theme";
 
 export default function ThemeOptionsTab() {
@@ -10,10 +10,10 @@ export default function ThemeOptionsTab() {
     <div className="space-y-6">
       {/* Title & Description */}
       <div>
-        <h2 className="text-base font-semibold text-slate-900 tracking-tight">
+        <h2 className="text-base font-semibold text-brand-text tracking-tight">
           Admin Color Scheme
         </h2>
-        <p className="text-xs text-slate-500 mt-0.5">
+        <p className="text-xs text-brand-muted mt-0.5">
           Select a color palette for your CRM workspace. Click any option to activate.
         </p>
       </div>
@@ -27,10 +27,10 @@ export default function ThemeOptionsTab() {
             <div
               key={theme.id}
               onClick={() => setTheme(theme.id)}
-              className={`flex flex-col justify-center p-3 rounded-lg transition-all cursor-pointer select-none ${
+              className={`flex flex-col justify-center p-3 rounded-xl transition-all cursor-pointer select-none border ${
                 isSelected
-                  ? "bg-slate-200/90 ring-1 ring-slate-300"
-                  : "hover:bg-slate-100/70"
+                  ? "bg-brand-primary/10 border-brand-primary ring-1 ring-brand-primary/30 shadow-xs"
+                  : "bg-brand-surface/60 border-brand-muted/30 hover:bg-brand-surface hover:border-brand-muted/60"
               }`}
             >
               {/* Radio Button + Theme Name */}
@@ -41,11 +41,11 @@ export default function ThemeOptionsTab() {
                   value={theme.id}
                   checked={isSelected}
                   onChange={() => setTheme(theme.id)}
-                  className="h-4 w-4 text-emerald-700 focus:ring-emerald-600 border-slate-400 cursor-pointer"
+                  className="h-4 w-4 text-brand-primary focus:ring-brand-primary border-brand-muted/50 cursor-pointer accent-current"
                 />
                 <span
                   className={`text-xs sm:text-sm font-medium ${
-                    isSelected ? "text-slate-900 font-semibold" : "text-slate-700"
+                    isSelected ? "text-brand-text font-bold" : "text-brand-muted"
                   }`}
                 >
                   {theme.name}

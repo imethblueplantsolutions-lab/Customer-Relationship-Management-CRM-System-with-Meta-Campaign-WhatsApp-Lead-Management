@@ -227,8 +227,8 @@ function ProfileTab({
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-bold text-slate-900">Edit your profile</h3>
-        <p className="text-xs text-slate-500 mt-0.5">
+        <h3 className="text-lg font-bold text-brand-text">Edit your profile</h3>
+        <p className="text-xs text-brand-muted mt-0.5">
           Your profile details are displayed across all CRM activities and audit logs
         </p>
       </div>
@@ -242,23 +242,23 @@ function ProfileTab({
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* Avatar Section */}
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 p-4 rounded-2xl bg-slate-50/80 border border-slate-100">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 p-4 rounded-2xl bg-brand-bg/50 border border-brand-muted/30">
           <div className="relative group shrink-0">
             {avatar ? (
               <img
                 src={avatar}
                 alt="Profile avatar"
-                className="h-20 w-20 rounded-2xl object-cover ring-4 ring-white shadow-md"
+                className="h-20 w-20 rounded-2xl object-cover ring-4 ring-brand-surface shadow-md"
               />
             ) : (
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-[#0F4C75] to-[#3282B8] text-2xl font-bold text-white shadow-md ring-4 ring-white">
+              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-primary to-brand-accent text-2xl font-bold text-white shadow-md ring-4 ring-brand-surface">
                 {userInitial}
               </div>
             )}
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="absolute -bottom-1 -right-1 p-1.5 rounded-xl bg-blue-600 text-white shadow-md hover:bg-blue-700 transition-colors cursor-pointer"
+              className="absolute -bottom-1 -right-1 p-1.5 rounded-xl bg-brand-primary text-white shadow-md hover:bg-brand-accent transition-colors cursor-pointer"
               title="Upload new picture"
             >
               <Camera className="h-3.5 w-3.5" />
@@ -267,8 +267,8 @@ function ProfileTab({
 
           <div className="flex-1 text-center sm:text-left space-y-2">
             <div>
-              <h4 className="text-xs font-bold text-slate-800">Profile Photo</h4>
-              <p className="text-[11px] text-slate-500">
+              <h4 className="text-xs font-bold text-brand-text">Profile Photo</h4>
+              <p className="text-[11px] text-brand-muted">
                 JPG, PNG, or WebP. Auto-scaled to 200×200px under 30KB.
               </p>
             </div>
@@ -277,9 +277,9 @@ function ProfileTab({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-brand-muted/30 bg-brand-surface px-3 py-1.5 text-xs font-semibold text-brand-text shadow-xs hover:bg-brand-bg hover:border-brand-muted/50 transition-all cursor-pointer"
               >
-                <Upload className="h-3 w-3 text-slate-500" />
+                <Upload className="h-3 w-3 text-brand-muted" />
                 Upload Photo
               </button>
               {avatar && (
@@ -307,8 +307,8 @@ function ProfileTab({
         {/* Name and Email */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1.5 flex items-center gap-1">
-              <UserIcon className="h-3 w-3 text-slate-400" />
+            <label className="text-xs font-bold text-brand-text block mb-1.5 flex items-center gap-1">
+              <UserIcon className="h-3 w-3 text-brand-muted" />
               Full Name
             </label>
             <input
@@ -317,20 +317,20 @@ function ProfileTab({
               value={profileName}
               onChange={(e) => setProfileName(e.target.value)}
               placeholder="e.g. John Doe"
-              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+              className="w-full rounded-xl border border-brand-muted/30 bg-brand-bg/40 px-4 py-2.5 text-sm font-medium text-brand-text placeholder-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
             />
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1.5 flex items-center gap-1">
-              <Mail className="h-3 w-3 text-slate-400" />
+            <label className="text-xs font-bold text-brand-text block mb-1.5 flex items-center gap-1">
+              <Mail className="h-3 w-3 text-brand-muted" />
               Email Address
             </label>
             <div className="flex items-center gap-2">
-              <div className="flex-1 rounded-xl bg-slate-50 border border-slate-100 px-4 py-2.5 font-mono text-sm text-slate-600 truncate">
+              <div className="flex-1 rounded-xl bg-brand-bg/60 border border-brand-muted/30 px-4 py-2.5 font-mono text-sm text-brand-muted truncate">
                 {user?.email || "—"}
               </div>
-              <span className="text-[10px] font-bold text-slate-400 bg-slate-100 rounded-lg px-2.5 py-1 shrink-0">
+              <span className="text-[10px] font-bold text-brand-muted bg-brand-bg rounded-lg px-2.5 py-1 shrink-0">
                 Read-only
               </span>
             </div>
@@ -340,8 +340,8 @@ function ProfileTab({
         {/* Phone and Bio */}
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1.5 flex items-center gap-1">
-              <Phone className="h-3 w-3 text-slate-400" />
+            <label className="text-xs font-bold text-brand-text block mb-1.5 flex items-center gap-1">
+              <Phone className="h-3 w-3 text-brand-muted" />
               Phone Number
             </label>
             <input
@@ -349,16 +349,16 @@ function ProfileTab({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="e.g. +1 (555) 000-0000"
-              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all placeholder:text-slate-400"
+              className="w-full rounded-xl border border-brand-muted/30 bg-brand-bg/40 px-4 py-2.5 text-sm font-medium text-brand-text placeholder-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
             />
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-bold text-slate-700 block">
+              <label className="text-xs font-bold text-brand-text block">
                 Bio / About
               </label>
-              <span className="text-[11px] text-slate-400 font-mono">
+              <span className="text-[11px] text-brand-muted font-mono">
                 {bio.length}/250
               </span>
             </div>
@@ -368,29 +368,29 @@ function ProfileTab({
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder="A short description about yourself, your role, or expertise..."
-              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all resize-none placeholder:text-slate-400"
+              className="w-full rounded-xl border border-brand-muted/30 bg-brand-bg/40 px-4 py-2.5 text-sm font-medium text-brand-text placeholder-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all resize-none"
             />
           </div>
         </div>
 
         {/* Read-Only Info Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-          <div className="rounded-xl bg-slate-50/80 border border-slate-100 p-3.5">
-            <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-1 flex items-center gap-1">
+          <div className="rounded-xl bg-brand-bg/50 border border-brand-muted/30 p-3.5">
+            <span className="text-[10px] uppercase tracking-wider font-bold text-brand-muted block mb-1 flex items-center gap-1">
               <Shield className="h-3 w-3" />
               Role & Privileges
             </span>
-            <p className="text-sm font-bold text-slate-700 flex items-center gap-1.5">
+            <p className="text-sm font-bold text-brand-text flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
               {roleLabel}
             </p>
           </div>
-          <div className="rounded-xl bg-slate-50/80 border border-slate-100 p-3.5">
-            <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-1 flex items-center gap-1">
+          <div className="rounded-xl bg-brand-bg/50 border border-brand-muted/30 p-3.5">
+            <span className="text-[10px] uppercase tracking-wider font-bold text-brand-muted block mb-1 flex items-center gap-1">
               <Calendar className="h-3 w-3" />
               Member Since
             </span>
-            <p className="text-sm font-bold text-slate-700">{joinedDate}</p>
+            <p className="text-sm font-bold text-brand-text">{joinedDate}</p>
           </div>
         </div>
 
@@ -398,7 +398,7 @@ function ProfileTab({
           <button
             type="submit"
             disabled={saving || !hasChanges || !profileName.trim()}
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-2 rounded-xl bg-brand-primary px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-brand-accent active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
           >
             <Save className="h-3.5 w-3.5" />
             {saving ? "Saving..." : "Save Changes"}
@@ -504,8 +504,8 @@ function SecurityTab({
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-bold text-slate-900">Security & Authentication</h3>
-        <p className="text-xs text-slate-500 mt-0.5">
+        <h3 className="text-lg font-bold text-brand-text">Security & Authentication</h3>
+        <p className="text-xs text-brand-muted mt-0.5">
           Change your email address or password — both require OTP verification for security
         </p>
       </div>
@@ -514,59 +514,59 @@ function SecurityTab({
       {success && <StatusBanner message={success} type="success" />}
 
       {/* Current Account Info */}
-      <div className="rounded-xl bg-slate-50/80 border border-slate-100 p-4 flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#0F4C75] to-[#3282B8] text-xs font-bold text-white shadow-sm">
+      <div className="rounded-xl bg-brand-bg/50 border border-brand-muted/30 p-4 flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-brand-primary to-brand-accent text-xs font-bold text-white shadow-sm">
           <Lock className="h-4 w-4" />
         </div>
         <div>
-          <p className="text-xs font-bold text-slate-700">Current Email</p>
-          <p className="font-mono text-sm text-slate-600">{user?.email || "—"}</p>
+          <p className="text-xs font-bold text-brand-text">Current Email</p>
+          <p className="font-mono text-sm text-brand-muted">{user?.email || "—"}</p>
         </div>
       </div>
 
       {otpStep === "IDLE" ? (
         <form onSubmit={handleRequestOtp} className="space-y-5">
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
-              <Mail className="h-3.5 w-3.5 text-blue-600" />
+            <label className="block text-xs font-bold text-brand-text mb-1.5 flex items-center gap-1.5">
+              <Mail className="h-3.5 w-3.5 text-brand-primary" />
               New Email Address
-              <span className="text-slate-400 font-normal">(optional)</span>
+              <span className="text-brand-muted font-normal">(optional)</span>
             </label>
             <input
               type="email"
               value={targetEmail}
               onChange={(e) => setTargetEmail(e.target.value)}
               placeholder="Enter new email address"
-              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+              className="w-full rounded-xl border border-brand-muted/30 bg-brand-bg/40 px-4 py-2.5 text-sm font-medium text-brand-text placeholder-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
             />
-            <p className="text-[11px] text-slate-400 mt-1">
+            <p className="text-[11px] text-brand-muted mt-1">
               An OTP code will be sent to the new address to verify inbox ownership
             </p>
           </div>
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-100" />
+              <div className="w-full border-t border-brand-muted/30" />
             </div>
             <div className="relative flex justify-center">
-              <span className="bg-white px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              <span className="bg-brand-surface px-3 text-[10px] font-bold text-brand-muted uppercase tracking-wider">
                 and / or
               </span>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
-              <Lock className="h-3.5 w-3.5 text-blue-600" />
+            <label className="block text-xs font-bold text-brand-text mb-1.5 flex items-center gap-1.5">
+              <Lock className="h-3.5 w-3.5 text-brand-primary" />
               New Password
-              <span className="text-slate-400 font-normal">(optional)</span>
+              <span className="text-brand-muted font-normal">(optional)</span>
             </label>
             <input
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="Enter new password (min 6 characters)"
-              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+              className="w-full rounded-xl border border-brand-muted/30 bg-brand-bg/40 px-4 py-2.5 text-sm font-medium text-brand-text placeholder-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
             />
           </div>
 
@@ -574,7 +574,7 @@ function SecurityTab({
             <button
               type="submit"
               disabled={requestingOtp || (!targetEmail.trim() && !newPassword.trim())}
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-xl bg-brand-primary px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-brand-accent active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
             >
               {requestingOtp ? (
                 <>
@@ -592,15 +592,15 @@ function SecurityTab({
         </form>
       ) : (
         <form onSubmit={handleVerifyOtp} className="space-y-5">
-          <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-100">
-            <p className="text-xs font-bold text-blue-800">Enter Verification Code</p>
-            <p className="text-[11px] text-blue-600 mt-0.5">
+          <div className="p-4 rounded-xl bg-brand-primary/10 border border-brand-primary/20">
+            <p className="text-xs font-bold text-brand-primary">Enter Verification Code</p>
+            <p className="text-[11px] text-brand-muted mt-0.5">
               A 6-digit OTP code has been sent to your email. Enter it below to confirm changes.
             </p>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-brand-text uppercase tracking-wider mb-1.5">
               6-Digit Verification Code
             </label>
             <input
@@ -610,7 +610,7 @@ function SecurityTab({
               value={otpCode}
               onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, ""))}
               placeholder="e.g. 123456"
-              className="w-full rounded-xl border border-slate-200 px-4 py-3 text-center font-mono text-xl font-bold text-slate-900 tracking-[0.3em] focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+              className="w-full rounded-xl border border-brand-muted/30 bg-brand-bg/40 px-4 py-3 text-center font-mono text-xl font-bold text-brand-text tracking-[0.3em] placeholder-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
             />
           </div>
 
@@ -618,7 +618,7 @@ function SecurityTab({
             <button
               type="submit"
               disabled={verifying || otpCode.length !== 6}
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-xl bg-brand-primary px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-brand-accent active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
             >
               {verifying ? (
                 <>
@@ -640,7 +640,7 @@ function SecurityTab({
                 setError("");
                 setSuccess("");
               }}
-              className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+              className="px-4 py-2.5 rounded-xl border border-brand-muted/30 text-xs font-bold text-brand-muted hover:bg-brand-bg/60 hover:text-brand-text transition-colors cursor-pointer"
             >
               Cancel
             </button>
@@ -703,7 +703,7 @@ function MetaSettingsTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="h-7 w-7 animate-spin rounded-full border-3 border-blue-600 border-t-transparent" />
+        <div className="h-7 w-7 animate-spin rounded-full border-3 border-brand-primary border-t-transparent" />
       </div>
     );
   }
@@ -711,8 +711,8 @@ function MetaSettingsTab() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-bold text-slate-900">Meta WhatsApp Business API</h3>
-        <p className="text-xs text-slate-500 mt-0.5">
+        <h3 className="text-lg font-bold text-brand-text">Meta WhatsApp Business API</h3>
+        <p className="text-xs text-brand-muted mt-0.5">
           Connect your Meta Cloud API account to send & receive official WhatsApp messages
         </p>
       </div>
@@ -727,8 +727,8 @@ function MetaSettingsTab() {
       <div className="space-y-5">
         {/* WABA ID */}
         <div>
-          <label className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-1.5">
-            <Smartphone className="h-3.5 w-3.5 text-blue-600" />
+          <label className="flex items-center gap-2 text-xs font-bold text-brand-text mb-1.5">
+            <Smartphone className="h-3.5 w-3.5 text-brand-primary" />
             WhatsApp Business Account ID (WABA)
           </label>
           <input
@@ -736,17 +736,17 @@ function MetaSettingsTab() {
             value={wabaId}
             onChange={(e) => setWabaId(e.target.value)}
             placeholder="e.g. 123456789012345"
-            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+            className="w-full rounded-xl border border-brand-muted/30 bg-brand-bg/40 px-4 py-2.5 text-sm text-brand-text placeholder-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
           />
-          <p className="mt-1 text-[11px] text-slate-400">
+          <p className="mt-1 text-[11px] text-brand-muted">
             Found in Meta Business Suite → WhatsApp Manager → Business Account Settings
           </p>
         </div>
 
         {/* Access Token */}
         <div>
-          <label className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-1.5">
-            <Key className="h-3.5 w-3.5 text-blue-600" />
+          <label className="flex items-center gap-2 text-xs font-bold text-brand-text mb-1.5">
+            <Key className="h-3.5 w-3.5 text-brand-primary" />
             Meta Access Token
           </label>
           <input
@@ -754,17 +754,17 @@ function MetaSettingsTab() {
             value={accessToken}
             onChange={(e) => setAccessToken(e.target.value)}
             placeholder="••••••••••••••••"
-            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+            className="w-full rounded-xl border border-brand-muted/30 bg-brand-bg/40 px-4 py-2.5 text-sm text-brand-text placeholder-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
           />
-          <p className="mt-1 text-[11px] text-slate-400">
+          <p className="mt-1 text-[11px] text-brand-muted">
             Permanent system user token with whatsapp_business_messaging permission
           </p>
         </div>
 
         {/* Phone Number ID */}
         <div>
-          <label className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-1.5">
-            <Smartphone className="h-3.5 w-3.5 text-blue-600" />
+          <label className="flex items-center gap-2 text-xs font-bold text-brand-text mb-1.5">
+            <Smartphone className="h-3.5 w-3.5 text-brand-primary" />
             Phone Number ID
           </label>
           <input
@@ -772,7 +772,7 @@ function MetaSettingsTab() {
             value={phoneNumberId}
             onChange={(e) => setPhoneNumberId(e.target.value)}
             placeholder="e.g. 109876543210123"
-            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+            className="w-full rounded-xl border border-brand-muted/30 bg-brand-bg/40 px-4 py-2.5 text-sm text-brand-text placeholder-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
           />
         </div>
       </div>
@@ -781,7 +781,7 @@ function MetaSettingsTab() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
+          className="inline-flex items-center gap-2 rounded-xl bg-brand-primary px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-brand-accent active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
         >
           <Save className="h-3.5 w-3.5" />
           {saving ? "Saving..." : "Save Meta Settings"}
@@ -827,7 +827,7 @@ function AccountSettingsTab({
   return (
     <div className="space-y-6">
       {/* Sub-Tabs Pill Navigation */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-3 border-b border-slate-200/80 -mx-1 px-1 scrollbar-none">
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-3 border-b border-brand-muted/30 -mx-1 px-1 scrollbar-none">
         {subTabs.map((t) => {
           const Icon = t.icon;
           const isActive = subTab === t.id;
@@ -838,16 +838,16 @@ function AccountSettingsTab({
               onClick={() => setSubTab(t.id)}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
                 isActive
-                  ? "bg-blue-600 text-white shadow-xs shadow-blue-600/20"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 bg-slate-50 border border-slate-200/60"
+                  ? "bg-brand-primary text-white shadow-xs shadow-brand-primary/20"
+                  : "text-brand-muted hover:text-brand-text hover:bg-brand-surface bg-brand-bg/60 border border-brand-muted/30"
               }`}
             >
-              <Icon className={`h-3.5 w-3.5 ${isActive ? "text-white" : "text-slate-500"}`} />
+              <Icon className={`h-3.5 w-3.5 ${isActive ? "text-white" : "text-brand-muted"}`} />
               <span>{t.label}</span>
               {t.badge && (
                 <span
                   className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold ${
-                    isActive ? "bg-white/20 text-white" : "bg-blue-50 text-blue-600"
+                    isActive ? "bg-white/20 text-white" : "bg-brand-primary/10 text-brand-primary"
                   }`}
                 >
                   {t.badge}
@@ -949,9 +949,9 @@ export default function AccountSettingsPage() {
         <button
           type="button"
           onClick={() => router.push("/dashboard")}
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 active:scale-95 transition-all shadow-xs cursor-pointer"
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-brand-surface border border-brand-muted/30 text-xs font-semibold text-brand-text hover:bg-brand-bg active:scale-95 transition-all shadow-xs cursor-pointer"
         >
-          <ArrowLeft className="h-4 w-4 text-slate-500" />
+          <ArrowLeft className="h-4 w-4 text-brand-muted" />
           Back to Dashboard
         </button>
       </div>
@@ -959,11 +959,11 @@ export default function AccountSettingsPage() {
       {/* Page Header */}
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
-            <Shield className="h-6 w-6 text-blue-600" />
+          <h1 className="text-2xl font-bold text-brand-text tracking-tight flex items-center gap-2.5">
+            <Shield className="h-6 w-6 text-brand-primary" />
             CRM Settings & Workspace Options
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-brand-muted mt-1">
             Manage your account credentials, workspace color themes, and WhatsApp API configurations
           </p>
         </div>
@@ -975,7 +975,7 @@ export default function AccountSettingsPage() {
           <div className="md:sticky md:top-8">
             {/* Desktop: Vertical tab list */}
             <div className="hidden md:block">
-              <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 px-3">
+              <h2 className="text-[10px] font-bold text-brand-muted uppercase tracking-wider mb-3 px-3">
                 Workspace Preferences
               </h2>
               <div className="space-y-1.5">
@@ -988,14 +988,14 @@ export default function AccountSettingsPage() {
                       onClick={() => setActiveTab(tab.id)}
                       className={`flex items-center justify-between w-full gap-3 px-3.5 py-3 rounded-xl text-left transition-all group cursor-pointer ${
                         isActive
-                          ? "bg-blue-50 text-blue-700 border-l-[3px] border-blue-600 shadow-xs"
-                          : "text-slate-600 border-l-[3px] border-transparent hover:bg-slate-50 hover:text-slate-900"
+                          ? "bg-brand-primary/10 text-brand-primary border-l-[3px] border-brand-primary shadow-xs"
+                          : "text-brand-muted border-l-[3px] border-transparent hover:bg-brand-surface/60 hover:text-brand-text"
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <Icon
                           className={`h-5 w-5 shrink-0 transition-colors ${
-                            isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600"
+                            isActive ? "text-brand-primary" : "text-brand-muted group-hover:text-brand-text"
                           }`}
                         />
                         <div className="min-w-0">
@@ -1005,15 +1005,15 @@ export default function AccountSettingsPage() {
                               <span
                                 className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold uppercase tracking-wider ${
                                   isActive
-                                    ? "bg-blue-600 text-white"
-                                    : "bg-blue-100 text-blue-700"
+                                    ? "bg-brand-primary text-white"
+                                    : "bg-brand-primary/20 text-brand-primary"
                                 }`}
                               >
                                 {tab.badge}
                               </span>
                             )}
                           </div>
-                          <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                          <p className="text-[11px] text-brand-muted truncate mt-0.5">
                             {tab.description}
                           </p>
                         </div>
@@ -1021,8 +1021,8 @@ export default function AccountSettingsPage() {
                       <ChevronRight
                         className={`h-3.5 w-3.5 shrink-0 transition-all ${
                           isActive
-                            ? "text-blue-500 opacity-100"
-                            : "text-slate-300 opacity-0 group-hover:opacity-100"
+                            ? "text-brand-primary opacity-100"
+                            : "text-brand-muted opacity-0 group-hover:opacity-100"
                         }`}
                       />
                     </button>
@@ -1030,10 +1030,10 @@ export default function AccountSettingsPage() {
                 })}
 
                 {/* Log Out Button */}
-                <div className="pt-3 mt-3 border-t border-slate-100">
+                <div className="pt-3 mt-3 border-t border-brand-muted/30">
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-2.5 w-full px-3.5 py-2.5 rounded-xl text-red-600 hover:bg-red-50 transition-all cursor-pointer group"
+                    className="flex items-center gap-2.5 w-full px-3.5 py-2.5 rounded-xl text-red-600 hover:bg-red-500/10 transition-all cursor-pointer group"
                   >
                     <LogOut className="h-[18px] w-[18px] shrink-0 text-red-400 group-hover:text-red-600 transition-colors" />
                     <span className="text-sm font-semibold">Log Out</span>
@@ -1053,8 +1053,8 @@ export default function AccountSettingsPage() {
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
                       isActive
-                        ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
-                        : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                        ? "bg-brand-primary text-white shadow-md shadow-brand-primary/20"
+                        : "bg-brand-surface text-brand-muted border border-brand-muted/30 hover:bg-brand-bg hover:text-brand-text"
                     }`}
                   >
                     <Icon className="h-3.5 w-3.5" />
@@ -1073,7 +1073,7 @@ export default function AccountSettingsPage() {
 
         {/* ─── Right Content Panel ─── */}
         <main className="flex-1 min-w-0">
-          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 sm:p-8">
+          <div className="bg-brand-surface rounded-2xl border border-brand-muted/30 shadow-sm p-6 sm:p-8">
             {activeTab === "account" && (
               <AccountSettingsTab
                 user={user}

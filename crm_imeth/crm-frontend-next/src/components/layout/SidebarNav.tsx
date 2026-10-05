@@ -118,13 +118,13 @@ export default function SidebarNav({ user: propUser, isCollapsed, onNavigate }: 
             title={isCollapsed ? itemLabel : undefined}
             className={`flex items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all group ${
               isActive
-                ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
-                : "text-slate-300 hover:bg-white/5 hover:text-white"
+                ? "bg-brand-primary text-white shadow-md shadow-brand-primary/30"
+                : "text-slate-300 hover:bg-white/10 hover:text-white"
             } ${isCollapsed ? "justify-center px-2" : ""}`}
           >
             <Icon
               className={`h-4.5 w-4.5 shrink-0 transition-transform group-hover:scale-110 ${
-                isActive ? "text-white" : "text-slate-400 group-hover:text-blue-300"
+                isActive ? "text-white" : "text-slate-400 group-hover:text-brand-accent"
               }`}
             />
             {!isCollapsed && <span className="truncate">{itemLabel}</span>}
