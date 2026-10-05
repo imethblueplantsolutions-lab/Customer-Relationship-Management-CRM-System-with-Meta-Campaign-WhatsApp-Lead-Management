@@ -10,9 +10,25 @@ const cors = require('cors');
 const helmet = require('helmet');
 const jwt = require('jsonwebtoken');
 const { Server } = require('socket.io');
+const rateLimit = require('express-rate-limit');
 const redisClient = require('./config/redis');
 const { isRedisAvailable } = require('./config/redis');
 const { extractTenantMiddleware } = require('./middleware/tenant');
+
+// Allowed origins: Vercel production + local dev
+const ALLOWED_ORIGINS = [
+  process.env.FRONTEND_URL || 'https://customer-relationship-management-crm-system-with-ojf1z9i48.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:4000',
+  'http://127.0.0.1:3000',
+];
+
+function corsOriginHandler(origin, callback) {
+  // Allow requests with no origin (mobile apps, Postman, server-to-server)
+  if (!origin) return callback(null, true);
+  if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+  callback(new Error(`CORS: Origin '${origin}' is not allowed`));
+}
 
 const app = express();
 const server = http.createServer(app);
@@ -23,9 +39,10 @@ const PORT = process.env.PORT || 3000;
 // Initialize Socket.IO (Redis adapter attached only when Redis is available)
 const io = new Server(server, {
   cors: {
-    origin: '*',
+    origin: ALLOWED_ORIGINS,
     methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id', 'Cache-Control', 'Pragma', 'Expires', 'x-requested-with']
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id', 'Cache-Control', 'Pragma', 'Expires', 'x-requested-with'],
+    credentials: true,
   }
 });
 
@@ -100,16 +117,46 @@ if (redisClient) {
   }
 }
 
-// Security & CORS
+// Security Headers (Helmet — full suite)
 app.use(helmet({
-  crossOriginResourcePolicy: false,
-  crossOriginOpenerPolicy: false
+  contentSecurityPolicy: false, // Disabled: API server, no HTML rendering; CSP managed by Vercel on frontend
+  crossOriginResourcePolicy: { policy: 'cross-origin' }, // Allow Vercel frontend to load API resources
+  crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+  hsts: { maxAge: 31536000, includeSubDomains: true, preload: true }, // Force HTTPS for 1 year
+  frameguard: { action: 'deny' },  // Clickjacking protection
+  noSniff: true,                   // MIME type sniffing prevention
+  xssFilter: true,                 // Legacy XSS filter header
 }));
+
+// CORS — strict whitelist (replaces wildcard '*')
 app.use(cors({
-  origin: '*',
+  origin: corsOriginHandler,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id', 'Cache-Control', 'Pragma', 'Expires', 'x-requested-with']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id', 'Cache-Control', 'Pragma', 'Expires', 'x-requested-with'],
+  credentials: true,
 }));
+
+// Global Rate Limiter: 100 requests per 15 minutes on all /api/* routes (DDoS mitigation)
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: 'Too many requests. Please try again later.' },
+  skip: (req) => req.path === '/health', // Never rate-limit health checks
+});
+
+// Strict Auth Rate Limiter: 10 requests per 15 minutes on /api/auth/* (brute-force protection)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: 'Too many authentication attempts. Please wait 15 minutes.' },
+});
+
+app.use('/api/', globalLimiter);
+app.use('/api/auth/', authLimiter);
 
 // Gzip/Brotli response compression (~80% bandwidth reduction on JSON payloads)
 const compression = require('compression');
