@@ -178,3 +178,59 @@ export const THEMES: ThemeConfig[] = [
     ],
   },
 ];
+
+export const THEME_STORAGE_KEY = "crm_active_theme";
+
+/**
+ * Returns the currently active theme from localStorage or default
+ */
+export function getActiveThemeId(): ThemeId {
+  if (typeof window === "undefined") return "default-crm";
+  try {
+    const saved = localStorage.getItem(THEME_STORAGE_KEY) as ThemeId;
+    if (saved && THEMES.some((t) => t.id === saved)) {
+      return saved;
+    }
+  } catch {
+    // Ignore localStorage access issues
+  }
+  return "default-crm";
+}
+
+export function getThemeById(id: string): ThemeConfig {
+  return THEMES.find((t) => t.id === id) || THEMES[0];
+}
+
+/**
+ * Applies the CSS variables to document.documentElement
+ */
+export function applyTheme(themeId: ThemeId): void {
+  if (typeof window === "undefined") return;
+
+  const theme = getThemeById(themeId);
+  const root = document.documentElement;
+
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, themeId);
+  } catch {
+    // Ignore
+  }
+
+  root.setAttribute("data-theme", theme.id);
+  root.setAttribute("data-theme-mode", theme.category);
+
+  // Apply semantic tokens
+  root.style.setProperty("--color-bg", theme.colors.background);
+  root.style.setProperty("--color-bg-card", theme.colors.surface);
+  root.style.setProperty("--color-bg-sidebar", theme.colors.sidebar);
+  root.style.setProperty("--color-border", theme.colors.border);
+  root.style.setProperty("--color-text", theme.colors.textPrimary);
+  root.style.setProperty("--color-text-muted", theme.colors.textSecondary);
+  root.style.setProperty("--color-primary", theme.colors.primary);
+  root.style.setProperty("--color-primary-hover", theme.colors.accent);
+
+  // Dispatch custom event for real-time listener updates
+  window.dispatchEvent(
+    new CustomEvent("crm-theme-changed", { detail: { themeId, theme } })
+  );
+}
