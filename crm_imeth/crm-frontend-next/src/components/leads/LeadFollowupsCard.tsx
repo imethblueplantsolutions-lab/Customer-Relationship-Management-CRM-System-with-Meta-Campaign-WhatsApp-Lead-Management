@@ -1,9 +1,21 @@
 "use client";
 
 import { useState, useRef, memo } from "react";
-import { Calendar, Check, Trash2 } from "lucide-react";
+import { Calendar, Check, Trash2, Clock, User } from "lucide-react";
 import type { Followup } from "@/types";
 import DateTimePicker24h from "@/components/ui/DateTimePicker24h";
+
+function formatDueDate(dueAt?: string | null) {
+  if (!dueAt) return "No due date set";
+  const date = new Date(dueAt);
+  if (isNaN(date.getTime())) return "Invalid date";
+  return date.toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
 
 /**
  * Props for the LeadFollowupsCard component.
@@ -206,7 +218,7 @@ export default memo(function LeadFollowupsCard({
             return (
               <div
                 key={item.id}
-                className={`flex items-center justify-between rounded-xl border p-3 transition-colors ${
+                className={`rounded-xl border p-3 sm:p-3.5 transition-colors ${
                   item.completed
                     ? "border-emerald-100 bg-emerald-50/40"
                     : isOverdue
@@ -214,11 +226,12 @@ export default memo(function LeadFollowupsCard({
                     : "border-slate-100 bg-slate-50/70"
                 }`}
               >
-                <div className="flex items-center gap-3 min-w-0">
+                <div className="flex items-start gap-2.5 sm:items-center sm:gap-3">
+                  {/* Completion Checkbox */}
                   <button
                     type="button"
                     onClick={() => onToggleComplete(item.id, item.completed)}
-                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors cursor-pointer ${
+                    className={`mt-0.5 sm:mt-0 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors cursor-pointer ${
                       item.completed
                         ? "bg-emerald-600 border-emerald-600 text-white"
                         : isOverdue
@@ -227,10 +240,12 @@ export default memo(function LeadFollowupsCard({
                     }`}
                     title={item.completed ? "Mark as pending" : "Mark as completed"}
                   >
-                    {item.completed && <Check className="h-3 w-3" />}
+                    {item.completed && <Check className="h-3 w-3 stroke-[2.5]" />}
                   </button>
+
+                  {/* Type Avatar Badge (Hidden on mobile per user request: hidden sm:flex) */}
                   <div
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
+                    className={`hidden sm:flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
                       item.completed
                         ? "bg-emerald-100 text-emerald-700"
                         : isOverdue
@@ -240,74 +255,106 @@ export default memo(function LeadFollowupsCard({
                   >
                     {item.type.charAt(0)}
                   </div>
-                  <div className="min-w-0">
-                    <p
-                      className={`text-xs font-semibold truncate ${
-                        item.completed
-                          ? "text-slate-400 line-through"
-                          : isOverdue
-                          ? "text-red-900 font-bold"
-                          : "text-slate-800"
-                      }`}
-                    >
-                      {item.note || item.type}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 mt-0.5">
-                      <span className={isOverdue ? "text-red-600 font-semibold" : ""}>
-                        {item.dueAt ? `Due: ${new Date(item.dueAt).toLocaleString()}` : "No due date set"}
+
+                  {/* Main Details Body */}
+                  <div className="flex-1 min-w-0">
+                    {/* Header Row: Note/Title & Badges/Actions */}
+                    <div className="flex items-start justify-between gap-2">
+                      <p
+                        className={`text-xs sm:text-sm font-semibold leading-snug break-words ${
+                          item.completed
+                            ? "text-slate-400 line-through"
+                            : isOverdue
+                            ? "text-red-900 font-bold"
+                            : "text-slate-800"
+                        }`}
+                      >
+                        {item.note || item.type}
+                      </p>
+
+                      {/* Mobile Actions / Badges (Right-aligned in top row on mobile) */}
+                      <div className="flex items-center gap-1.5 shrink-0 sm:hidden">
+                        {isOverdue && (
+                          <span className="inline-flex items-center rounded-full bg-red-100 px-1.5 py-0.5 text-[9px] font-bold text-red-700 uppercase">
+                            Overdue
+                          </span>
+                        )}
+                        <span className="inline-flex items-center rounded-full bg-slate-200 px-1.5 py-0.5 text-[9px] font-bold text-slate-600">
+                          {item.type}
+                        </span>
+                        {canManageAssignment && onDeleteFollowup && (
+                          <button
+                            type="button"
+                            onClick={() => onDeleteFollowup(item.id)}
+                            className="p-1 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                            title="Delete Follow-up"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Metadata Row: Due Date & Assignee */}
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] sm:text-xs text-slate-500 mt-1">
+                      <span className={`inline-flex items-center gap-1 ${isOverdue ? "text-red-600 font-semibold" : ""}`}>
+                        <Clock className="h-3 w-3 shrink-0 opacity-70" />
+                        {item.dueAt ? `Due: ${formatDueDate(item.dueAt)}` : "No due date set"}
                       </span>
+
                       {item.assignedTo && (
-                        <>
-                          <span>•</span>
-                          <span className="inline-flex items-center gap-1 text-emerald-700 font-medium">
-                            {item.assignedTo.avatar ? (
-                              <img
-                                src={item.assignedTo.avatar}
-                                alt={item.assignedTo.name || "Assignee"}
-                                className="h-3.5 w-3.5 rounded-full object-cover ring-1 ring-white shrink-0"
-                              />
-                            ) : null}
-                            Assigned: {item.assignedTo.name || item.assignedTo.email}
-                          </span>
-                        </>
+                        <span className="inline-flex items-center gap-1 text-emerald-700 font-medium">
+                          <span className="hidden sm:inline text-slate-300">•</span>
+                          <User className="h-3 w-3 shrink-0 opacity-70 sm:hidden" />
+                          {item.assignedTo.avatar ? (
+                            <img
+                              src={item.assignedTo.avatar}
+                              alt={item.assignedTo.name || "Assignee"}
+                              className="h-3.5 w-3.5 rounded-full object-cover ring-1 ring-white shrink-0"
+                            />
+                          ) : null}
+                          Assigned: {item.assignedTo.name || item.assignedTo.email}
+                        </span>
                       )}
+
+                      {/* Assigned By (Creator) text (Hidden on mobile per user request: hidden sm:inline-flex) */}
                       {item.createdBy && item.createdBy.id !== item.assignedTo?.id && (
-                        <>
-                          <span>•</span>
-                          <span className="inline-flex items-center gap-1">
-                            {item.createdBy.avatar ? (
-                              <img
-                                src={item.createdBy.avatar}
-                                alt={item.createdBy.name || "Creator"}
-                                className="h-3.5 w-3.5 rounded-full object-cover ring-1 ring-white shrink-0"
-                              />
-                            ) : null}
-                            By: {item.createdBy.name || item.createdBy.email}
-                          </span>
-                        </>
+                        <span className="hidden sm:inline-flex items-center gap-1 text-slate-400">
+                          <span className="text-slate-300">•</span>
+                          {item.createdBy.avatar ? (
+                            <img
+                              src={item.createdBy.avatar}
+                              alt={item.createdBy.name || "Creator"}
+                              className="h-3.5 w-3.5 rounded-full object-cover ring-1 ring-white shrink-0"
+                            />
+                          ) : null}
+                          By: {item.createdBy.name || item.createdBy.email}
+                        </span>
                       )}
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                  {isOverdue && (
-                    <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[9px] font-bold text-red-700 uppercase tracking-wide">
-                      Overdue
+
+                  {/* Desktop Actions / Badges (hidden on mobile, visible on sm:flex) */}
+                  <div className="hidden sm:flex items-center gap-1.5 shrink-0 ml-2">
+                    {isOverdue && (
+                      <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[9px] font-bold text-red-700 uppercase tracking-wide">
+                        Overdue
+                      </span>
+                    )}
+                    <span className="inline-flex items-center rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-600">
+                      {item.type}
                     </span>
-                  )}
-                  <span className="inline-flex items-center rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-600">
-                    {item.type}
-                  </span>
-                  {canManageAssignment && onDeleteFollowup && (
-                    <button
-                      type="button"
-                      onClick={() => onDeleteFollowup(item.id)}
-                      className="p-1 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors cursor-pointer"
-                      title="Delete Follow-up (Admin & Team Lead)"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  )}
+                    {canManageAssignment && onDeleteFollowup && (
+                      <button
+                        type="button"
+                        onClick={() => onDeleteFollowup(item.id)}
+                        className="p-1 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors cursor-pointer"
+                        title="Delete Follow-up (Admin & Team Lead)"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             );
