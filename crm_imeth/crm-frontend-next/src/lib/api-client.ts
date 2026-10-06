@@ -78,7 +78,10 @@ export async function apiClient<T = unknown>(
     ...(options.headers as Record<string, string> || {}),
   };
 
-  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  let cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  if (cleanEndpoint.startsWith('/api/')) {
+    cleanEndpoint = cleanEndpoint.slice(4);
+  }
   const response = await fetch(`${API_BASE}${cleanEndpoint}`, {
     cache: 'no-store',
     ...options,
