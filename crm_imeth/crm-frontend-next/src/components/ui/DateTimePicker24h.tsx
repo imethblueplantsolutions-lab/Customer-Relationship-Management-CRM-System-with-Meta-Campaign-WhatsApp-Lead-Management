@@ -120,7 +120,6 @@ export default function DateTimePicker24h({
   const handleSelectDay = (day: number) => {
     const yyyy = viewDate.getFullYear();
     const mm = viewDate.getMonth();
-    const newDate = new Date(yyyy, mm, day, selectedHour, selectedMinute);
     // Format to "YYYY-MM-DDTHH:mm"
     const monthStr = String(mm + 1).padStart(2, "0");
     const dayStr = String(day).padStart(2, "0");
