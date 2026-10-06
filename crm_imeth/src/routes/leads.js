@@ -1215,8 +1215,107 @@ router.delete('/:id', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
     console.error('Error deleting lead:', error);
     res.status(500).json({ success: false, error: 'Failed to delete lead' });
   }
+// POST /bulk-update: Bulk update leads (status and/or assignee)
+router.post('/bulk-update', authenticate, authorize(['ADMIN', 'TEAM_LEAD', 'AGENT']), async (req, res) => {
+  try {
+    const { leadIds, status, assignedToId } = req.body;
+    const store = tenantStorage.getStore();
+    const tenantId = req.user?.tenantId || store?.tenantId;
+
+    if (!Array.isArray(leadIds) || leadIds.length === 0) {
+      return res.status(400).json({ success: false, error: 'Array of leadIds is required' });
+    }
+
+    // Role-based safeguard: Only ADMIN and TEAM_LEAD can reassign leads
+    if (assignedToId !== undefined && req.user?.role !== 'ADMIN' && req.user?.role !== 'TEAM_LEAD') {
+      return res.status(403).json({ success: false, error: 'Only admins and team leads can reassign leads' });
+    }
+
+    // Verify assignedTo belongs to the same tenant if assignedToId is provided
+    if (assignedToId) {
+      const targetAgent = await prisma.user.findFirst({
+        where: { id: assignedToId, tenantId },
+      });
+      if (!targetAgent) {
+        return res.status(400).json({ success: false, error: 'Target agent not found in tenant' });
+      }
+    }
+
+    const updateData = {};
+    if (status) {
+      updateData.status = status;
+    }
+    if (assignedToId !== undefined) {
+      updateData.assignedToId = assignedToId || null;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ success: false, error: 'No update parameters provided (status or assignedToId required)' });
+    }
+
+    // RBAC Scope Condition
+    const scopeCondition = await getLeadScopeCondition(req.user);
+
+    const whereClause = {
+      id: { in: leadIds },
+      tenantId,
+      ...scopeCondition,
+    };
+
+    const result = await prisma.lead.updateMany({
+      where: whereClause,
+      data: updateData,
+    });
+
+    await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
+
+    return res.status(200).json({
+      success: true,
+      count: result.count,
+      message: `Successfully updated ${result.count} lead(s)`,
+    });
+  } catch (error) {
+    console.error('Error in bulk-update:', error);
+    return res.status(500).json({ success: false, error: error.message || 'Failed to bulk update leads' });
+  }
 });
 
+// POST /bulk-delete: Bulk delete leads (Admin & Team Lead only)
+router.post('/bulk-delete', authenticate, authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
+  try {
+    const { leadIds } = req.body;
+    const store = tenantStorage.getStore();
+    const tenantId = req.user?.tenantId || store?.tenantId;
+
+    if (!Array.isArray(leadIds) || leadIds.length === 0) {
+      return res.status(400).json({ success: false, error: 'Array of leadIds is required' });
+    }
+
+    // RBAC Scope Condition
+    const scopeCondition = await getLeadScopeCondition(req.user);
+
+    const whereClause = {
+      id: { in: leadIds },
+      tenantId,
+      ...scopeCondition,
+    };
+
+    const result = await prisma.lead.deleteMany({
+      where: whereClause,
+    });
+
+    await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
+
+    return res.status(200).json({
+      success: true,
+      count: result.count,
+      message: `Successfully deleted ${result.count} lead(s)`,
+    });
+  } catch (error) {
+    console.error('Error in bulk-delete:', error);
+    return res.status(500).json({ success: false, error: error.message || 'Failed to bulk delete leads' });
+  }
+});
 
 module.exports = router;
 
