@@ -57,7 +57,7 @@ export default memo(function LeadInfoCard({
   const [editEmail, setEditEmail] = useState("");
   const [editNotes, setEditNotes] = useState("");
   const [savingDetails, setSavingDetails] = useState(false);
-  const [isMobileExpanded, setIsMobileExpanded] = useState(false);
+  const [isMobileExpanded, setIsMobileExpanded] = useState(true);
 
   const enterEditMode = () => {
     setEditName(lead.name || "");

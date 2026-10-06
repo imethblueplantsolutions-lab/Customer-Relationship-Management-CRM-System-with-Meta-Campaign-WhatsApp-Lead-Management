@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, memo } from "react";
+import { useState, useEffect, memo } from "react";
 import {
   Clock,
   Phone,
@@ -126,6 +126,8 @@ interface LeadActivityTimelineProps {
   ) => Promise<void>;
   onDeleteActivity: (activityId: string) => Promise<void>;
   isSubmittingActivity: boolean;
+  /** Optional trigger to programmatically open the activity creation modal with a given type */
+  openActivityTrigger?: { type: string; timestamp: number } | null;
 }
 
 export default memo(function LeadActivityTimeline({
@@ -140,6 +142,7 @@ export default memo(function LeadActivityTimeline({
   onUpdateActivity,
   onDeleteActivity,
   isSubmittingActivity,
+  openActivityTrigger,
 }: LeadActivityTimelineProps) {
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const [activityForm, setActivityForm] = useState<{
@@ -177,6 +180,12 @@ export default memo(function LeadActivityTimeline({
     });
     setIsActivityModalOpen(true);
   };
+
+  useEffect(() => {
+    if (openActivityTrigger?.timestamp) {
+      openActivityModal(openActivityTrigger.type || "NOTE");
+    }
+  }, [openActivityTrigger]);
 
   const openEditModal = (activity: Activity) => {
     setEditingActivity(activity);

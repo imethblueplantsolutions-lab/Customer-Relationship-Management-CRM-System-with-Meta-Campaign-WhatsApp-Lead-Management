@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, memo } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import { Calendar, Check, Trash2, Clock, User } from "lucide-react";
 import type { Followup } from "@/types";
 import DateTimePicker24h from "@/components/ui/DateTimePicker24h";
@@ -43,6 +43,8 @@ interface LeadFollowupsCardProps {
   onDeleteFollowup?: (followupId: string) => Promise<void>;
   /** Loading indicator when saving a new reminder */
   addingFollowup: boolean;
+  /** Optional trigger timestamp to programmatically open the schedule form */
+  openFormTrigger?: number;
 }
 
 export default memo(function LeadFollowupsCard({
@@ -54,8 +56,15 @@ export default memo(function LeadFollowupsCard({
   onToggleComplete,
   onDeleteFollowup,
   addingFollowup,
+  openFormTrigger,
 }: LeadFollowupsCardProps) {
   const [showFollowupForm, setShowFollowupForm] = useState(false);
+
+  useEffect(() => {
+    if (openFormTrigger) {
+      setShowFollowupForm(true);
+    }
+  }, [openFormTrigger]);
   const [followupType, setFollowupType] = useState("CALL");
   const [customFollowupType, setCustomFollowupType] = useState("");
   const [followupNote, setFollowupNote] = useState("");
