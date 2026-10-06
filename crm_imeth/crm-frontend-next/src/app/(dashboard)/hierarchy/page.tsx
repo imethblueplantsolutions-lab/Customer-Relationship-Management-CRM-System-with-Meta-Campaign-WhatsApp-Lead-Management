@@ -712,9 +712,9 @@ export default function UserHierarchyPage() {
           <button
             onClick={() => fetchHierarchy(true)}
             disabled={refreshing || loading}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700/60 transition-all cursor-pointer disabled:opacity-50 shadow-xs"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-brand-primary hover:border-brand-primary/40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700/60 transition-all cursor-pointer disabled:opacity-50 shadow-xs"
           >
-            <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin text-blue-600" : ""}`} />
+            <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin text-brand-primary" : ""}`} />
             <span>Refresh</span>
           </button>
         </div>
@@ -937,7 +937,7 @@ export default function UserHierarchyPage() {
         <div className="sticky top-0 z-30 animate-in slide-in-from-top-2 duration-300">
           <div className="flex items-center justify-between rounded-2xl border border-blue-200 bg-blue-50/90 px-5 py-3 shadow-md backdrop-blur-sm dark:border-blue-800 dark:bg-blue-950/80">
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white font-bold text-xs shadow-sm">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary text-white font-bold text-xs shadow-sm">
                 {selectedUserIds.size}
               </div>
               <div>
@@ -965,7 +965,7 @@ export default function UserHierarchyPage() {
                 className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all active:scale-95 ${
                   isMixedRoleSelection
                     ? "bg-slate-400 cursor-not-allowed opacity-70"
-                    : "bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                    : "bg-brand-primary hover:bg-brand-accent cursor-pointer"
                 }`}
               >
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -1767,7 +1767,7 @@ export default function UserHierarchyPage() {
                       : undefined
                   );
                 }}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition-all cursor-pointer shadow-sm disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary px-4 py-2 text-xs font-semibold text-white hover:bg-brand-accent transition-all cursor-pointer shadow-sm disabled:opacity-50"
               >
                 {savingReassignment && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
                 <span>Save Changes</span>
@@ -2437,7 +2437,7 @@ export default function UserHierarchyPage() {
                 disabled={bulkReassigning || isMixedRoleSelection}
                 onClick={handleBulkReassign}
                 title={isMixedRoleSelection ? "Cannot bulk reassign across mixed role tiers" : ""}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition-all cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary px-4 py-2 text-xs font-semibold text-white hover:bg-brand-accent transition-all cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {bulkReassigning && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
                 <span>{bulkReassigning ? "Reassigning..." : `Reassign ${selectedUserIds.size} Users`}</span>

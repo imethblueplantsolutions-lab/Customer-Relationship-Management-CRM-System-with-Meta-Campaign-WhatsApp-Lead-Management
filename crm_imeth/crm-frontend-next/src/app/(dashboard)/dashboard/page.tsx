@@ -112,7 +112,7 @@ function DashboardContent() {
       <div>
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
-            <LayoutDashboard className="h-6 w-6 text-blue-600" />
+            <LayoutDashboard className="h-6 w-6 text-brand-primary" />
             Dashboard
           </h2>
           {user?.role === "TEAM_LEAD" && (
@@ -128,8 +128,8 @@ function DashboardContent() {
             </span>
           )}
           {(user?.role === "ADMIN" || user?.role === "SUPER_ADMIN") && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800 border border-blue-200">
-              <Shield className="h-3.5 w-3.5 text-blue-600" />
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-semibold text-brand-primary border border-brand-primary/20">
+              <Shield className="h-3.5 w-3.5 text-brand-primary" />
               Tenant-Wide Analytics
             </span>
           )}
@@ -152,7 +152,7 @@ function DashboardContent() {
           {stats.totalLeads === 0 && (
             <Link
               href="/leads"
-              className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700"
+              className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-brand-primary hover:text-brand-accent"
             >
               Add your first lead <ArrowRight className="h-3 w-3" />
             </Link>
@@ -196,7 +196,7 @@ function DashboardContent() {
           ) : (
             <Link
               href="/followups"
-              className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700"
+              className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-brand-primary hover:text-brand-accent"
             >
               View tasks <ArrowRight className="h-3 w-3" />
             </Link>
@@ -212,7 +212,7 @@ function DashboardContent() {
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-sm font-bold text-slate-700">Recent Leads</h3>
           {stats.recentLeads.length > 0 && (
-            <Link href="/leads" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
+            <Link href="/leads" className="text-xs font-semibold text-brand-primary hover:text-brand-accent">
               View all →
             </Link>
           )}
@@ -227,7 +227,7 @@ function DashboardContent() {
             </p>
             <Link
               href="/leads"
-              className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors"
+              className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-brand-primary px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-brand-accent transition-colors"
             >
               <Plus className="h-3.5 w-3.5" /> Go to Leads
             </Link>
@@ -247,7 +247,7 @@ function DashboardContent() {
                 {stats.recentLeads.map((lead) => (
                   <tr key={lead.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                     <td className="py-4 font-medium text-slate-800">
-                      <Link href={`/leads/${lead.id}`} className="hover:text-blue-600">
+                      <Link href={`/leads/${lead.id}`} className="hover:text-brand-primary">
                         {lead.name || "—"}
                       </Link>
                     </td>

@@ -350,7 +350,7 @@ export default function FlowEditorContent() {
   if (loading) {
     return (
       <div className="flex h-[calc(100vh-120px)] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
       </div>
     );
   }
@@ -361,7 +361,7 @@ export default function FlowEditorContent() {
         <p className="text-sm text-slate-500">Flow not found</p>
         <button
           onClick={() => router.push("/flows")}
-          className="text-sm text-blue-600 hover:underline cursor-pointer"
+          className="text-sm text-brand-primary hover:text-brand-accent hover:underline cursor-pointer"
         >
           ← Back to flows
         </button>
@@ -414,7 +414,7 @@ export default function FlowEditorContent() {
             className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold text-white shadow-md transition-all cursor-pointer ${
               hasChanges
                 ? "bg-amber-600 hover:bg-amber-700 ring-2 ring-amber-400/40"
-                : "bg-blue-600 hover:bg-blue-700"
+                : "bg-brand-primary hover:bg-brand-accent"
             } disabled:opacity-50`}
           >
             {hasChanges && <span className="h-2 w-2 rounded-full bg-white animate-pulse" />}

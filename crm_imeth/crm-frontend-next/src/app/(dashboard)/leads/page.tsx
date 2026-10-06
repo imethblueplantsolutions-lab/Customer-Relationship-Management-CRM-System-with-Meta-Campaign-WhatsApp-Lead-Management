@@ -199,7 +199,7 @@ function LeadsPageContent() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
-            <Users className="h-6 w-6 text-blue-600" />
+            <Users className="h-6 w-6 text-brand-primary" />
             Leads Pipeline
           </h2>
           <p className="text-sm text-slate-500 mt-1">
@@ -211,9 +211,9 @@ function LeadsPageContent() {
             <button
               type="button"
               onClick={() => setShowMergeModal(true)}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-5 py-3.5 text-sm font-bold shadow-xs transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 hover:text-brand-primary hover:border-brand-primary/40 px-5 py-3.5 text-sm font-bold shadow-xs transition-all cursor-pointer"
             >
-              <GitMerge className="h-4 w-4 text-blue-600" />
+              <GitMerge className="h-4 w-4 text-brand-primary" />
               Merge Duplicates
             </button>
           )}
@@ -225,7 +225,7 @@ function LeadsPageContent() {
             }}
             className={`inline-flex items-center gap-3 rounded-xl px-7 py-3.5 text-sm font-bold shadow-md transition-all cursor-pointer ${showAddForm
               ? "bg-slate-200 text-slate-700 hover:bg-slate-300"
-              : "bg-blue-600 text-white hover:bg-blue-700"
+              : "bg-brand-primary text-white hover:bg-brand-accent shadow-md hover:shadow-lg"
               }`}
           >
             {showAddForm ? (
@@ -247,9 +247,9 @@ function LeadsPageContent() {
           {/* Form Header */}
           <div className="flex items-center justify-between bg-slate-50/70 border-b border-slate-200/80 px-5 py-4">
             <div>
-              <h3 className="text-base font-bold text-[#0F4C75] flex items-center gap-2">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#BBE1FA]/30">
-                  <Plus className="h-4 w-4 text-blue-600" />
+              <h3 className="text-base font-bold text-brand-primary flex items-center gap-2">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-primary/10">
+                  <Plus className="h-4 w-4 text-brand-primary" />
                 </span>
                 Manual Lead Injection
               </h3>
@@ -506,7 +506,7 @@ function LeadsPageContent() {
               <button
                 type="submit"
                 disabled={formSubmitting}
-                className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-brand-primary hover:bg-brand-accent text-white font-bold text-xs rounded-xl shadow-md hover:shadow-lg transition-all disabled:opacity-50 cursor-pointer"
               >
                 {formSubmitting ? (
                   <>
@@ -545,7 +545,7 @@ function LeadsPageContent() {
               className="flex items-center justify-between rounded-2xl bg-white border border-slate-200/60 px-6 py-5 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group"
             >
               <div className="flex items-center gap-4 min-w-0">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-600/10 text-sm font-bold text-blue-600">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-primary/10 text-sm font-bold text-brand-primary">
                   {(lead.name || lead.phoneNumber).charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0">
@@ -592,7 +592,7 @@ function LeadsPageContent() {
                 >
                   {lead.status}
                 </span>
-                <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-blue-600 transition-colors" />
+                <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-brand-primary transition-colors" />
               </div>
             </Link>
           ))}

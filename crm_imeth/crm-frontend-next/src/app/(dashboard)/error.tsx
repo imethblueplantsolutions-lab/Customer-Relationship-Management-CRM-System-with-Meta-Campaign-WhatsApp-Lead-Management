@@ -38,7 +38,7 @@ export default function DashboardError({
         <button
           type="button"
           onClick={() => reset()}
-          className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition-all cursor-pointer"
+          className="inline-flex items-center gap-2 rounded-xl bg-brand-primary px-4 py-2.5 text-xs font-semibold text-white shadow-xs hover:bg-brand-accent transition-all cursor-pointer"
         >
           <RotateCcw className="h-3.5 w-3.5" /> Try Again
         </button>

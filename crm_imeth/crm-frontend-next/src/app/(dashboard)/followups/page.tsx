@@ -187,7 +187,7 @@ export default function FollowupsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
-            <Clock className="h-6 w-6 text-blue-600" />
+            <Clock className="h-6 w-6 text-brand-primary" />
             Follow-up Reminders & Tasks
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
@@ -197,9 +197,9 @@ export default function FollowupsPage() {
 
         <button
           onClick={() => fetchFollowups()}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2.5 text-xs font-bold shadow-xs transition-all cursor-pointer shrink-0"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 hover:text-brand-primary hover:border-brand-primary/40 px-4 py-2.5 text-xs font-bold shadow-xs transition-all cursor-pointer shrink-0"
         >
-          <RefreshCw className={`h-4 w-4 text-blue-600 ${loading ? "animate-spin" : ""}`} />
+          <RefreshCw className={`h-4 w-4 text-brand-primary ${loading ? "animate-spin" : ""}`} />
           Refresh Tasks
         </button>
       </div>
@@ -244,7 +244,7 @@ export default function FollowupsPage() {
           onClick={() => setActiveTab("TODAY")}
           className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === "TODAY"
-              ? "bg-blue-600 text-white shadow-sm"
+              ? "bg-brand-primary text-white shadow-sm"
               : "text-slate-600 hover:bg-slate-50"
           }`}
         >
@@ -387,7 +387,7 @@ export default function FollowupsPage() {
                 {/* Footer Meta */}
                 {f.assignedTo && (
                   <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                    <span className="flex items-center gap-1 text-blue-600 font-semibold">
+                    <span className="flex items-center gap-1 text-brand-primary font-semibold">
                       <User className="h-3.5 w-3.5" />
                       Assigned: {f.assignedTo.name || f.assignedTo.email}
                     </span>

@@ -138,7 +138,7 @@ export default function DeadLetterQueuePage() {
   if (isLoading) {
     return (
       <div className="flex h-96 items-center justify-center">
-        <RefreshCw className="h-8 w-8 animate-spin text-blue-600" />
+        <RefreshCw className="h-8 w-8 animate-spin text-brand-primary" />
       </div>
     );
   }
@@ -161,9 +161,9 @@ export default function DeadLetterQueuePage() {
           type="button"
           onClick={fetchFailedJobs}
           disabled={loading}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2.5 text-xs font-bold shadow-xs transition-all cursor-pointer shrink-0 disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 hover:text-brand-primary hover:border-brand-primary/40 px-4 py-2.5 text-xs font-bold shadow-xs transition-all cursor-pointer shrink-0 disabled:opacity-50"
         >
-          <RefreshCw className={`h-4 w-4 text-blue-600 ${loading ? "animate-spin" : ""}`} />
+          <RefreshCw className={`h-4 w-4 text-brand-primary ${loading ? "animate-spin" : ""}`} />
           Refresh Jobs
         </button>
       </div>
@@ -225,7 +225,7 @@ export default function DeadLetterQueuePage() {
             placeholder="Search by job name, ID, error..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-brand-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all"
           />
         </div>
 
@@ -270,7 +270,7 @@ export default function DeadLetterQueuePage() {
       <div className="rounded-2xl border border-slate-200/90 bg-white shadow-xs overflow-hidden">
         {loading && jobs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <RefreshCw className="h-8 w-8 animate-spin text-blue-600 mb-3" />
+            <RefreshCw className="h-8 w-8 animate-spin text-brand-primary mb-3" />
             <p className="text-xs font-semibold text-slate-500">Loading dead leads...</p>
           </div>
         ) : filteredJobs.length === 0 ? (
@@ -401,7 +401,7 @@ export default function DeadLetterQueuePage() {
                           disabled={!isFailed || isReplaying}
                           className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs ${
                             isFailed
-                              ? "bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+                              ? "bg-brand-primary hover:bg-brand-accent text-white disabled:opacity-50"
                               : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
                           }`}
                           title={isFailed ? "Replay job to BullMQ queue" : "Job already replayed"}

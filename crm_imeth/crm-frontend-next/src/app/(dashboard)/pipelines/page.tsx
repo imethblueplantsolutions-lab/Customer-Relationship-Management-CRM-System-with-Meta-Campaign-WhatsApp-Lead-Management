@@ -213,7 +213,7 @@ export default function PipelinesPage() {
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
-            <GitBranch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-600" />
+            <GitBranch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-primary" />
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           </div>
         </div>
@@ -221,7 +221,7 @@ export default function PipelinesPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowNewPipeline(true)}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-brand-primary hover:border-brand-primary/40 transition-all cursor-pointer"
           >
             <Plus className="h-4 w-4" /> New Pipeline
           </button>
@@ -231,7 +231,7 @@ export default function PipelinesPage() {
               setShowDealForm(true);
             }}
             disabled={!selectedId || stages.length === 0}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-md hover:bg-blue-700 transition-all disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-brand-primary px-4 py-2.5 text-sm font-bold text-white shadow-md hover:bg-brand-accent transition-all disabled:opacity-50 cursor-pointer"
           >
             <Plus className="h-4 w-4" /> Add Deal
           </button>
@@ -246,7 +246,7 @@ export default function PipelinesPage() {
           <p className="mt-2 text-sm text-slate-400">Create one to start tracking deals</p>
           <button
             onClick={() => setShowNewPipeline(true)}
-            className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white cursor-pointer"
+            className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-brand-primary px-4 py-2.5 text-sm font-bold text-white shadow-md hover:bg-brand-accent transition-all cursor-pointer"
           >
             <Plus className="h-4 w-4" /> Create Pipeline
           </button>
@@ -312,7 +312,7 @@ export default function PipelinesPage() {
               <button
                 onClick={handleCreatePipeline}
                 disabled={creating || !newName.trim()}
-                className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+                className="rounded-xl bg-brand-primary px-4 py-2 text-sm font-bold text-white hover:bg-brand-accent disabled:opacity-50 cursor-pointer shadow-sm"
               >
                 {creating ? "Creating..." : "Create"}
               </button>
@@ -361,7 +361,7 @@ export default function PipelinesPage() {
               <button
                 onClick={handleCreateDeal}
                 disabled={!dealTitle.trim()}
-                className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+                className="rounded-xl bg-brand-primary px-4 py-2 text-sm font-bold text-white hover:bg-brand-accent disabled:opacity-50 cursor-pointer shadow-sm"
               >
                 Create Deal
               </button>
@@ -401,7 +401,7 @@ function StageColumn({
       <div
         ref={setNodeRef}
         className={`mt-3 flex flex-1 flex-col gap-2 rounded-xl transition-all min-h-[80px] ${
-          isOver ? "bg-blue-600/5 outline outline-2 outline-dashed outline-blue-600 outline-offset-2" : ""
+          isOver ? "bg-brand-primary/5 outline outline-2 outline-dashed outline-brand-primary outline-offset-2" : ""
         }`}
       >
         {deals.length === 0 ? (

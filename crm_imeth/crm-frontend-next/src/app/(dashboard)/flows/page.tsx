@@ -125,7 +125,7 @@ export default function FlowsPage() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
-            <Workflow className="h-6 w-6 text-blue-600" />
+            <Workflow className="h-6 w-6 text-brand-primary" />
             Automation Flows
           </h2>
           <p className="text-sm text-slate-500 mt-1">
@@ -134,7 +134,7 @@ export default function FlowsPage() {
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-md hover:bg-blue-700 transition-all cursor-pointer"
+          className="inline-flex items-center gap-2 rounded-xl bg-brand-primary px-4 py-2.5 text-sm font-bold text-white shadow-md hover:bg-brand-accent transition-all cursor-pointer"
         >
           <Plus className="h-4 w-4" /> New Flow
         </button>
@@ -151,7 +151,7 @@ export default function FlowsPage() {
           </p>
           <button
             onClick={() => setShowCreate(true)}
-            className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white cursor-pointer"
+            className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-brand-primary px-4 py-2.5 text-sm font-bold text-white shadow-md hover:bg-brand-accent transition-all cursor-pointer"
           >
             <Plus className="h-4 w-4" /> Create Flow
           </button>
@@ -302,7 +302,7 @@ export default function FlowsPage() {
               <button
                 onClick={handleCreate}
                 disabled={creating || !newName.trim()}
-                className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+                className="rounded-xl bg-brand-primary px-4 py-2 text-sm font-bold text-white hover:bg-brand-accent disabled:opacity-50 cursor-pointer shadow-sm"
               >
                 {creating ? "Creating..." : "Create Flow"}
               </button>
