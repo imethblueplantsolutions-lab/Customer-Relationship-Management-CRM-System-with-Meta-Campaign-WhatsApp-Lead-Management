@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, memo } from "react";
+import { useMemo, memo, useRef } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -43,8 +43,17 @@ export default memo(function LeadHeader({
   onUpdateStatus,
   onDeleteLead,
 }: LeadHeaderProps) {
-  // Gamified celebration hook: fires audio chime and confetti on transition into Converted stage
-  useCrmWinCelebration(lead.status);
+  const convertedWrapperRef = useRef<HTMLDivElement | null>(null);
+
+  // Gamified celebration hook: fires audio chime and localized button confetti on transition into Converted stage
+  const { triggerCelebration } = useCrmWinCelebration(lead.status, convertedWrapperRef);
+
+  const handleStageClick = async (stageValue: string) => {
+    if (stageValue === "CONVERTED") {
+      triggerCelebration();
+    }
+    await onUpdateStatus(stageValue);
+  };
 
   // Calculate Stage Duration (relative from updatedAt)
   const durationInfo = useMemo(() => {
@@ -178,6 +187,7 @@ export default memo(function LeadHeader({
           {PIPELINE_STAGES.map((stage, idx) => {
             const isCurrent = lead.status === stage.value;
             const isCompleted = currentStageIndex > idx && !isLost;
+            const isConverted = stage.value === "CONVERTED";
 
             let style = "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-slate-300";
             let badge = "bg-slate-200 text-slate-600";
@@ -194,13 +204,12 @@ export default memo(function LeadHeader({
               badge = "bg-slate-200/80 text-slate-400";
             }
 
-            return (
+            const buttonNode = (
               <button
-                key={stage.value}
                 type="button"
-                onClick={() => onUpdateStatus(stage.value)}
+                onClick={() => handleStageClick(stage.value)}
                 disabled={statusUpdating}
-                className={`relative flex items-center justify-between gap-2 p-2.5 rounded-xl border text-xs transition-all cursor-pointer select-none text-left ${style}`}
+                className={`relative flex items-center justify-between gap-2 p-2.5 rounded-xl border text-xs transition-all cursor-pointer select-none text-left w-full h-full ${style} ${isConverted ? "confetti-button" : ""}`}
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <span
@@ -223,6 +232,24 @@ export default memo(function LeadHeader({
                   </span>
                 )}
               </button>
+            );
+
+            if (isConverted) {
+              return (
+                <div
+                  key={stage.value}
+                  ref={convertedWrapperRef}
+                  className="button-wrapper relative w-full h-full"
+                >
+                  {buttonNode}
+                </div>
+              );
+            }
+
+            return (
+              <div key={stage.value} className="w-full h-full">
+                {buttonNode}
+              </div>
             );
           })}
         </div>

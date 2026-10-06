@@ -499,3 +499,17 @@ td {
 [data-theme-mode="dark"] #login-page-root .login-gradient-header span {
   color: #ffffff !important;
 }
+
+/* ─── Button Confetti Celebration (from confeti.html) ─── */
+.button-wrapper {
+  position: relative;
+}
+
+.button-wrapper canvas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 50;
+}

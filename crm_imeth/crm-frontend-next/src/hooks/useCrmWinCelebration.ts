@@ -1,18 +1,78 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import useSound from "use-sound";
 import confetti from "canvas-confetti";
 
+let lastCelebrationTimestamp = 0;
+
 /**
- * Custom hook to trigger a gamified celebration (audio chime + visual emoji & green confetti)
- * strictly once when a lead transitions into the "CONVERTED" stage.
- *
- * Featured celebration emojis: 🎉 🥂 🎇 🎈
- *
- * @param currentStage - The current pipeline status of the lead (e.g., 'CONVERTED', 'Converted')
+ * Fires the localized button celebration effect studied from utils_codes/confeti.html.
+ * Creates a dedicated canvas anchored to the button wrapper and bursts confetti
+ * with exact matching parameters:
+ * - particleCount: 200
+ * - spread: 200
+ * - startVelocity: 15
+ * - scalar: 0.9
+ * - ticks: 90
  */
-export function useCrmWinCelebration(currentStage: string | undefined) {
+export function fireConvertedButtonConfetti(targetContainer?: HTMLElement | null) {
+  if (typeof window === "undefined") return;
+
+  const now = Date.now();
+  if (now - lastCelebrationTimestamp < 350) return; // Prevent duplicate rapid bursts
+  lastCelebrationTimestamp = now;
+
+  try {
+    const container =
+      targetContainer ||
+      (document.querySelector(".button-wrapper") as HTMLElement) ||
+      document.body;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 600;
+    canvas.height = 600;
+    canvas.style.position = "absolute";
+    canvas.style.top = "50%";
+    canvas.style.left = "50%";
+    canvas.style.transform = "translate(-50%, -50%)";
+    canvas.style.pointerEvents = "none";
+    canvas.style.zIndex = "50";
+
+    container.appendChild(canvas);
+
+    const confettiButton = confetti.create(canvas, {
+      resize: false,
+      useWorker: true,
+    });
+
+    confettiButton({
+      particleCount: 200,
+      spread: 200,
+      startVelocity: 15,
+      scalar: 0.9,
+      ticks: 90,
+    })?.then(() => {
+      if (canvas.parentNode) {
+        canvas.parentNode.removeChild(canvas);
+      }
+    });
+  } catch (err) {
+    console.warn("[fireConvertedButtonConfetti] Error firing confetti:", err);
+  }
+}
+
+/**
+ * Custom hook to trigger the button celebration effect when transitioning into the "CONVERTED" stage,
+ * or when manually invoking triggerCelebration().
+ *
+ * @param currentStage - The current pipeline status of the lead (e.g., 'CONVERTED')
+ * @param containerRef - Optional React ref to the Converted button wrapper element
+ */
+export function useCrmWinCelebration(
+  currentStage?: string,
+  containerRef?: React.RefObject<HTMLElement | null>
+) {
   const [playSuccessSound] = useSound("/sounds/crm-win-notification.mp3", {
     volume: 0.5,
   });
@@ -20,53 +80,27 @@ export function useCrmWinCelebration(currentStage: string | undefined) {
   const normalizedStage = currentStage?.toUpperCase() || "";
   const previousStageRef = useRef<string>(normalizedStage);
 
+  const triggerCelebration = useCallback(() => {
+    try {
+      playSuccessSound();
+    } catch (err) {
+      console.warn("[useCrmWinCelebration] Audio playback error:", err);
+    }
+    fireConvertedButtonConfetti(containerRef?.current);
+  }, [containerRef, playSuccessSound]);
+
   useEffect(() => {
     // Only fire if transitioning from a non-converted stage into CONVERTED
     if (
       previousStageRef.current !== "CONVERTED" &&
       normalizedStage === "CONVERTED"
     ) {
-      // 1. Play celebration audio chime
-      try {
-        playSuccessSound();
-      } catch (err) {
-        console.warn("[useCrmWinCelebration] Audio playback error:", err);
-      }
-
-      // 2. Trigger celebration confetti & emoji bursts (🎉 🥂 🎇 🎈)
-      try {
-        const scalar = 2.2;
-        const emojiShapes = [
-          confetti.shapeFromText({ text: "🎉", scalar }),
-          confetti.shapeFromText({ text: "🥂", scalar }),
-          confetti.shapeFromText({ text: "🎇", scalar }),
-          confetti.shapeFromText({ text: "🎈", scalar }),
-        ];
-
-        // Primary: CRM green confetti shimmer
-        confetti({
-          particleCount: 100,
-          spread: 80,
-          origin: { y: 0.6 },
-          colors: ["#059669", "#10B981", "#34D399"],
-          zIndex: 9999,
-        });
-
-        // Secondary: Floating celebration emojis (🎉 🥂 🎇 🎈)
-        confetti({
-          particleCount: 45,
-          spread: 90,
-          origin: { y: 0.6 },
-          shapes: emojiShapes,
-          scalar,
-          zIndex: 9999,
-        });
-      } catch (err) {
-        console.warn("[useCrmWinCelebration] Confetti error:", err);
-      }
+      triggerCelebration();
     }
 
-    // Immediately record current stage to prevent repeat triggers on subsequent renders
+    // Record stage to prevent repeat triggers on rerenders
     previousStageRef.current = normalizedStage;
-  }, [normalizedStage, playSuccessSound]);
+  }, [normalizedStage, triggerCelebration]);
+
+  return { triggerCelebration };
 }
