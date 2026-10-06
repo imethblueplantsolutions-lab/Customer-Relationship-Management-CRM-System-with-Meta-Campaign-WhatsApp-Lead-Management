@@ -54,7 +54,7 @@ router.get('/stats', async (req, res) => {
         take: 5,
         orderBy: { updatedAt: 'desc' },
         include: {
-          assignedTo: { select: { id: true, email: true, role: true } }
+          assignedTo: { select: { id: true, name: true, email: true, role: true } }
         }
       }),
       prisma.followup.count({ where: followupWhere })

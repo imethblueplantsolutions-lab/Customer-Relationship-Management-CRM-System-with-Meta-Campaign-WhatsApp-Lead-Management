@@ -50,7 +50,15 @@ const authenticate = async (req, res, next) => {
  * Usage: authorize(['ADMIN', 'TEAM_LEAD'])
  */
 const authorize = (roles = []) => (req, res, next) => {
-  if (!req.user || (roles.length && !roles.includes(req.user.role))) {
+  if (!req.user || !req.user.role) {
+    return res.status(401).json({ success: false, error: 'Unauthorized: Authentication required' });
+  }
+  // SUPER_ADMIN has platform-wide unconditional access
+  if (req.user.role === 'SUPER_ADMIN') {
+    return next();
+  }
+  const allowedRoles = Array.isArray(roles) ? roles : [roles];
+  if (allowedRoles.length && !allowedRoles.includes(req.user.role)) {
     return res.status(403).json({ success: false, error: 'Forbidden: Insufficient privileges' });
   }
   next();

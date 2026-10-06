@@ -12,6 +12,9 @@ const { assertCanProvisionRole, getTenantQuotaStatus } = require('../utils/tenan
 const { getDownstreamUserIds } = require('../utils/hierarchy');
 const router = express.Router();
 
+// Enforce authentication on all user and profile management endpoints
+router.use(authenticate);
+
 // Helper to calculate SHA-256 hash for OTP codes
 function hashOtp(otpCode) {
   return crypto.createHash('sha256').update(String(otpCode).trim()).digest('hex');

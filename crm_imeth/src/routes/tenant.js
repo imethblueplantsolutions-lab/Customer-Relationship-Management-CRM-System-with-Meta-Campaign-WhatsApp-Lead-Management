@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const prisma = require('../config/db');
 const { requireRoles } = require('../middleware/rbac');
+const { tenantStorage } = require('../middleware/tenant');
 
 /**
  * GET /api/tenant/profile
@@ -10,7 +11,8 @@ const { requireRoles } = require('../middleware/rbac');
  */
 router.get('/profile', async (req, res) => {
   try {
-    const tenantId = req.user?.tenantId;
+    const store = tenantStorage.getStore();
+    const tenantId = req.user?.tenantId || store?.tenantId;
     if (!tenantId) {
       return res.status(400).json({ success: false, error: 'Tenant context missing from session' });
     }
@@ -51,7 +53,8 @@ router.get('/profile', async (req, res) => {
  */
 router.put('/profile', requireRoles('ADMIN'), async (req, res) => {
   try {
-    const tenantId = req.user?.tenantId;
+    const store = tenantStorage.getStore();
+    const tenantId = req.user?.tenantId || store?.tenantId;
     if (!tenantId) {
       return res.status(400).json({ success: false, error: 'Tenant context missing from session' });
     }

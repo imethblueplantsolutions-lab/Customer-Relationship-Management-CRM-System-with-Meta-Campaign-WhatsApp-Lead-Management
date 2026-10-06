@@ -50,14 +50,15 @@ async function authorizeAttachmentAccess(attachmentId, user) {
   const attachmentTenantId = parentLead ? parentLead.tenantId : attachment.createdBy?.tenantId;
 
   // 1. Tenant boundary validation (Anti-IDOR)
-  if (attachmentTenantId !== user.tenantId) {
+  const isSuperAdmin = user.role === 'SUPER_ADMIN';
+  if (!isSuperAdmin && attachmentTenantId !== user.tenantId) {
     const error = new Error('Attachment not found');
     error.statusCode = 404;
     throw error;
   }
 
   // 2. Hierarchy & Role Scoping
-  if (parentLead) {
+  if (!isSuperAdmin && parentLead) {
     const scopeCondition = await getLeadScopeCondition(user);
     const authorized = await prisma.lead.findFirst({
       where: {
