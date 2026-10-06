@@ -96,6 +96,19 @@ export default function OtpLoginModal({
       return;
     }
 
+    // Handle multi-digit input (e.g. mobile SMS autofill injecting full OTP via onChange)
+    if (cleanValue.length > 1) {
+      const digits = cleanValue.slice(0, 6).split("");
+      const nextDigits = [...otpDigits];
+      for (let i = 0; i < 6; i++) {
+        nextDigits[i] = digits[i] || "";
+      }
+      setOtpDigits(nextDigits);
+      const nextFocusIndex = Math.min(digits.length, 5);
+      inputRefs.current[nextFocusIndex]?.focus();
+      return;
+    }
+
     // Handle single digit input
     const nextDigits = [...otpDigits];
     nextDigits[index] = cleanValue.slice(-1);
@@ -204,15 +217,16 @@ export default function OtpLoginModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
+      <div className="relative w-full max-w-md my-auto max-h-[calc(100dvh-2rem)] flex flex-col bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-100 overflow-y-auto overscroll-contain">
         
         {/* Modal Top Header Gradient */}
-        <div className="login-gradient-header bg-gradient-to-r from-[#1B262C] via-[#0F4C75] to-[#3282B8] p-6 text-white text-center relative">
+        <div className="login-gradient-header bg-gradient-to-r from-[#1B262C] via-[#0F4C75] to-[#3282B8] p-5 sm:p-6 text-white text-center relative shrink-0">
           <button
             type="button"
             onClick={onCancel}
-            className="absolute top-4 right-4 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+            aria-label="Close modal"
+            className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer min-w-[40px] min-h-[40px] flex items-center justify-center"
           >
             <X className="w-4 h-4" />
           </button>
@@ -230,7 +244,7 @@ export default function OtpLoginModal({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 sm:p-7 space-y-5">
+        <form onSubmit={handleSubmit} className="p-5 sm:p-7 space-y-4 sm:space-y-5">
           
           {/* Email Target Indicator */}
           <div className="p-3 rounded-xl bg-[#BBE1FA]/20 border border-[#BBE1FA]/70 flex items-center justify-between text-xs text-[#0F4C75] font-medium">
@@ -279,19 +293,20 @@ export default function OtpLoginModal({
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 text-center">
               Enter 6-Digit Code
             </label>
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-1.5 sm:gap-2">
               {otpDigits.map((digit, idx) => (
                 <input
                   key={idx}
                   ref={(el) => { inputRefs.current[idx] = el; }}
                   type="text"
                   inputMode="numeric"
+                  autoComplete={idx === 0 ? "one-time-code" : "off"}
                   maxLength={1}
                   value={digit}
                   onChange={(e) => handleDigitChange(idx, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(idx, e)}
                   onPaste={handlePaste}
-                  className={`w-11 sm:w-12 h-13 rounded-xl border text-center text-xl font-bold font-mono transition-all focus:outline-none ${
+                  className={`w-9 h-11 sm:w-11 sm:h-13 md:w-12 rounded-lg sm:rounded-xl border text-center text-lg sm:text-xl font-bold font-mono transition-all focus:outline-none ${
                     digit
                       ? "border-blue-500 bg-sky-50 text-[#0F4C75] ring-2 ring-blue-500/20"
                       : "border-slate-200 bg-slate-50 text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
@@ -320,12 +335,13 @@ export default function OtpLoginModal({
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
                   placeholder="New personal password"
-                  className="w-full h-11 px-3.5 pr-10 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                  className="w-full h-11 px-3.5 pr-10 rounded-xl bg-slate-50 border border-slate-200 text-base sm:text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                  aria-label={showNewPassword ? "Hide password" : "Show password"}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
                 >
                   {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -339,7 +355,7 @@ export default function OtpLoginModal({
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   placeholder="Confirm new password"
-                  className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                  className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-base sm:text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
                 />
               </div>
             </div>
