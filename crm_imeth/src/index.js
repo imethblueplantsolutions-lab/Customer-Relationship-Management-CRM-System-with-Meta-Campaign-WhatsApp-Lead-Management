@@ -186,6 +186,7 @@ app.use('/api/pipelines', require('./routes/pipelines'));
 app.use('/api/deals', require('./routes/deals'));
 app.use('/api/flows', require('./routes/flows'));
 app.use('/api/settings', require('./routes/settings'));
+app.use('/api/tenant', require('./routes/tenant'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/hierarchy', require('./routes/hierarchy'));
 app.use('/api/audit-logs', require('./routes/auditLogs'));

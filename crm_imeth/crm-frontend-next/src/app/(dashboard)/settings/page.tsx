@@ -31,7 +31,11 @@ import {
   Sliders,
   AlertTriangle,
   Webhook,
+  Building2,
+  ShieldAlert,
+  MapPin,
 } from "lucide-react";
+import { toast } from "sonner";
 import ActivityFeed from "@/components/hierarchy/ActivityFeed";
 import ThemeOptionsTab from "@/components/settings/ThemeOptionsTab";
 import NotificationPreferencesTab from "@/components/settings/NotificationPreferencesTab";
@@ -405,6 +409,199 @@ function ProfileTab({
           </button>
         </div>
       </form>
+
+      {/* ─── Company Organization Profile Section ─── */}
+      <CompanyProfileSection user={user} />
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// COMPANY PROFILE SECTION (Organization Details & RBAC)
+// ═══════════════════════════════════════════════════════════
+function CompanyProfileSection({ user }: { user: User | null }) {
+  const [companyName, setCompanyName] = useState("");
+  const [companyAddress, setCompanyAddress] = useState("");
+  const [isCompanyLoading, setIsCompanyLoading] = useState(true);
+  const [isCompanySaving, setIsCompanySaving] = useState(false);
+
+  const isAdmin = ["ADMIN", "SUPER_ADMIN"].includes(user?.role || "");
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchCompanyProfile = async () => {
+      setIsCompanyLoading(true);
+      try {
+        const res = await apiClient<{ companyName?: string; companyAddress?: string }>("/tenant/profile");
+        if (res.success && res.data && isMounted) {
+          setCompanyName(res.data.companyName || "");
+          setCompanyAddress(res.data.companyAddress || "");
+        }
+      } catch (err) {
+        console.error("Failed to load company profile:", err);
+      } finally {
+        if (isMounted) {
+          setIsCompanyLoading(false);
+        }
+      }
+    };
+
+    fetchCompanyProfile();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleSaveCompany = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!companyName.trim()) {
+      toast.error("Company Name is required");
+      return;
+    }
+
+    setIsCompanySaving(true);
+    try {
+      const res = await apiClient<{ companyName: string; companyAddress: string }>("/tenant/profile", {
+        method: "PUT",
+        body: JSON.stringify({
+          companyName: companyName.trim(),
+          companyAddress: companyAddress.trim() || null,
+        }),
+      });
+
+      if (res.success) {
+        toast.success("Company profile updated successfully!");
+        if (res.data?.companyName) {
+          setCompanyName(res.data.companyName);
+        }
+        if (res.data?.companyAddress !== undefined) {
+          setCompanyAddress(res.data.companyAddress || "");
+        }
+      } else {
+        toast.error(res.error || "Failed to update company profile");
+      }
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Error saving company profile");
+    } finally {
+      setIsCompanySaving(false);
+    }
+  };
+
+  return (
+    <div className="bg-brand-surface border border-brand-muted/30 rounded-xl p-6 space-y-5 shadow-xs">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-brand-muted/20">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary shrink-0">
+            <Building2 className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-brand-text">Company Organization Profile</h3>
+            <p className="text-xs text-brand-muted mt-0.5">
+              Workspace business identity, official title, and registered company address
+            </p>
+          </div>
+        </div>
+
+        {isAdmin ? (
+          <span className="inline-flex items-center gap-1.5 self-start sm:self-center text-[10px] font-bold text-brand-primary bg-brand-primary/10 border border-brand-primary/20 px-2.5 py-1 rounded-full uppercase tracking-wider">
+            <Shield className="h-3 w-3" /> Admin Editable
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 self-start sm:self-center text-[10px] font-bold text-brand-muted bg-brand-bg border border-brand-muted/30 px-2.5 py-1 rounded-full uppercase tracking-wider">
+            <Lock className="h-3 w-3" /> Read-Only Workspace
+          </span>
+        )}
+      </div>
+
+      {isCompanyLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <RefreshCw className="h-6 w-6 animate-spin text-brand-primary" />
+        </div>
+      ) : isAdmin ? (
+        /* Admin View: Editable form */
+        <form onSubmit={handleSaveCompany} className="space-y-4">
+          <div>
+            <label className="text-xs font-bold text-brand-text block mb-1.5 flex items-center gap-1.5">
+              <Building2 className="h-3.5 w-3.5 text-brand-primary" />
+              Company Name
+              <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              required
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              placeholder="e.g. Acme Corporation Pvt Ltd"
+              className="w-full rounded-xl border border-brand-muted/30 bg-brand-bg/40 px-4 py-2.5 text-sm font-medium text-brand-text placeholder-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-brand-text block mb-1.5 flex items-center gap-1.5">
+              <MapPin className="h-3.5 w-3.5 text-brand-primary" />
+              Company Address
+            </label>
+            <textarea
+              rows={3}
+              value={companyAddress}
+              onChange={(e) => setCompanyAddress(e.target.value)}
+              placeholder="e.g. 123 Enterprise Blvd, Suite 400, New York, NY 10001"
+              className="w-full rounded-xl border border-brand-muted/30 bg-brand-bg/40 px-4 py-2.5 text-sm font-medium text-brand-text placeholder-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all resize-none"
+            />
+          </div>
+
+          <div className="pt-1">
+            <button
+              type="submit"
+              disabled={isCompanySaving || !companyName.trim()}
+              className="bg-brand-primary hover:bg-brand-accent text-white px-4 py-2 rounded-lg font-bold text-xs shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50 inline-flex items-center gap-2"
+            >
+              {isCompanySaving ? (
+                <>
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  Saving Company Profile...
+                </>
+              ) : (
+                <>
+                  <Save className="h-3.5 w-3.5" />
+                  Save Company Profile
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      ) : (
+        /* Non-Admin View: Read-only display with amber banner */
+        <div className="space-y-4">
+          <div className="rounded-xl border border-amber-200 bg-amber-50/90 dark:border-amber-800 dark:bg-amber-950/40 p-3.5 text-xs text-amber-800 dark:text-amber-200 flex items-start gap-2.5">
+            <ShieldAlert className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <span>Company profile details are managed by your workspace Administrator. Contact an administrator to update this information.</span>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <label className="text-xs font-bold text-brand-muted block mb-1.5 flex items-center gap-1.5">
+                <Building2 className="h-3.5 w-3.5 text-brand-muted" />
+                Company Name
+              </label>
+              <div className="text-brand-text bg-brand-bg/50 border border-brand-muted/20 p-3 rounded-lg text-sm font-semibold">
+                {companyName || "Not configured yet"}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-brand-muted block mb-1.5 flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5 text-brand-muted" />
+                Company Address
+              </label>
+              <div className="text-brand-text bg-brand-bg/50 border border-brand-muted/20 p-3 rounded-lg text-sm whitespace-pre-wrap">
+                {companyAddress || "No official address recorded"}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
