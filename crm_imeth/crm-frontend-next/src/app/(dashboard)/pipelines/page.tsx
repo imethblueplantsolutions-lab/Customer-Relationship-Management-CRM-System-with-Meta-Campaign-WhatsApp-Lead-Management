@@ -203,21 +203,21 @@ export default function PipelinesPage() {
             <select
               value={selectedId}
               onChange={(e) => setSelectedId(e.target.value)}
-              className="appearance-none rounded-xl border border-slate-200 bg-white pl-10 pr-10 py-2.5 text-sm font-semibold text-slate-800 cursor-pointer focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+              className="appearance-none rounded-xl border border-brand-muted/30 bg-brand-surface pl-10 pr-10 py-2.5 text-sm font-semibold text-brand-text cursor-pointer focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none"
             >
               {pipelines.map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
+                <option key={p.id} value={p.id} className="bg-brand-surface text-brand-text">{p.name}</option>
               ))}
             </select>
             <GitBranch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-primary" />
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-muted" />
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowNewPipeline(true)}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-brand-primary hover:border-brand-primary/40 transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-brand-muted/30 bg-brand-surface px-4 py-2.5 text-sm font-semibold text-brand-text hover:bg-brand-bg hover:text-brand-primary hover:border-brand-primary/40 transition-all cursor-pointer shadow-xs"
           >
             <Plus className="h-4 w-4" /> New Pipeline
           </button>
@@ -287,28 +287,28 @@ export default function PipelinesPage() {
       {/* New Pipeline Modal */}
       {showNewPipeline && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
-            <h3 className="text-lg font-bold text-slate-800">New Pipeline</h3>
+          <div className="w-full max-w-sm rounded-2xl bg-brand-surface border border-brand-muted/30 p-6 shadow-2xl">
+            <h3 className="text-lg font-bold text-brand-text">New Pipeline</h3>
             <input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="e.g. Sales Pipeline"
-              className="mt-4 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+              className="mt-4 w-full rounded-xl border border-brand-muted/30 bg-brand-bg/60 px-4 py-3 text-sm text-brand-text placeholder:text-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none"
               onKeyDown={(e) => e.key === "Enter" && handleCreatePipeline()}
               autoFocus
             />
-            <p className="mt-2 text-xs text-slate-400">Default stages will be created automatically.</p>
+            <p className="mt-2 text-xs text-brand-muted">Default stages will be created automatically.</p>
             <div className="mt-4 flex justify-end gap-2">
               <button
                 onClick={() => setShowNewPipeline(false)}
-                className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer"
+                className="rounded-xl px-4 py-2 text-sm font-semibold text-brand-muted hover:text-brand-text hover:bg-brand-bg cursor-pointer transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreatePipeline}
                 disabled={creating || !newName.trim()}
-                className="rounded-xl bg-brand-primary px-4 py-2 text-sm font-bold text-white hover:bg-brand-accent disabled:opacity-50 cursor-pointer shadow-sm"
+                className="rounded-xl bg-brand-primary px-4 py-2 text-sm font-bold text-white hover:bg-brand-accent disabled:opacity-50 cursor-pointer shadow-sm transition-all"
               >
                 {creating ? "Creating..." : "Create"}
               </button>
@@ -320,14 +320,14 @@ export default function PipelinesPage() {
       {/* Add Deal Modal */}
       {showDealForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
-            <h3 className="text-lg font-bold text-slate-800">New Deal</h3>
+          <div className="w-full max-w-sm rounded-2xl bg-brand-surface border border-brand-muted/30 p-6 shadow-2xl">
+            <h3 className="text-lg font-bold text-brand-text">New Deal</h3>
             <div className="mt-4 space-y-3">
               <input
                 value={dealTitle}
                 onChange={(e) => setDealTitle(e.target.value)}
                 placeholder="Deal title"
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                className="w-full rounded-xl border border-brand-muted/30 bg-brand-bg/60 px-4 py-3 text-sm text-brand-text placeholder:text-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none"
                 autoFocus
               />
               <input
@@ -335,29 +335,29 @@ export default function PipelinesPage() {
                 value={dealValue}
                 onChange={(e) => setDealValue(e.target.value)}
                 placeholder="Value (USD)"
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                className="w-full rounded-xl border border-brand-muted/30 bg-brand-bg/60 px-4 py-3 text-sm text-brand-text placeholder:text-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none"
               />
               <select
                 value={dealStageId}
                 onChange={(e) => setDealStageId(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none cursor-pointer"
+                className="w-full rounded-xl border border-brand-muted/30 bg-brand-bg/60 px-4 py-3 text-sm text-brand-text focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none cursor-pointer"
               >
                 {stages.map((s) => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
+                  <option key={s.id} value={s.id} className="bg-brand-surface text-brand-text">{s.name}</option>
                 ))}
               </select>
             </div>
             <div className="mt-4 flex justify-end gap-2">
               <button
                 onClick={() => setShowDealForm(false)}
-                className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer"
+                className="rounded-xl px-4 py-2 text-sm font-semibold text-brand-muted hover:text-brand-text hover:bg-brand-bg cursor-pointer transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreateDeal}
                 disabled={!dealTitle.trim()}
-                className="rounded-xl bg-brand-primary px-4 py-2 text-sm font-bold text-white hover:bg-brand-accent disabled:opacity-50 cursor-pointer shadow-sm"
+                className="rounded-xl bg-brand-primary px-4 py-2 text-sm font-bold text-white hover:bg-brand-accent disabled:opacity-50 cursor-pointer shadow-sm transition-all"
               >
                 Create Deal
               </button>
@@ -380,19 +380,19 @@ function StageColumn({
   deals: Deal[];
   totalValue: number;
   onAddDeal: () => void;
-}) {
+  }) {
   const { setNodeRef, isOver } = useDroppable({ id: stage.id });
 
   return (
-    <div className="flex w-[85vw] min-w-[260px] max-w-[320px] shrink-0 snap-start flex-col rounded-2xl border border-slate-200/60 bg-white/80 p-5 lg:w-auto lg:max-w-none lg:flex-1 lg:basis-[260px] lg:shrink lg:snap-none shadow-sm">
+    <div className="flex w-[85vw] min-w-[260px] max-w-[320px] shrink-0 snap-start flex-col rounded-2xl border border-brand-muted/30 bg-brand-surface p-5 lg:w-auto lg:max-w-none lg:flex-1 lg:basis-[260px] lg:shrink lg:snap-none shadow-xs">
       <div className="-mx-4 -mt-4 h-[3px] rounded-t-2xl" style={{ backgroundColor: stage.color }} />
       <div className="flex items-center justify-between pt-3">
-        <h3 className="truncate text-sm font-semibold text-slate-800">{stage.name}</h3>
-        <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500">
+        <h3 className="truncate text-sm font-semibold text-brand-text">{stage.name}</h3>
+        <span className="shrink-0 rounded-full bg-brand-bg px-2 py-0.5 text-[11px] font-medium text-brand-muted">
           {deals.length}
         </span>
       </div>
-      <p className="text-xs text-slate-400">{formatCurrency(totalValue)}</p>
+      <p className="text-xs text-brand-muted">{formatCurrency(totalValue)}</p>
 
       <div
         ref={setNodeRef}
@@ -401,7 +401,7 @@ function StageColumn({
         }`}
       >
         {deals.length === 0 ? (
-          <div className="flex flex-1 items-center justify-center rounded-xl border-2 border-dashed border-slate-200 py-8 text-xs text-slate-400">
+          <div className="flex flex-1 items-center justify-center rounded-xl border-2 border-dashed border-brand-muted/30 py-8 text-xs text-brand-muted">
             Drop deal here
           </div>
         ) : (
@@ -413,7 +413,7 @@ function StageColumn({
 
       <button
         onClick={onAddDeal}
-        className="mt-3 flex w-full items-center justify-start gap-1 rounded-xl border border-dashed border-slate-200 bg-transparent px-3 py-2 text-xs font-medium text-slate-400 hover:border-slate-300 hover:text-slate-600 transition-all cursor-pointer"
+        className="mt-3 flex w-full items-center justify-start gap-1 rounded-xl border border-dashed border-brand-muted/30 bg-transparent px-3 py-2 text-xs font-medium text-brand-muted hover:border-brand-primary/40 hover:text-brand-primary transition-all cursor-pointer"
       >
         <Plus className="h-3 w-3" /> Add deal
       </button>
@@ -450,10 +450,10 @@ function DealCard({
 
   return (
     <div
-      className={`group relative w-full rounded-xl border border-slate-200/50 bg-slate-50/70 pl-4 pr-3 py-4 text-left shadow-sm transition-all ${
+      className={`group relative w-full rounded-xl border border-brand-muted/20 bg-brand-bg/60 pl-4 pr-3 py-4 text-left shadow-xs transition-all ${
         isOverlay
           ? "shadow-xl"
-          : "hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white hover:shadow-md"
+          : "hover:-translate-y-0.5 hover:border-brand-muted/40 hover:bg-brand-surface hover:shadow-md"
       }`}
     >
       <span
@@ -462,7 +462,7 @@ function DealCard({
       />
 
       <div className="flex items-start justify-between gap-2">
-        <h4 className="flex-1 text-sm font-semibold leading-snug text-slate-800 break-words">
+        <h4 className="flex-1 text-sm font-semibold leading-snug text-brand-text break-words">
           {deal.title}
         </h4>
         {deal.status === "won" && (
@@ -478,18 +478,18 @@ function DealCard({
       </div>
 
       <div className="mt-2 flex items-center gap-2">
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-200 text-[10px] font-semibold text-slate-600">
+        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-surface border border-brand-muted/30 text-[10px] font-semibold text-brand-text">
           {initials(deal.lead?.name, deal.lead?.phoneNumber)}
         </span>
-        <span className="truncate text-xs text-slate-500">{contactLabel}</span>
+        <span className="truncate text-xs text-brand-muted">{contactLabel}</span>
       </div>
 
       <div className="mt-2 flex items-center justify-between">
-        <span className="text-sm font-bold text-blue-600">
+        <span className="text-sm font-bold text-brand-primary">
           {formatCurrency(deal.value, deal.currency)}
         </span>
         {deal.expectedCloseDate && (
-          <span className="flex items-center gap-1 text-[11px] text-slate-400">
+          <span className="flex items-center gap-1 text-[11px] text-brand-muted">
             <Calendar className="h-3 w-3" />
             {new Date(deal.expectedCloseDate).toLocaleDateString("en-US", {
               month: "short",

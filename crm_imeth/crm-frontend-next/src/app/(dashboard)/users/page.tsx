@@ -480,30 +480,30 @@ export default function UserManagementPage() {
       )}
 
       {/* Filters & Search Bar */}
-      <div className="rounded-2xl bg-white border border-slate-200/80 p-4 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="rounded-2xl bg-brand-surface border border-brand-muted/30 p-4 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-muted pointer-events-none" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by name or email..."
-            className="w-full h-10 pl-10 pr-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+            className="w-full h-10 pl-10 pr-4 rounded-xl bg-brand-bg/60 border border-brand-muted/30 text-xs text-brand-text placeholder:text-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all"
           />
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <span className="text-xs font-bold text-slate-500 shrink-0">Role Filter:</span>
+          <span className="text-xs font-bold text-brand-muted shrink-0">Role Filter:</span>
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:border-blue-500 focus:outline-none cursor-pointer"
+            className="h-10 px-3 rounded-xl bg-brand-bg/60 border border-brand-muted/30 text-xs font-semibold text-brand-text focus:border-brand-primary focus:outline-none cursor-pointer"
           >
-            <option value="ALL">All Roles ({usersList.length})</option>
-            {user?.role === "SUPER_ADMIN" && <option value="SUPER_ADMIN">Super Admins</option>}
-            {user?.role === "SUPER_ADMIN" && <option value="ADMIN">Admins</option>}
-            <option value="TEAM_LEAD">Team Leads</option>
-            <option value="AGENT">Sales Agents</option>
+            <option value="ALL" className="bg-brand-surface text-brand-text">All Roles ({usersList.length})</option>
+            {user?.role === "SUPER_ADMIN" && <option value="SUPER_ADMIN" className="bg-brand-surface text-brand-text">Super Admins</option>}
+            {user?.role === "SUPER_ADMIN" && <option value="ADMIN" className="bg-brand-surface text-brand-text">Admins</option>}
+            <option value="TEAM_LEAD" className="bg-brand-surface text-brand-text">Team Leads</option>
+            <option value="AGENT" className="bg-brand-surface text-brand-text">Sales Agents</option>
           </select>
         </div>
       </div>

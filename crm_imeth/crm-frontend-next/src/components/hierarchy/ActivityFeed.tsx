@@ -229,39 +229,39 @@ export function ActivityFeed({ users = [], title = "Enterprise Audit Trail", sub
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-3.5 rounded-2xl shadow-xs">
+      <div className="flex flex-col sm:flex-row items-center gap-3 bg-brand-surface border border-brand-muted/30 p-3.5 rounded-2xl shadow-xs">
         <div className="relative flex-1 w-full">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-muted" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by actor, target user, or action details..."
-            className="w-full h-9 pl-9 pr-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+            className="w-full h-9 pl-9 pr-3 rounded-xl bg-brand-bg/60 border border-brand-muted/30 text-xs text-brand-text placeholder:text-brand-muted focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
           />
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Filter className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+          <Filter className="h-3.5 w-3.5 text-brand-muted shrink-0" />
           <select
             value={actionFilter}
             onChange={(e) => setActionFilter(e.target.value)}
-            className="h-9 px-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer"
+            className="h-9 px-3 rounded-xl bg-brand-bg/60 border border-brand-muted/30 text-xs font-semibold text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary cursor-pointer"
           >
-            <option value="ALL">All Actions ({logs.length})</option>
-            <option value="HIERARCHY_REASSIGNED">Hierarchy Reassignments</option>
-            <option value="HIERARCHY_BULK_REASSIGNED">Bulk Reassignments</option>
-            <option value="USER_CREATED">User Provisioning</option>
-            <option value="USER_DEACTIVATED">Deactivations</option>
-            <option value="USER_ACTIVATED">Activations</option>
-            <option value="USER_ROLE_CHANGED">Role Updates</option>
-            <option value="USER_DELETED">Deletions</option>
+            <option value="ALL" className="bg-brand-surface text-brand-text">All Actions ({logs.length})</option>
+            <option value="HIERARCHY_REASSIGNED" className="bg-brand-surface text-brand-text">Hierarchy Reassignments</option>
+            <option value="HIERARCHY_BULK_REASSIGNED" className="bg-brand-surface text-brand-text">Bulk Reassignments</option>
+            <option value="USER_CREATED" className="bg-brand-surface text-brand-text">User Provisioning</option>
+            <option value="USER_DEACTIVATED" className="bg-brand-surface text-brand-text">Deactivations</option>
+            <option value="USER_ACTIVATED" className="bg-brand-surface text-brand-text">Activations</option>
+            <option value="USER_ROLE_CHANGED" className="bg-brand-surface text-brand-text">Role Updates</option>
+            <option value="USER_DELETED" className="bg-brand-surface text-brand-text">Deletions</option>
           </select>
         </div>
       </div>
 
       {/* Timeline Stream */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-xs p-6">
+      <div className="bg-brand-surface border border-brand-muted/30 rounded-2xl shadow-xs p-6">
         {loading ? (
           <div className="py-16 text-center space-y-3">
             <RefreshCw className="mx-auto h-8 w-8 text-purple-600 animate-spin" />
