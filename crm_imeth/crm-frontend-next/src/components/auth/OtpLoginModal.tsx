@@ -208,7 +208,7 @@ export default function OtpLoginModal({
       <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
         
         {/* Modal Top Header Gradient */}
-        <div className="bg-gradient-to-r from-[#1B262C] via-[#0F4C75] to-[#3282B8] p-6 text-white text-center relative">
+        <div className="login-gradient-header bg-gradient-to-r from-[#1B262C] via-[#0F4C75] to-[#3282B8] p-6 text-white text-center relative">
           <button
             type="button"
             onClick={onCancel}
@@ -218,10 +218,10 @@ export default function OtpLoginModal({
           </button>
           
           <div className="w-12 h-12 mx-auto rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-lg mb-3">
-            <ShieldCheck className="w-6 h-6 text-[#BBE1FA]" />
+            <ShieldCheck className="w-6 h-6 text-white" />
           </div>
 
-          <h3 className="text-xl font-bold tracking-tight">Two-Factor OTP Security</h3>
+          <h3 className="text-xl font-bold tracking-tight text-white">Two-Factor OTP Security</h3>
           <p className="text-xs text-white/80 mt-1 max-w-xs mx-auto">
             {isFirstLogin
               ? "First-time login verification & mandatory password reset required"

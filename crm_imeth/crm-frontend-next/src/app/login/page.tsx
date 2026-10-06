@@ -488,7 +488,7 @@ export default function LoginPage() {
         >
           {/* ================= 1. SIGN IN FORM PANEL (Left 50% Desktop) ================= */}
           <div
-            className={`w-1/2 md:w-1/2 p-6 flex flex-col justify-between gap-4 bg-white transition-opacity duration-700 ease-in-out ${
+            className={`w-1/2 md:w-1/2 p-6 flex flex-col justify-between gap-4 bg-white login-form-panel transition-opacity duration-700 ease-in-out ${
               isSignUpActive
                 ? "md:opacity-0 md:z-10 md:pointer-events-none"
                 : "md:opacity-100 md:z-20 md:pointer-events-auto"
@@ -703,7 +703,7 @@ export default function LoginPage() {
 
           {/* ================= 2. SIGN UP FORM PANEL (Right 50% Desktop) ================= */}
           <div
-            className={`w-1/2 md:w-1/2 p-6 flex flex-col justify-between gap-4 bg-white transition-opacity duration-700 ease-in-out ${
+            className={`w-1/2 md:w-1/2 p-6 flex flex-col justify-between gap-4 bg-white login-form-panel transition-opacity duration-700 ease-in-out ${
               isSignUpActive
                 ? "md:opacity-100 md:z-20 md:pointer-events-auto"
                 : "md:opacity-0 md:z-10 md:pointer-events-none"
@@ -872,6 +872,7 @@ export default function LoginPage() {
 
       {/* ================= 3. DARK BLUE SLIDING OVERLAY PANEL (`.toggle-container`) ================= */}
         <div
+          id="login-overlay-panel"
           className={`hidden md:flex absolute top-0 left-1/2 w-1/2 h-full z-30 transition-transform duration-700 ease-in-out overflow-hidden bg-gradient-to-br from-[#1B262C] via-[#0F4C75] to-[#3282B8] flex-col justify-between p-6 ${
             isSignUpActive ? "-translate-x-full" : "translate-x-0"
           }`}
@@ -882,9 +883,9 @@ export default function LoginPage() {
 
           {/* Top Header Badge */}
           <div className="w-full flex items-center justify-between z-10">
-            <div className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[10px] font-semibold text-white/90 flex items-center gap-1.5 shadow-lg">
-              <Layers className="w-3 h-3 text-[#BBE1FA]" />
-              Enterprise Edition
+            <div className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[10px] font-semibold text-white flex items-center gap-1.5 shadow-lg">
+              <Layers className="w-3 h-3 text-white" />
+              <span>Enterprise Edition</span>
             </div>
           </div>
 
@@ -892,12 +893,12 @@ export default function LoginPage() {
           <div className="relative z-10 w-full max-w-[380px] mx-auto rounded-xl bg-white/15 backdrop-blur-2xl border border-white/30 p-5 text-white shadow-2xl flex flex-col gap-3 my-auto">
             {/* Header Icon Ring */}
             <div className="w-8.5 h-8.5 rounded-xl border-2 border-white/40 border-t-white flex items-center justify-center bg-white/10 backdrop-blur-md">
-              <Sparkles className="w-4 h-4 text-[#BBE1FA]" />
+              <Sparkles className="w-4 h-4 text-white" />
             </div>
 
             {/* Content Text */}
             <div className="flex flex-col gap-1">
-              <span className="self-start px-2 py-0.5 rounded-full bg-[#BBE1FA]/20 border border-[#BBE1FA]/40 text-[9px] font-bold tracking-wider text-[#BBE1FA] uppercase">
+              <span className="self-start px-2 py-0.5 rounded-full bg-white/20 border border-white/30 text-[9px] font-bold tracking-wider text-white uppercase">
                 {slides[activeSlide].tag}
               </span>
               <h2 className="text-base sm:text-lg font-bold leading-snug tracking-tight text-white drop-shadow-xs">
@@ -917,7 +918,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => setActiveSlide(idx)}
                   className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                    activeSlide === idx ? "w-7 bg-[#BBE1FA]" : "w-1.5 bg-white/40 hover:bg-white/70"
+                    activeSlide === idx ? "w-7 bg-white" : "w-1.5 bg-white/40 hover:bg-white/70"
                   }`}
                   aria-label={`Go to slide ${idx + 1}`}
                 />
@@ -938,7 +939,7 @@ export default function LoginPage() {
                   onClick={() => setIsSignUpActive(true)}
                   className="px-3.5 py-1.5 rounded-lg bg-white text-[#0F4C75] hover:bg-[#BBE1FA] font-bold text-xs transition-all cursor-pointer shadow-md hover:shadow-lg"
                 >
-                  Sign Up
+                  <span className="toggle-btn-text text-[#0F4C75]">Sign Up</span>
                 </button>
               </>
             ) : (
@@ -952,7 +953,7 @@ export default function LoginPage() {
                   onClick={() => setIsSignUpActive(false)}
                   className="px-3.5 py-1.5 rounded-lg bg-white text-[#0F4C75] hover:bg-[#BBE1FA] font-bold text-xs transition-all cursor-pointer shadow-md hover:shadow-lg"
                 >
-                  Sign In
+                  <span className="toggle-btn-text text-[#0F4C75]">Sign In</span>
                 </button>
               </>
             )}
@@ -991,7 +992,7 @@ export default function LoginPage() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header Gradient */}
-            <div className="bg-gradient-to-r from-[#1B262C] via-[#0F4C75] to-[#3282B8] p-6 text-white text-center relative">
+            <div className="login-gradient-header bg-gradient-to-r from-[#1B262C] via-[#0F4C75] to-[#3282B8] p-6 text-white text-center relative">
               <button
                 type="button"
                 onClick={handleCloseResetModal}
@@ -1004,13 +1005,13 @@ export default function LoginPage() {
                 {resetStep === "SUCCESS" ? (
                   <CheckCircle2 className="w-6 h-6 text-emerald-400" />
                 ) : resetStep === "OTP" ? (
-                  <KeyRound className="w-6 h-6 text-[#BBE1FA]" />
+                  <KeyRound className="w-6 h-6 text-white" />
                 ) : (
-                  <ShieldCheck className="w-6 h-6 text-[#BBE1FA]" />
+                  <ShieldCheck className="w-6 h-6 text-white" />
                 )}
               </div>
 
-              <h3 className="text-xl font-bold tracking-tight">
+              <h3 className="text-xl font-bold tracking-tight text-white">
                 {resetStep === "SUCCESS"
                   ? "Password Updated!"
                   : resetStep === "OTP"

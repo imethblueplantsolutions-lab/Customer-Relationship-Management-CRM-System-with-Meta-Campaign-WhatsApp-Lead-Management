@@ -397,18 +397,13 @@ td {
   color: #1e293b !important;
 }
 
-#login-page-root h1,
-#login-page-root h2,
-#login-page-root h3,
-#login-page-root h4,
-#login-page-root h5,
-#login-page-root h6,
-[data-theme-mode="dark"] #login-page-root h1,
-[data-theme-mode="dark"] #login-page-root h2,
-[data-theme-mode="dark"] #login-page-root h3,
-[data-theme-mode="dark"] #login-page-root h4,
-[data-theme-mode="dark"] #login-page-root h5,
-[data-theme-mode="dark"] #login-page-root h6 {
+/* Form panel headings (Welcome Back, Create Account) */
+#login-page-root .login-form-panel h1,
+#login-page-root .login-form-panel h2,
+#login-page-root .login-form-panel h3,
+[data-theme-mode="dark"] #login-page-root .login-form-panel h1,
+[data-theme-mode="dark"] #login-page-root .login-form-panel h2,
+[data-theme-mode="dark"] #login-page-root .login-form-panel h3 {
   color: #0f172a !important;
 }
 
@@ -475,4 +470,32 @@ td {
 #login-page-root input::placeholder,
 [data-theme-mode="dark"] #login-page-root input::placeholder {
   color: #94a3b8 !important;
+}
+
+/* Sliding overlay panel & modal headers: all text, headings, badges must be crisp white */
+#login-overlay-panel,
+#login-overlay-panel h1,
+#login-overlay-panel h2,
+#login-overlay-panel h3,
+#login-overlay-panel p,
+#login-overlay-panel span:not(.toggle-btn-text),
+[data-theme-mode="dark"] #login-overlay-panel,
+[data-theme-mode="dark"] #login-overlay-panel h1,
+[data-theme-mode="dark"] #login-overlay-panel h2,
+[data-theme-mode="dark"] #login-overlay-panel h3,
+[data-theme-mode="dark"] #login-overlay-panel p,
+[data-theme-mode="dark"] #login-overlay-panel span:not(.toggle-btn-text),
+#login-page-root .login-gradient-header,
+#login-page-root .login-gradient-header h1,
+#login-page-root .login-gradient-header h2,
+#login-page-root .login-gradient-header h3,
+#login-page-root .login-gradient-header p,
+#login-page-root .login-gradient-header span,
+[data-theme-mode="dark"] #login-page-root .login-gradient-header,
+[data-theme-mode="dark"] #login-page-root .login-gradient-header h1,
+[data-theme-mode="dark"] #login-page-root .login-gradient-header h2,
+[data-theme-mode="dark"] #login-page-root .login-gradient-header h3,
+[data-theme-mode="dark"] #login-page-root .login-gradient-header p,
+[data-theme-mode="dark"] #login-page-root .login-gradient-header span {
+  color: #ffffff !important;
 }
