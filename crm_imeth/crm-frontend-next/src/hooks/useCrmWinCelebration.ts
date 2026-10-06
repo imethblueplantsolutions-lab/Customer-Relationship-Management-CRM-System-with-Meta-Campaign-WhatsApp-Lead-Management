@@ -24,10 +24,22 @@ export function fireConvertedButtonConfetti(targetContainer?: HTMLElement | null
   lastCelebrationTimestamp = now;
 
   try {
-    const container =
-      targetContainer ||
-      (document.querySelector(".button-wrapper") as HTMLElement) ||
-      document.body;
+    let container = targetContainer || null;
+
+    // If container is not provided or is hidden (offsetParent is null when display: none),
+    // automatically find the currently visible .button-wrapper in the active viewport (mobile vs desktop)
+    if (!container || container.offsetParent === null) {
+      const visibleWrapper = Array.from(
+        document.querySelectorAll<HTMLElement>(".button-wrapper")
+      ).find((el) => el.offsetParent !== null);
+      if (visibleWrapper) {
+        container = visibleWrapper;
+      }
+    }
+
+    if (!container) {
+      container = document.body;
+    }
 
     const canvas = document.createElement("canvas");
     canvas.width = 600;
@@ -80,13 +92,14 @@ export function useCrmWinCelebration(
   const normalizedStage = currentStage?.toUpperCase() || "";
   const previousStageRef = useRef<string>(normalizedStage);
 
-  const triggerCelebration = useCallback(() => {
+  const triggerCelebration = useCallback((customContainer?: HTMLElement | null) => {
     try {
       playSuccessSound();
     } catch (err) {
       console.warn("[useCrmWinCelebration] Audio playback error:", err);
     }
-    fireConvertedButtonConfetti(containerRef?.current);
+    const target = customContainer || containerRef?.current;
+    fireConvertedButtonConfetti(target);
   }, [containerRef, playSuccessSound]);
 
   useEffect(() => {

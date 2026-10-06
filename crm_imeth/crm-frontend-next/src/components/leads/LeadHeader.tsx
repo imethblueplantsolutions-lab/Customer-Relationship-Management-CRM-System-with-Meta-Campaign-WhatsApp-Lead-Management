@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, memo, useRef } from "react";
+import { useMemo, memo, useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -12,6 +12,7 @@ import {
   Sparkles,
   XCircle,
   Building2,
+  ChevronDown,
 } from "lucide-react";
 import type { Lead } from "@/types";
 import { useCrmWinCelebration } from "@/hooks/useCrmWinCelebration";
@@ -43,14 +44,39 @@ export default memo(function LeadHeader({
   onUpdateStatus,
   onDeleteLead,
 }: LeadHeaderProps) {
-  const convertedWrapperRef = useRef<HTMLDivElement | null>(null);
+  const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
+  const desktopConvertedWrapperRef = useRef<HTMLDivElement | null>(null);
+  const mobileDropdownWrapperRef = useRef<HTMLDivElement | null>(null);
+
+  // Close mobile dropdown when clicking or tapping outside
+  useEffect(() => {
+    if (!mobileDropdownOpen) return;
+    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+      if (
+        mobileDropdownWrapperRef.current &&
+        !mobileDropdownWrapperRef.current.contains(e.target as Node)
+      ) {
+        setMobileDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("touchstart", handleOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("touchstart", handleOutsideClick);
+    };
+  }, [mobileDropdownOpen]);
 
   // Gamified celebration hook: fires audio chime and localized button confetti on transition into Converted stage
-  const { triggerCelebration } = useCrmWinCelebration(lead.status, convertedWrapperRef);
+  const { triggerCelebration } = useCrmWinCelebration(lead.status, desktopConvertedWrapperRef);
 
-  const handleStageClick = async (stageValue: string) => {
+  const handleStageClick = async (stageValue: string, customContainer?: HTMLElement | null) => {
     if (stageValue === "CONVERTED") {
-      triggerCelebration();
+      const targetContainer =
+        customContainer ||
+        mobileDropdownWrapperRef.current ||
+        desktopConvertedWrapperRef.current;
+      triggerCelebration(targetContainer);
     }
     await onUpdateStatus(stageValue);
   };
@@ -182,8 +208,139 @@ export default memo(function LeadHeader({
           )}
         </div>
 
-        {/* Stepper Chevrons / Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+        {/* ─── Mobile View: Interactive Pipeline Stage Dropdown Selector (sm:hidden) ─── */}
+        <div className="block sm:hidden relative button-wrapper" ref={mobileDropdownWrapperRef}>
+          <button
+            type="button"
+            disabled={statusUpdating}
+            onClick={() => setMobileDropdownOpen((prev) => !prev)}
+            className="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-200/90 bg-slate-50/70 hover:bg-slate-100/80 p-3 text-left shadow-xs transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-primary/20 disabled:opacity-50"
+            aria-haspopup="listbox"
+            aria-expanded={mobileDropdownOpen}
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span
+                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-extrabold ${
+                  isLost
+                    ? "bg-rose-500 text-white"
+                    : lead.status === "CONVERTED"
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "bg-blue-600 text-white"
+                }`}
+              >
+                {isLost ? (
+                  <XCircle className="h-3.5 w-3.5" />
+                ) : lead.status === "CONVERTED" ? (
+                  <Sparkles className="h-3.5 w-3.5" />
+                ) : (
+                  currentStageIndex >= 0 ? currentStageIndex + 1 : 1
+                )}
+              </span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-xs font-bold text-slate-800 truncate">
+                    {currentStatusObj.label}
+                  </p>
+                  {lead.status === "CONVERTED" && (
+                    <span className="text-[11px]">🎉</span>
+                  )}
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Stage {currentStageIndex >= 0 ? currentStageIndex + 1 : 1} of {PIPELINE_STAGES.length} • Tap to switch
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <span
+                className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                  lead.status === "CONVERTED"
+                    ? "bg-emerald-100 text-emerald-800"
+                    : "bg-slate-200/80 text-slate-700"
+                }`}
+              >
+                Active
+              </span>
+              <ChevronDown
+                className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${
+                  mobileDropdownOpen ? "rotate-180" : ""
+                }`}
+              />
+            </div>
+          </button>
+
+          {/* Mobile Dropdown Popover */}
+          {mobileDropdownOpen && (
+            <div
+              className="absolute left-0 right-0 top-full mt-2 z-50 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl transition-all space-y-1 animate-in fade-in slide-in-from-top-2 duration-150"
+              role="listbox"
+            >
+              {PIPELINE_STAGES.map((stage, idx) => {
+                const isCurrent = lead.status === stage.value;
+                const isCompleted = currentStageIndex > idx && !isLost;
+                const isConverted = stage.value === "CONVERTED";
+
+                let optionStyle = "hover:bg-slate-50 text-slate-700";
+                if (isCurrent) {
+                  optionStyle = isLost
+                    ? "bg-rose-50 text-rose-800 font-bold"
+                    : isConverted
+                    ? "bg-emerald-50 text-emerald-800 font-bold"
+                    : "bg-blue-50 text-blue-800 font-bold";
+                }
+
+                return (
+                  <button
+                    key={stage.value}
+                    type="button"
+                    onClick={() => {
+                      setMobileDropdownOpen(false);
+                      handleStageClick(stage.value, mobileDropdownWrapperRef.current);
+                    }}
+                    className={`flex w-full items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer select-none text-left ${optionStyle}`}
+                    role="option"
+                    aria-selected={isCurrent}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span
+                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-extrabold ${
+                          isCurrent
+                            ? stage.activeBg
+                            : isCompleted
+                            ? "bg-emerald-100 text-emerald-800"
+                            : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        {isCompleted ? (
+                          <Check className="h-3 w-3 stroke-[2.5]" />
+                        ) : isCurrent ? (
+                          <Sparkles className="h-3 w-3" />
+                        ) : (
+                          idx + 1
+                        )}
+                      </span>
+                      <span className="truncate">{stage.label}</span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {isConverted && (
+                        <span className="text-[11px]">🎉</span>
+                      )}
+                      {isCurrent && (
+                        <span className="text-[10px] font-extrabold text-blue-600 uppercase">
+                          Selected
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* ─── Desktop View: Interactive Stepper Chevrons (hidden sm:grid) ─── */}
+        <div className="hidden sm:grid sm:grid-cols-3 lg:grid-cols-5 gap-2">
           {PIPELINE_STAGES.map((stage, idx) => {
             const isCurrent = lead.status === stage.value;
             const isCompleted = currentStageIndex > idx && !isLost;
@@ -207,7 +364,7 @@ export default memo(function LeadHeader({
             const buttonNode = (
               <button
                 type="button"
-                onClick={() => handleStageClick(stage.value)}
+                onClick={() => handleStageClick(stage.value, desktopConvertedWrapperRef.current)}
                 disabled={statusUpdating}
                 className={`relative flex items-center justify-between gap-2 p-2.5 rounded-xl border text-xs transition-all cursor-pointer select-none text-left w-full h-full ${style} ${isConverted ? "confetti-button" : ""}`}
               >
@@ -238,7 +395,7 @@ export default memo(function LeadHeader({
               return (
                 <div
                   key={stage.value}
-                  ref={convertedWrapperRef}
+                  ref={desktopConvertedWrapperRef}
                   className="button-wrapper relative w-full h-full"
                 >
                   {buttonNode}
