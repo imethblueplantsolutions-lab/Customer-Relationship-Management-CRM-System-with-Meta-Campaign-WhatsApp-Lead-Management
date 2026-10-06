@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import {
   ThemeId,
   ThemeConfig,
@@ -24,18 +25,28 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const userId = user?.id || null;
+  const pathname = usePathname();
+  const isLoginPage = pathname === "/login";
 
   const [currentThemeId, setCurrentThemeId] = useState<ThemeId>(() => getActiveThemeId(userId));
   const [mounted, setMounted] = useState(false);
 
-  // Synchronize on mount and whenever the user switches (login / switch user / logout)
+  // Synchronize on mount, whenever the user switches, or route changes
   useEffect(() => {
     setMounted(true);
+
+    if (isLoginPage) {
+      // /login is strictly kept to its original default CRM styling and never affected by user themes
+      applyThemeUtil("default-crm", null, false);
+      return;
+    }
+
     const active = getActiveThemeId(userId);
     setCurrentThemeId(active);
-    applyThemeUtil(active, userId);
+    applyThemeUtil(active, userId, true);
 
     const handleThemeChange = (e: Event) => {
+      if (isLoginPage) return;
       const customEvent = e as CustomEvent<{ themeId: ThemeId; userId?: string | null }>;
       if (customEvent.detail?.themeId) {
         if (!customEvent.detail.userId || customEvent.detail.userId === userId) {
@@ -48,12 +59,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return () => {
       window.removeEventListener("crm-theme-changed", handleThemeChange);
     };
-  }, [userId]);
+  }, [userId, isLoginPage]);
 
   const setTheme = useCallback(
     (id: ThemeId) => {
       setCurrentThemeId(id);
-      applyThemeUtil(id, userId);
+      applyThemeUtil(id, userId, true);
     },
     [userId]
   );

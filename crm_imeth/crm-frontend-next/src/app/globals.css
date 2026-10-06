@@ -384,3 +384,95 @@ td {
 [data-theme-mode="light"] .text-slate-500 {
   color: var(--color-text-muted, #475569);
 }
+
+/* =========================================================
+   LOGIN PAGE STRICT THEME ISOLATION
+   The /login page is strictly isolated to its original CRM branding
+   and must NEVER be affected by any user theme or dark mode.
+   ========================================================= */
+#login-page-root,
+[data-theme-mode="dark"] #login-page-root {
+  color-scheme: light !important;
+  background-color: #f4f9fd !important;
+  color: #1e293b !important;
+}
+
+#login-page-root h1,
+#login-page-root h2,
+#login-page-root h3,
+#login-page-root h4,
+#login-page-root h5,
+#login-page-root h6,
+[data-theme-mode="dark"] #login-page-root h1,
+[data-theme-mode="dark"] #login-page-root h2,
+[data-theme-mode="dark"] #login-page-root h3,
+[data-theme-mode="dark"] #login-page-root h4,
+[data-theme-mode="dark"] #login-page-root h5,
+[data-theme-mode="dark"] #login-page-root h6 {
+  color: #0f172a !important;
+}
+
+#login-page-root .text-slate-900,
+[data-theme-mode="dark"] #login-page-root .text-slate-900 {
+  color: #0f172a !important;
+}
+
+#login-page-root .text-slate-800,
+[data-theme-mode="dark"] #login-page-root .text-slate-800 {
+  color: #1e293b !important;
+}
+
+#login-page-root .text-slate-700,
+[data-theme-mode="dark"] #login-page-root .text-slate-700 {
+  color: #334155 !important;
+}
+
+#login-page-root .text-slate-600,
+#login-page-root .text-slate-500,
+[data-theme-mode="dark"] #login-page-root .text-slate-600,
+[data-theme-mode="dark"] #login-page-root .text-slate-500 {
+  color: #64748b !important;
+}
+
+#login-page-root .text-slate-400,
+[data-theme-mode="dark"] #login-page-root .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+#login-page-root .bg-white,
+[data-theme-mode="dark"] #login-page-root .bg-white {
+  background-color: #ffffff !important;
+}
+
+#login-page-root .bg-slate-50,
+[data-theme-mode="dark"] #login-page-root .bg-slate-50 {
+  background-color: #f8fafc !important;
+}
+
+#login-page-root .border-slate-100,
+[data-theme-mode="dark"] #login-page-root .border-slate-100 {
+  border-color: #f1f5f9 !important;
+}
+
+#login-page-root .border-slate-200,
+[data-theme-mode="dark"] #login-page-root .border-slate-200 {
+  border-color: #e2e8f0 !important;
+}
+
+#login-page-root input:not([type="checkbox"]):not([type="radio"]),
+[data-theme-mode="dark"] #login-page-root input:not([type="checkbox"]):not([type="radio"]) {
+  background-color: #f4f7f6 !important;
+  color: #1e293b !important;
+  border-color: transparent !important;
+}
+
+#login-page-root input:not([type="checkbox"]):not([type="radio"]):focus,
+[data-theme-mode="dark"] #login-page-root input:not([type="checkbox"]):not([type="radio"]):focus {
+  background-color: #ffffff !important;
+  border-color: #3b82f6 !important;
+}
+
+#login-page-root input::placeholder,
+[data-theme-mode="dark"] #login-page-root input::placeholder {
+  color: #94a3b8 !important;
+}

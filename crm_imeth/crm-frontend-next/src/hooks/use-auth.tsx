@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    applyTheme("default-crm", null);
+    applyTheme("default-crm", null, false);
     setToken(null);
     setUser(null);
     window.location.href = "/login";

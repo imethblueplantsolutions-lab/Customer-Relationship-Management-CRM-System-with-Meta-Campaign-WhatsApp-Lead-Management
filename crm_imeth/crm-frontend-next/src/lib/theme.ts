@@ -282,7 +282,7 @@ export const THEMES: ThemeConfig[] = [
   {
     id: "default-crm",
     name: "Classic CRM Teal",
-    category: "dark",
+    category: "light",
     tagline: "WhatsApp Dark Teal",
     description: "Original CRM aesthetic with signature deep teal sidebar and vibrant blue action highlights.",
     colors: {
@@ -311,6 +311,11 @@ export const THEMES: ThemeConfig[] = [
 export function getThemeStorageKey(userId?: string | null): string {
   if (userId) {
     return `crm_theme_${userId}`;
+  }
+  // When userId is explicitly null (e.g. unauthenticated / guest / login page),
+  // never fall back to any previously stored user in localStorage!
+  if (userId === null) {
+    return "crm_theme_default";
   }
   if (typeof window !== "undefined") {
     try {
@@ -354,21 +359,27 @@ export function getThemeById(id: string): ThemeConfig {
 /**
  * Applies the CSS variables to document.documentElement and saves strictly to this user's storage key.
  */
-export function applyTheme(themeId: ThemeId, userId?: string | null): void {
+export function applyTheme(
+  themeId: ThemeId,
+  userId?: string | null,
+  saveToStorage: boolean = true
+): void {
   if (typeof window === "undefined") return;
 
   const theme = getThemeById(themeId);
   const root = document.documentElement;
 
-  try {
-    const key = getThemeStorageKey(userId);
-    if (key !== "crm_theme_default") {
-      localStorage.setItem(key, themeId);
+  if (saveToStorage) {
+    try {
+      const key = getThemeStorageKey(userId);
+      if (key !== "crm_theme_default") {
+        localStorage.setItem(key, themeId);
+      }
+      // Remove deprecated global key to prevent cross-account leakage
+      localStorage.removeItem("crm_active_theme");
+    } catch {
+      // Ignore
     }
-    // Remove deprecated global key to prevent cross-account leakage
-    localStorage.removeItem("crm_active_theme");
-  } catch {
-    // Ignore
   }
 
   root.setAttribute("data-theme", theme.id);
