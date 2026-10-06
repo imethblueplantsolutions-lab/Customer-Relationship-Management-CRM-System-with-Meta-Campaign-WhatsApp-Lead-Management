@@ -113,43 +113,29 @@ export default memo(function LeadHeader({
     <div className="space-y-4">
       {/* ─── Breadcrumb & Top Bar ─────────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          {/* Row 1: Left Arrow + Title + Badges + Mobile Right-Side Top Delete Button */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-3 min-w-0 flex-wrap">
-              <Link
-                href="/leads"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-xs"
-                title="Back to Leads"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-800 truncate">
-                {lead.name || "Unknown Customer"}
-              </h1>
-              {lead.category && (
-                <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 border border-slate-200">
-                  {lead.category}
-                </span>
-              )}
-              {durationInfo.isStale && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-300 px-2.5 py-0.5 text-[11px] font-bold text-amber-800 animate-pulse">
-                  <AlertTriangle className="h-3 w-3 text-amber-600" />
-                  Stale ({durationInfo.text})
-                </span>
-              )}
-            </div>
-
-            {/* Mobile-Only Delete Button (Positioned at right-side top on mobile) */}
-            {canDeleteLead && (
-              <button
-                onClick={onDeleteLead}
-                disabled={deletingLead}
-                className="sm:hidden inline-flex items-center justify-center h-9 w-9 shrink-0 rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
-                title="Delete Lead"
-              >
-                <Trash2 className="h-4 w-4 text-red-600" />
-              </button>
+        <div className="min-w-0">
+          {/* Row 1: Left Arrow + Title + Badges (Horizontally Aligned) */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <Link
+              href="/leads"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-xs"
+              title="Back to Leads"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-800 truncate">
+              {lead.name || "Unknown Customer"}
+            </h1>
+            {lead.category && (
+              <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 border border-slate-200">
+                {lead.category}
+              </span>
+            )}
+            {durationInfo.isStale && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-300 px-2.5 py-0.5 text-[11px] font-bold text-amber-800 animate-pulse">
+                <AlertTriangle className="h-3 w-3 text-amber-600" />
+                Stale ({durationInfo.text})
+              </span>
             )}
           </div>
 
@@ -175,26 +161,26 @@ export default memo(function LeadHeader({
           </div>
         </div>
 
-        {/* Top Right Quick Actions (Desktop Position) */}
+        {/* Top Right Quick Actions (Desktop: Delete then Status; Mobile: Status then Delete) */}
         <div className="flex items-center gap-2.5">
-          {/* Delete Lead Button (Desktop only: hidden sm:inline-flex) */}
+          {/* Status Badge: order-1 on mobile, sm:order-2 on desktop */}
+          <div className="order-1 sm:order-2 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-xs select-none">
+            <span className={`h-2 w-2 rounded-full ${currentStatusObj.color}`} />
+            <span>{currentStatusObj.label}</span>
+          </div>
+
+          {/* Delete Lead Button: order-2 on mobile, sm:order-1 on desktop */}
           {canDeleteLead && (
             <button
               onClick={onDeleteLead}
               disabled={deletingLead}
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2 text-xs font-bold text-red-700 hover:bg-red-100 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+              className="order-2 sm:order-1 inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2 text-xs font-bold text-red-700 hover:bg-red-100 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
               title="Delete Lead"
             >
               <Trash2 className="h-3.5 w-3.5 text-red-600" />
-              <span>{deletingLead ? "Deleting..." : "Delete Lead"}</span>
+              <span className="hidden sm:inline">{deletingLead ? "Deleting..." : "Delete Lead"}</span>
             </button>
           )}
-
-          {/* Status Badge (Read-Only Indicator) */}
-          <div className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-xs select-none">
-            <span className={`h-2 w-2 rounded-full ${currentStatusObj.color}`} />
-            <span>{currentStatusObj.label}</span>
-          </div>
         </div>
       </div>
 
