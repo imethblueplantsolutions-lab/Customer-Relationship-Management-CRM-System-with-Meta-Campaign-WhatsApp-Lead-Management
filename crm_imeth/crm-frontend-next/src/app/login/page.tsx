@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { apiClient } from "@/lib/api-client";
 import OtpLoginModal from "@/components/auth/OtpLoginModal";
@@ -56,7 +56,32 @@ declare global {
   }
 }
 
-export default function LoginPage() {
+function LoginPageContent() {
+  const searchParams = useSearchParams();
+  const returnUrlParam = searchParams.get("returnUrl");
+  const isExpired = searchParams.get("expired") === "true";
+
+  // Check for ?expired=true on mount and alert user
+  useEffect(() => {
+    if (isExpired) {
+      toast.error("Your session expired due to inactivity. Please log in again.", {
+        id: "session-expired-toast",
+        duration: 5000,
+      });
+    }
+  }, [isExpired]);
+
+  // Helper to safely navigate to returnUrl or user role default
+  const getDestination = useCallback(
+    (user?: User | null) => {
+      if (returnUrlParam && returnUrlParam.startsWith("/") && !returnUrlParam.startsWith("//")) {
+        return returnUrlParam;
+      }
+      return user?.role === "SUPER_ADMIN" ? "/hierarchy" : "/dashboard";
+    },
+    [returnUrlParam]
+  );
+
   // Mode toggle state
   const [isSignUpActive, setIsSignUpActive] = useState(false);
 
@@ -181,7 +206,7 @@ export default function LoginPage() {
       } else {
         const storedUser = localStorage.getItem("user");
         const parsed = storedUser ? JSON.parse(storedUser) : null;
-        router.push(parsed?.role === "SUPER_ADMIN" ? "/hierarchy" : "/dashboard");
+        router.push(getDestination(parsed));
       }
     } catch (err: unknown) {
       const msg =
@@ -217,7 +242,7 @@ export default function LoginPage() {
       if (res.success && res.data) {
         toast.success("Account & Organization created successfully!");
         setSession(res.data.token, res.data.user);
-        router.push(res.data.user.role === "SUPER_ADMIN" ? "/hierarchy" : "/dashboard");
+        router.push(getDestination(res.data.user));
       } else {
         setSignUpError(res.error || "Registration failed. Please try again.");
       }
@@ -233,7 +258,7 @@ export default function LoginPage() {
   const handleOtpSuccess = (data: { token: string; user: User }) => {
     setShowOtpModal(false);
     setSession(data.token, data.user);
-    router.push(data.user?.role === "SUPER_ADMIN" ? "/hierarchy" : "/dashboard");
+    router.push(getDestination(data.user));
   };
 
   const handleSeedDatabase = async () => {
@@ -286,7 +311,7 @@ export default function LoginPage() {
       }
 
       setSession(token, user);
-      router.push(user.role === "SUPER_ADMIN" ? "/hierarchy" : "/dashboard");
+      router.push(getDestination(user));
     } catch (err: unknown) {
       setError(
         err instanceof Error
@@ -296,7 +321,7 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
-  }, [router, setSession]);
+  }, [router, setSession, getDestination]);
 
   useEffect(() => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
@@ -1235,5 +1260,13 @@ export default function LoginPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-white" />}>
+      <LoginPageContent />
+    </Suspense>
   );
 }

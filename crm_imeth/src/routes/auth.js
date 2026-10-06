@@ -110,6 +110,94 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// POST: Refresh user session token
+router.post('/refresh', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'Authorization token required' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ success: false, error: 'Token missing' });
+    }
+
+    let payload;
+    try {
+      payload = jwt.verify(token, process.env.JWT_SECRET || 'development_jwt_secret_key', {
+        ignoreExpiration: true,
+      });
+    } catch (err) {
+      return res.status(401).json({ success: false, error: 'Invalid session token' });
+    }
+
+    const targetUserId = payload.userId || payload.id;
+    if (!targetUserId) {
+      return res.status(401).json({ success: false, error: 'Malformed token payload' });
+    }
+
+    // Disallow refreshing tokens that expired more than 7 days ago
+    if (payload.exp && Date.now() / 1000 - payload.exp > 7 * 24 * 60 * 60) {
+      return res.status(401).json({ success: false, error: 'Session expired permanently. Please log in again.' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: targetUserId },
+    });
+
+    if (!user || !user.isActive) {
+      return res.status(401).json({ success: false, error: 'Account inactive or not found' });
+    }
+
+    // Verify tokenVersion to support revocation / password reset invalidation
+    const tokenVersion = payload.tokenVersion ?? 0;
+    const currentVersion = user.tokenVersion ?? 0;
+    if (tokenVersion !== currentVersion) {
+      return res.status(401).json({ success: false, error: 'Session invalidated. Please log in again.' });
+    }
+
+    // Issue fresh 12-hour JWT
+    const newToken = jwt.sign(
+      {
+        userId: user.id,
+        id: user.id,
+        email: user.email,
+        tenantId: user.tenantId,
+        role: user.role,
+        tokenVersion: user.tokenVersion || 0,
+      },
+      process.env.JWT_SECRET || 'development_jwt_secret_key',
+      { expiresIn: '12h' }
+    );
+
+    const userProfile = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      phone: user.phone || null,
+      bio: user.bio || null,
+      avatar: user.avatar || null,
+      tenantId: user.tenantId,
+      isFirstLogin: user.isFirstLogin,
+    };
+
+    return res.status(200).json({
+      success: true,
+      token: newToken,
+      data: {
+        token: newToken,
+        user: userProfile,
+      },
+      user: userProfile,
+    });
+  } catch (error) {
+    console.error('[Auth Route] Session refresh error:', error);
+    return res.status(500).json({ success: false, error: 'Session refresh failed' });
+  }
+});
+
 // POST: Google OAuth Token Verification & Enterprise SaaS Session Issuance
 router.post('/google', async (req, res) => {
   try {

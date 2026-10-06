@@ -8,6 +8,8 @@ import SidebarNav from "@/components/layout/SidebarNav";
 import NotificationDropdown from "@/components/layout/NotificationDropdown";
 import UserCard from "@/components/layout/UserCard";
 import { useTheme } from "@/hooks/use-theme";
+import { useSessionTimeout } from "@/hooks/use-session-timeout";
+import SessionTimeoutModal from "@/components/auth/SessionTimeoutModal";
 
 export default function DashboardLayout({
   children,
@@ -16,6 +18,13 @@ export default function DashboardLayout({
 }) {
   const { isAuthenticated, isLoading, user, logout } = useAuth();
   useTheme();
+  const {
+    isIdleWarningActive,
+    countdownSeconds,
+    isExtending,
+    extendSession,
+    logoutNow,
+  } = useSessionTimeout();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -275,6 +284,15 @@ export default function DashboardLayout({
           </div>
         </main>
       </div>
+
+      {/* Session Inactivity Timeout Warning Modal */}
+      <SessionTimeoutModal
+        isOpen={isIdleWarningActive}
+        countdownSeconds={countdownSeconds}
+        isExtending={isExtending}
+        onExtend={extendSession}
+        onLogout={logoutNow}
+      />
     </div>
   );
 }
