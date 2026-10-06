@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useLeadSocket } from "@/hooks/use-lead-socket";
 import { useAgentList } from "@/hooks/use-agent-list";
 import type { Lead, Message, Followup, Activity } from "@/types";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 // Subcomponents
 import LeadHeader from "@/components/leads/LeadHeader";
@@ -103,7 +103,7 @@ export default function LeadDetailPage() {
         toast.success("Lead deleted successfully");
         router.push("/leads");
       } else {
-        const errorMsg = typeof res.error === "string" ? res.error : (res.error as any)?.message || "Failed to delete lead. Please try again.";
+        const errorMsg = typeof res.error === "string" ? res.error : (typeof res.error === "object" && res.error !== null && "message" in res.error ? String((res.error as { message: unknown }).message) : "Failed to delete lead. Please try again.");
         toast.error(errorMsg);
         setDeletingLead(false);
         setIsDeleteDialogOpen(false);
@@ -165,7 +165,7 @@ export default function LeadDetailPage() {
 
       if (res.success && res.data) {
         const newFollowup = res.data;
-        const newActivity = (res as any).activity as Activity | undefined;
+        const newActivity = (res as unknown as Record<string, unknown>).activity as Activity | undefined;
 
         setLead((prev) => {
           if (!prev) return prev;
@@ -206,7 +206,7 @@ export default function LeadDetailPage() {
       });
       if (res.success && res.data) {
         const updatedFollowup = res.data;
-        const newActivity = (res as any).activity as Activity | undefined;
+        const newActivity = (res as unknown as Record<string, unknown>).activity as Activity | undefined;
         const isNowCompleted = !currentCompleted;
 
         setLead((prev) => {

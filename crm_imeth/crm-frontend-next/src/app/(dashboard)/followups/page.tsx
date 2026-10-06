@@ -13,7 +13,6 @@ import {
   Video,
   CheckSquare,
   User,
-  Plus,
   RefreshCw,
   X,
   Trash2,
@@ -103,7 +102,10 @@ export default function FollowupsPage() {
       });
 
       if (res.success && res.data) {
-        toast.success(nextCompleted ? "Follow-up marked as completed!" : "Follow-up reopened");
+        const msg = nextCompleted ? "Follow-up marked as completed!" : "Follow-up reopened";
+        toast.success(msg);
+        setSuccessMsg(msg);
+        setTimeout(() => setSuccessMsg(""), 4000);
       } else {
         // Rollback on non-success
         setFollowups((prev) =>

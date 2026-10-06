@@ -14,7 +14,6 @@ import {
   CheckCircle2,
   AlertCircle,
   Sparkles,
-  Key,
   Copy,
   Check,
   RefreshCw,
@@ -85,7 +84,6 @@ export default function UserManagementPage() {
   } | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const isAdmin = user?.role === "ADMIN";
   const isPrivileged = ["ADMIN", "TEAM_LEAD"].includes(user?.role || "");
 
   // Role hierarchy levels for action permissions
@@ -110,7 +108,7 @@ export default function UserManagementPage() {
       if (res.success && res.data) {
         setQuotaStatus(res.data);
       }
-    } catch (_) {}
+    } catch {}
   };
 
   // Load Users

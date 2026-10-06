@@ -11,7 +11,6 @@ import {
   Filter,
   UserPlus,
   ArrowRightLeft,
-  ShieldAlert,
   UserCheck,
   UserX,
   Trash2,
@@ -20,11 +19,6 @@ import {
   ChevronUp,
   Clock,
   Sparkles,
-  Shield,
-  Zap,
-  Crown,
-  Briefcase,
-  AlertCircle,
 } from "lucide-react";
 
 interface ActivityFeedProps {

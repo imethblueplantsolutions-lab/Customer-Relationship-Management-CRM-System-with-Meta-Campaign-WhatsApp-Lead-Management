@@ -25,11 +25,9 @@ import {
   Calendar,
   Check,
   X,
-  Loader2,
 } from "lucide-react";
 
-// ─── Default stages for new pipelines ──────────────────────
-const DEFAULT_PIPELINE_NAME = "Sales Pipeline";
+
 
 export default function PipelinesPage() {
   const [pipelines, setPipelines] = useState<Pipeline[]>([]);
@@ -109,7 +107,7 @@ export default function PipelinesPage() {
         body: JSON.stringify({ name: newName.trim() }),
       });
       if (res.success && res.data) {
-        const list = await loadPipelines();
+        await loadPipelines();
         setSelectedId(res.data.id);
         setNewName("");
         setShowNewPipeline(false);
@@ -183,8 +181,6 @@ export default function PipelinesPage() {
       await loadDeals(selectedId);
     }
   }
-
-  const selectedPipeline = pipelines.find((p) => p.id === selectedId);
 
   if (loading) {
     return (

@@ -2,12 +2,11 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { RoleGuard } from "@/components/RoleGuard";
 import { useSocket } from "@/hooks/use-socket";
 import { apiClient, ApiError } from "@/lib/api-client";
-import type { User, HierarchyResponse, HierarchyStats } from "@/types";
+import type { User, HierarchyResponse } from "@/types";
 import PlanLimitAlert from "@/components/ui/PlanLimitAlert";
 
 const OrgChartTree = dynamic(() => import("@/components/hierarchy/OrgChartTree"), {
@@ -39,8 +38,6 @@ import {
   ChevronDown,
   AlertCircle,
   CheckCircle2,
-  UserCheck,
-  Building2,
   UserX,
   ArrowRight,
   SlidersHorizontal,
@@ -132,8 +129,7 @@ const REQUIRED_MANAGER_LABEL: Record<string, string> = {
 };
 
 export default function UserHierarchyPage() {
-  const { user: currentUser, isLoading: authLoading } = useAuth();
-  const router = useRouter();
+  const { user: currentUser } = useAuth();
   const { socket } = useSocket();
 
   // State
@@ -221,7 +217,7 @@ export default function UserHierarchyPage() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [currentUser]);
 
   useEffect(() => {
     if (currentUser?.role === "SUPER_ADMIN") {
@@ -282,7 +278,7 @@ export default function UserHierarchyPage() {
   ) => {
     setUpdatingUserId(userId);
     try {
-      const payload: Record<string, any> = {
+      const payload: Record<string, unknown> = {
         reportsToId: managerId,
       };
       if (quotaUpdates) {
@@ -609,7 +605,7 @@ export default function UserHierarchyPage() {
         (u.role === "SUPER_ADMIN" || !targetTenantId || u.tenantId === targetTenantId) &&
         (allowedManagerRoles.length > 0 ? allowedManagerRoles.includes(u.role) : false)
     );
-  }, [hierarchyData?.users, reassignModalUser]);
+  }, [hierarchyData, reassignModalUser]);
 
   // Potential managers for the BULK reassign modal — exclude all selected users & their downstream subordinates
   const bulkPotentialManagers = useMemo(() => {
@@ -658,7 +654,7 @@ export default function UserHierarchyPage() {
         (u.role === "SUPER_ADMIN" || !targetTenantId || u.tenantId === targetTenantId) &&
         (allowedManagerRoles ? allowedManagerRoles.includes(u.role) : true)
     );
-  }, [hierarchyData?.users, selectedUserIds]);
+  }, [hierarchyData, selectedUserIds]);
 
   const stats = hierarchyData?.stats;
 

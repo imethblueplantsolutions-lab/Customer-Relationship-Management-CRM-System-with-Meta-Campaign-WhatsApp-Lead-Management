@@ -243,6 +243,7 @@ export interface AuditLog {
     avatar?: string | null;
   } | null;
   action: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   details?: Record<string, any> | null;
   createdAt: string;
 }

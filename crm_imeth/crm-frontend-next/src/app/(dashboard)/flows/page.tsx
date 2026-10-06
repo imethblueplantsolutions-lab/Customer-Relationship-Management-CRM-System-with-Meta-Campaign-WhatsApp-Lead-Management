@@ -12,7 +12,6 @@ import {
   Trash2,
   Play,
   Pause,
-  Loader2,
   MoreVertical,
 } from "lucide-react";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
@@ -99,7 +98,7 @@ export default function FlowsPage() {
         toast.success("Flow deleted successfully");
         setFlows((prev) => prev.filter((f) => f.id !== flowToDelete.id));
       } else {
-        const errorMsg = typeof res.error === "string" ? res.error : (res.error as any)?.message || "Failed to delete flow";
+        const errorMsg = typeof res.error === "string" ? res.error : (typeof res.error === "object" && res.error !== null && "message" in res.error ? String((res.error as { message: unknown }).message) : "Failed to delete flow");
         toast.error(errorMsg);
       }
     } catch (err) {

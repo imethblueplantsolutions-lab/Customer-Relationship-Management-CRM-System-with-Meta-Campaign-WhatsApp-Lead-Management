@@ -12,10 +12,7 @@ import {
   ZoomOut,
   RotateCcw,
   Users,
-  ChevronRight,
-  Sparkles,
   Building2,
-  Maximize2,
   Trash2,
 } from 'lucide-react';
 

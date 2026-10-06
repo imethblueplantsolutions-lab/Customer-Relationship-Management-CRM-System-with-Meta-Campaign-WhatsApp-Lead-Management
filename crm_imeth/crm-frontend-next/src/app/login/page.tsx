@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { apiClient } from "@/lib/api-client";
@@ -19,7 +19,6 @@ import {
   Database,
   CheckCircle2,
   Layers,
-  ChevronDown,
   User as UserIcon,
   Building2,
   KeyRound,
@@ -261,7 +260,7 @@ export default function LoginPage() {
 
   const [googleInitialized, setGoogleInitialized] = useState(false);
 
-  const handleGoogleResponse = async (response: { credential?: string }) => {
+  const handleGoogleResponse = useCallback(async (response: { credential?: string }) => {
     if (!response?.credential) {
       setError("No authentication credential received from Google.");
       return;
@@ -297,7 +296,7 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router, setSession]);
 
   useEffect(() => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
@@ -336,7 +335,7 @@ export default function LoginPage() {
     } else {
       initGsi();
     }
-  }, []);
+  }, [handleGoogleResponse]);
 
   const handleGoogleSignIn = () => {
     setError("");

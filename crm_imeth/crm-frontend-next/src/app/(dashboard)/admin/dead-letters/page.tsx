@@ -15,7 +15,6 @@ import {
   ChevronDown,
   ChevronUp,
   RefreshCw,
-  ShieldAlert,
   Database,
   Layers,
   Check,
@@ -35,7 +34,7 @@ interface FailedJob {
 }
 
 export default function DeadLetterQueuePage() {
-  const { user, isLoading } = useAuth();
+  const { isLoading } = useAuth();
   const [jobs, setJobs] = useState<FailedJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [replayingIds, setReplayingIds] = useState<Record<string, boolean>>({});

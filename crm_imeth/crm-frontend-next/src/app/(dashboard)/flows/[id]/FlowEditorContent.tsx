@@ -19,11 +19,10 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { apiClient } from "@/lib/api-client";
-import type { Flow, FlowNode } from "@/types";
+import type { Flow } from "@/types";
 import {
   Save,
   ArrowLeft,
-  Plus,
   MessageSquare,
   GitBranch,
   HandMetal,
@@ -45,7 +44,7 @@ const NODE_PALETTE = [
 ];
 
 // ─── Custom node components ──────────────────────────────────
-function StartNode({ data }: { data: Record<string, unknown> }) {
+function StartNode() {
   return (
     <div className="rounded-xl border-2 border-emerald-400 bg-emerald-50 px-5 py-3 shadow-md min-w-[160px]">
       <div className="flex items-center gap-2">
@@ -93,7 +92,7 @@ function ConditionNode({ data }: { data: Record<string, unknown> }) {
   );
 }
 
-function HandoffNode({ data }: { data: Record<string, unknown> }) {
+function HandoffNode() {
   return (
     <div className="rounded-xl border-2 border-orange-300 bg-orange-50 px-5 py-3 shadow-md min-w-[160px]">
       <Handle type="target" position={Position.Top} className="!bg-orange-500" />

@@ -53,7 +53,7 @@ function DashboardContent() {
         if (res.success && res.data) {
           setStats(res.data);
         } else {
-          const msg = typeof res.error === "string" ? res.error : (res.error as any)?.message || "Failed to load stats";
+          const msg = typeof res.error === "string" ? res.error : (typeof res.error === "object" && res.error !== null && "message" in res.error ? String((res.error as { message: unknown }).message) : "Failed to load stats");
           setError(msg);
         }
       } catch (err: unknown) {
