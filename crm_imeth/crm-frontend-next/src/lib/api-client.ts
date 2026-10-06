@@ -31,14 +31,34 @@ export class ApiError extends Error {
   title?: string;
   quota?: Record<string, unknown>;
   statusCode?: number;
+  remainingAttempts?: number;
+  lockoutUntil?: string;
+  isLocked?: boolean;
+  data?: Record<string, unknown>;
 
-  constructor(message: string, options?: { code?: string; title?: string; quota?: Record<string, unknown>; statusCode?: number }) {
+  constructor(
+    message: string,
+    options?: {
+      code?: string;
+      title?: string;
+      quota?: Record<string, unknown>;
+      statusCode?: number;
+      remainingAttempts?: number;
+      lockoutUntil?: string;
+      isLocked?: boolean;
+      data?: Record<string, unknown>;
+    }
+  ) {
     super(message);
     this.name = 'ApiError';
     this.code = options?.code;
     this.title = options?.title;
     this.quota = options?.quota;
     this.statusCode = options?.statusCode;
+    this.remainingAttempts = options?.remainingAttempts;
+    this.lockoutUntil = options?.lockoutUntil;
+    this.isLocked = options?.isLocked;
+    this.data = options?.data;
   }
 }
 
@@ -93,6 +113,10 @@ export async function apiClient<T = unknown>(
       title: data.title,
       quota: data.quota,
       statusCode: response.status,
+      remainingAttempts: typeof data.remainingAttempts === 'number' ? data.remainingAttempts : undefined,
+      lockoutUntil: typeof data.lockoutUntil === 'string' ? data.lockoutUntil : undefined,
+      isLocked: Boolean(data.isLocked || response.status === 423),
+      data,
     });
   }
   return data as ApiResponse<T>;

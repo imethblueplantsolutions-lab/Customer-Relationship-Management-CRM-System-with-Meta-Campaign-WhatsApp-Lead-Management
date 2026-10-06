@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
-import { apiClient } from "@/lib/api-client";
+import { apiClient, ApiError } from "@/lib/api-client";
 import OtpLoginModal from "@/components/auth/OtpLoginModal";
 import CredentialErrorModal from "@/components/auth/CredentialErrorModal";
 import { applyTheme } from "@/lib/theme";
@@ -93,9 +93,13 @@ function LoginPageContent() {
   const [successMsg, setSuccessMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Credential Error Modal state & Input Error state
+  // Credential Error Modal state & Brute-force Lockout state
   const [showCredentialModal, setShowCredentialModal] = useState(false);
   const [hasAuthError, setHasAuthError] = useState(false);
+  const [authRemainingAttempts, setAuthRemainingAttempts] = useState<number | null>(null);
+  const [authLockoutUntil, setAuthLockoutUntil] = useState<string | null>(null);
+  const [authIsLocked, setAuthIsLocked] = useState(false);
+  const [authErrorModalMessage, setAuthErrorModalMessage] = useState("");
   const emailInputRef = useRef<HTMLInputElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
   const lastAttemptedEmailRef = useRef("");
@@ -215,6 +219,19 @@ function LoginPageContent() {
           : "Authentication failed. Please check credentials or backend server.";
       setError(msg);
       setHasAuthError(true);
+
+      if (err instanceof ApiError) {
+        setAuthRemainingAttempts(err.remainingAttempts ?? null);
+        setAuthLockoutUntil(err.lockoutUntil ?? null);
+        setAuthIsLocked(Boolean(err.isLocked || err.statusCode === 423));
+        setAuthErrorModalMessage(err.message || "The email and password you entered did not match our records.");
+      } else {
+        setAuthRemainingAttempts(null);
+        setAuthLockoutUntil(null);
+        setAuthIsLocked(false);
+        setAuthErrorModalMessage(msg);
+      }
+
       setShowCredentialModal(true);
     } finally {
       setLoading(false);
@@ -996,11 +1013,22 @@ function LoginPageContent() {
         onCancel={() => setShowOtpModal(false)}
       />
 
-      {/* Incorrect Credential Alert Modal (matching screenshot) */}
+      {/* Incorrect Credential Alert & Brute-Force Lockout Modal */}
       <CredentialErrorModal
         isOpen={showCredentialModal}
+        title={authIsLocked ? "Account Temporarily Locked" : "Authentication Failed"}
+        message={authErrorModalMessage || "The email and password you entered did not match our records. Please double-check and try again."}
+        remainingAttempts={authRemainingAttempts}
+        lockoutUntil={authLockoutUntil}
+        isLocked={authIsLocked}
         onClose={() => handleDismissCredentialModal(false)}
         onConfirm={() => handleDismissCredentialModal(true)}
+        onResetPassword={() => {
+          setShowCredentialModal(false);
+          setIsResetModalOpen(true);
+          setResetStep("EMAIL");
+          setResetEmail(email || "");
+        }}
       />
 
       {/* Self-Service Password Recovery Modal */}

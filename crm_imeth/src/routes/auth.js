@@ -28,9 +28,71 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ success: false, error: 'Invalid credentials or inactive account' });
     }
 
+    // Check if account is temporarily locked out
+    if (user.lockoutUntil && new Date(user.lockoutUntil) > new Date()) {
+      const remainingSeconds = Math.ceil((new Date(user.lockoutUntil).getTime() - Date.now()) / 1000);
+      const remainingMinutes = Math.ceil(remainingSeconds / 60);
+      return res.status(423).json({
+        success: false,
+        isLocked: true,
+        lockoutUntil: user.lockoutUntil,
+        error: `Account is temporarily locked due to too many failed attempts. Please try again in ${remainingMinutes} minute${remainingMinutes === 1 ? '' : 's'} or reset your password.`,
+      });
+    }
+
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
-      return res.status(401).json({ success: false, error: 'Invalid credentials' });
+      const updatedAttempts = (user.failedLoginAttempts || 0) + 1;
+
+      if (updatedAttempts >= 5) {
+        const lockoutUntil = new Date(Date.now() + 15 * 60 * 1000); // 15-minute lockout
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            failedLoginAttempts: updatedAttempts,
+            lockoutUntil,
+          },
+        });
+
+        return res.status(423).json({
+          success: false,
+          isLocked: true,
+          lockoutUntil,
+          error: 'Maximum failed attempts reached (5/5). Your account is locked for 15 minutes for security. You can reset your password now to regain access immediately.',
+        });
+      }
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          failedLoginAttempts: updatedAttempts,
+          lockoutUntil: null,
+        },
+      });
+
+      const remainingAttempts = 5 - updatedAttempts;
+      const warningMessage =
+        updatedAttempts >= 3
+          ? `Invalid credentials. Warning: ${remainingAttempts} attempt${remainingAttempts === 1 ? '' : 's'} remaining before your account is temporarily locked.`
+          : 'Invalid credentials';
+
+      return res.status(401).json({
+        success: false,
+        isLocked: false,
+        remainingAttempts: updatedAttempts >= 3 ? remainingAttempts : undefined,
+        error: warningMessage,
+      });
+    }
+
+    // Password is valid! Reset failedLoginAttempts and clear lockout
+    if (user.failedLoginAttempts > 0 || user.lockoutUntil) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          failedLoginAttempts: 0,
+          lockoutUntil: null,
+        },
+      });
     }
 
     // First-Time Login: Require OTP and mandatory initial password change
@@ -366,6 +428,8 @@ router.post('/verify-otp', async (req, res) => {
           otpHash: null,
           otpExpiresAt: null,
           otpAttempts: 0,
+          failedLoginAttempts: 0,
+          lockoutUntil: null,
           tokenVersion: { increment: 1 },
         },
       });
@@ -618,7 +682,7 @@ router.post('/reset-password', async (req, res) => {
     // Hash the new password using bcrypt
     const hashedPassword = await bcrypt.hash(newPassword.trim(), 10);
 
-    // Update user password and clear OTP fields
+    // Update user password and clear OTP fields & lockouts
     await prisma.user.update({
       where: { id: user.id },
       data: {
@@ -626,6 +690,8 @@ router.post('/reset-password', async (req, res) => {
         otpHash: null,
         otpExpiresAt: null,
         otpAttempts: 0,
+        failedLoginAttempts: 0,
+        lockoutUntil: null,
         isFirstLogin: false,
         tokenVersion: { increment: 1 },
       },

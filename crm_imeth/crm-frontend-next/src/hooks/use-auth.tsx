@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
-import { apiClient } from "@/lib/api-client";
+import { apiClient, ApiError } from "@/lib/api-client";
 import { useSocket } from "@/hooks/use-socket";
 import { toast } from "sonner";
 import type { User } from "@/types";
@@ -155,7 +155,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { requireOtp: false };
       }
     } else {
-      throw new Error(res.error || "Authentication failed");
+      throw new ApiError(res.error || "Authentication failed", {
+        code: res.code,
+        title: res.title,
+      });
     }
     return { requireOtp: false };
   }, [setSession]);

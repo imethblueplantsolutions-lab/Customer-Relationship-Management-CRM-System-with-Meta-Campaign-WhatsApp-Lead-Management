@@ -44,6 +44,8 @@ model User {
   otpAttempts       Int            @default(0)
   pendingEmail      String?
   tokenVersion      Int            @default(0)
+  failedLoginAttempts Int          @default(0)
+  lockoutUntil      DateTime?
   maxTeamLeads      Int?           @default(1)
   maxAgents         Int?           @default(1)
   tenantId          String
