@@ -72,10 +72,12 @@ export default memo(function LeadHeader({
 
   const handleStageClick = async (stageValue: string, customContainer?: HTMLElement | null) => {
     if (stageValue === "CONVERTED") {
+      const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
       const targetContainer =
         customContainer ||
-        mobileDropdownWrapperRef.current ||
-        desktopConvertedWrapperRef.current;
+        (isMobile ? mobileDropdownWrapperRef.current : desktopConvertedWrapperRef.current) ||
+        desktopConvertedWrapperRef.current ||
+        mobileDropdownWrapperRef.current;
       triggerCelebration(targetContainer);
     }
     await onUpdateStatus(stageValue);
