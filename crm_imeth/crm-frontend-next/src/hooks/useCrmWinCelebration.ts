@@ -62,8 +62,8 @@ export function fireConvertedButtonConfetti(targetContainer?: HTMLElement | null
       particleCount: 150,
       spread: 360,
       startVelocity: 7,
-      decay: 1,
-      scalar: 0.9,
+      decay: 0.85,
+      scalar: 0.6,
       ticks: 90,
     })?.then(() => {
       if (canvas.parentNode) {
