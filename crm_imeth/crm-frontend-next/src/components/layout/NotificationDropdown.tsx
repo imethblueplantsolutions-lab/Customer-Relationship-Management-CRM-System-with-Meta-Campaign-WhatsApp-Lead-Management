@@ -57,10 +57,22 @@ export default function NotificationDropdown({ isCollapsed }: NotificationDropdo
       setNotifications((prev) => [notif, ...prev.slice(0, 19)]);
       setUnreadCount((prev) => prev + 1);
 
-      // Trigger sonner toast directly with priority for overdue alerts
+      // Trigger sonner toast directly with priority for overdue & due soon alerts
       const isOverdue = notif.type === "TASK_OVERDUE";
+      const isDueSoon = notif.type === "TASK_DUE_SOON";
+
       if (isOverdue) {
         toast.error(notif.title, {
+          description: notif.body || notif.message,
+          action: notif.linkUrl
+            ? {
+                label: "View Task",
+                onClick: () => router.push(notif.linkUrl!),
+              }
+            : undefined,
+        });
+      } else if (isDueSoon) {
+        toast.warning(notif.title, {
           description: notif.body || notif.message,
           action: notif.linkUrl
             ? {
@@ -79,6 +91,18 @@ export default function NotificationDropdown({ isCollapsed }: NotificationDropdo
               }
             : undefined,
         });
+      }
+
+      // Browser Desktop Notification (when backgrounded or permission granted)
+      if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+        try {
+          new Notification(notif.title, {
+            body: notif.body || notif.message || "",
+            icon: "/favicon.ico",
+          });
+        } catch {
+          // Non-critical desktop notification fallback
+        }
       }
     };
 
@@ -179,6 +203,8 @@ export default function NotificationDropdown({ isCollapsed }: NotificationDropdo
                     !notif.isRead
                       ? notif.type === "TASK_OVERDUE"
                         ? "border-l-2 border-red-500 bg-red-500/10"
+                        : notif.type === "TASK_DUE_SOON"
+                        ? "border-l-2 border-amber-500 bg-amber-500/10"
                         : "border-l-2 border-blue-500"
                       : ""
                   }`}

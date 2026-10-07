@@ -109,7 +109,114 @@ async function checkOverdueFollowups(io) {
 }
 
 /**
- * Starts the periodic overdue task checker.
+ * Checks all active follow-ups due in the next 15 minutes (now < dueAt <= now + 15m)
+ * and dispatches a pre-due notification to the assigned sales agent if not yet sent.
+ * @param {import('socket.io').Server} io - Socket.IO server instance
+ */
+async function checkDueSoonFollowups(io) {
+  try {
+    const now = new Date();
+    const in15Minutes = new Date(now.getTime() + 15 * 60 * 1000);
+
+    const dueSoonFollowups = await prisma.followup.findMany({
+      where: {
+        completed: false,
+        dueAt: { gt: now, lte: in15Minutes },
+      },
+      include: {
+        lead: {
+          select: {
+            id: true,
+            name: true,
+            phoneNumber: true,
+            assignedToId: true,
+            tenantId: true,
+          },
+        },
+        assignedTo: {
+          select: { id: true, name: true, email: true },
+        },
+        createdBy: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+      take: 200,
+    });
+
+    if (!dueSoonFollowups || dueSoonFollowups.length === 0) {
+      return;
+    }
+
+    for (const followup of dueSoonFollowups) {
+      const targetUserId =
+        followup.assignedToId ||
+        followup.lead?.assignedToId ||
+        followup.createdById;
+
+      if (!targetUserId) continue;
+
+      const taskLink = `/leads/${followup.leadId}?followupId=${followup.id}`;
+
+      const alreadyNotified = await prisma.notification.findFirst({
+        where: {
+          userId: targetUserId,
+          type: 'TASK_DUE_SOON',
+          linkUrl: taskLink,
+        },
+      });
+
+      if (alreadyNotified) {
+        continue;
+      }
+
+      const leadName =
+        followup.lead?.name || followup.lead?.phoneNumber || 'Lead';
+      const dueTimeStr = followup.dueAt
+        ? new Date(followup.dueAt).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+          })
+        : 'scheduled time';
+
+      const notifTitle = `Upcoming Follow-up: ${followup.type || 'Task'}`;
+      const notifBody = `Task for "${leadName}" is due soon at ${dueTimeStr}. Please prepare.`;
+
+      const notification = await prisma.notification.create({
+        data: {
+          userId: targetUserId,
+          type: 'TASK_DUE_SOON',
+          title: notifTitle,
+          body: notifBody,
+          message: notifBody,
+          linkUrl: taskLink,
+        },
+      });
+
+      if (io) {
+        io.to(`user:${targetUserId}`).emit('new_notification', notification);
+        console.log(
+          `📡 [Reminder Checker] Dispatched TASK_DUE_SOON notification to user:${targetUserId} for followup ${followup.id}`
+        );
+      }
+    }
+  } catch (error) {
+    console.error('[Reminder Checker] Error processing due soon follow-ups:', error.message);
+  }
+}
+
+/**
+ * Runs both overdue and upcoming pre-due reminder checks.
+ * @param {import('socket.io').Server} io
+ */
+async function checkAllFollowupReminders(io) {
+  await Promise.allSettled([
+    checkDueSoonFollowups(io),
+    checkOverdueFollowups(io),
+  ]);
+}
+
+/**
+ * Starts the periodic follow-up task and reminder checker.
  * @param {import('socket.io').Server} io - Socket.IO server instance
  * @param {number} intervalMs - Check interval in milliseconds (default: 60s)
  */
@@ -118,19 +225,19 @@ function startOverdueChecker(io, intervalMs = 60000) {
     clearInterval(checkerInterval);
   }
 
-  console.log(`⏰ [Overdue Checker] Service started (Interval: ${intervalMs / 1000}s)`);
+  console.log(`⏰ [Reminder Checker] Service started (Interval: ${intervalMs / 1000}s)`);
 
   // Run initial check after a brief 5s warmup delay
   setTimeout(() => {
-    checkOverdueFollowups(io).catch((err) =>
-      console.warn('[Overdue Checker] Initial check failed:', err.message)
+    checkAllFollowupReminders(io).catch((err) =>
+      console.warn('[Reminder Checker] Initial check failed:', err.message)
     );
   }, 5000);
 
   // Set recurring interval
   checkerInterval = setInterval(() => {
-    checkOverdueFollowups(io).catch((err) =>
-      console.warn('[Overdue Checker] Periodic check failed:', err.message)
+    checkAllFollowupReminders(io).catch((err) =>
+      console.warn('[Reminder Checker] Periodic check failed:', err.message)
     );
   }, intervalMs);
 
@@ -139,5 +246,7 @@ function startOverdueChecker(io, intervalMs = 60000) {
 
 module.exports = {
   checkOverdueFollowups,
+  checkDueSoonFollowups,
+  checkAllFollowupReminders,
   startOverdueChecker,
 };

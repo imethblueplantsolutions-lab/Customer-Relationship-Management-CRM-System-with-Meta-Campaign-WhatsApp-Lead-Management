@@ -924,13 +924,14 @@ router.post('/:id/followups', async (req, res) => {
 });
 
 // PUT: Update or complete follow-up activity
-router.put('/:id/followups/:followupId', async (req, res) => {
+router.put('/:id/followups/:followupId', authenticate, async (req, res) => {
   try {
     const store = tenantStorage.getStore();
     const tenantId = req.user?.tenantId || store?.tenantId;
-    const isAgent = req.user?.role === 'AGENT';
+    const userRole = req.user?.role;
+    const isAgent = userRole === 'AGENT';
     const currentUserId = req.user?.userId || req.user?.id;
-    const { completed, note, dueAt, type } = req.body;
+    const { completed, note, dueAt, type, assignedToId } = req.body;
 
     const followup = await prisma.followup.findFirst({
       where: { id: req.params.followupId, leadId: req.params.id },
@@ -941,11 +942,26 @@ router.put('/:id/followups/:followupId', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Follow-up not found' });
     }
 
+    // Agents can only update their own follow-ups
     if (isAgent && followup.assignedToId !== currentUserId && followup.createdById !== currentUserId) {
       return res.status(403).json({ success: false, error: 'Forbidden: You can only update your own follow-ups' });
     }
 
+    // Agents cannot reassign to another agent
+    if (isAgent && assignedToId && assignedToId !== currentUserId) {
+      return res.status(403).json({ success: false, error: 'Forbidden: Agents cannot reassign follow-ups to other team members' });
+    }
+
+    if (assignedToId) {
+      await assertUserBelongsToTenant(assignedToId, tenantId);
+    }
+
     const isNowCompleted = completed !== undefined && Boolean(completed) === true && !followup.completed;
+
+    // Check if dueAt was changed (rescheduled)
+    const oldDueAtTime = followup.dueAt ? new Date(followup.dueAt).getTime() : null;
+    const newDueAtTime = dueAt ? new Date(dueAt).getTime() : null;
+    const isRescheduled = dueAt !== undefined && oldDueAtTime !== newDueAtTime;
 
     const updated = await prisma.followup.update({
       where: { id: req.params.followupId },
@@ -953,7 +969,8 @@ router.put('/:id/followups/:followupId', async (req, res) => {
         ...(completed !== undefined && { completed: Boolean(completed) }),
         ...(note !== undefined && { note }),
         ...(dueAt !== undefined && { dueAt: dueAt ? new Date(dueAt) : null }),
-        ...(type !== undefined && { type })
+        ...(type !== undefined && { type }),
+        ...(assignedToId !== undefined && { assignedToId }),
       },
       include: {
         createdBy: { select: { id: true, name: true, email: true, role: true, avatar: true } },
@@ -962,6 +979,8 @@ router.put('/:id/followups/:followupId', async (req, res) => {
     });
 
     await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
+
+    const { io } = require('../index');
 
     // Automatically record TASK_COMPLETED activity on timeline when completed/done
     let completedActivity = null;
@@ -981,13 +1000,40 @@ router.put('/:id/followups/:followupId', async (req, res) => {
           }
         });
 
-        const { io } = require('../index');
         if (io) {
           io.to(`tenant:${tenantId}`).emit('lead_activity_created', { leadId: req.params.id, activity: completedActivity });
         }
       } catch (actErr) {
         console.warn('[Activity] Failed to create TASK_COMPLETED activity:', actErr.message);
       }
+    } else if (isRescheduled) {
+      // Automatically record TASK_SCHEDULED on timeline when rescheduled
+      try {
+        const formattedNewDate = newDueAtTime ? new Date(newDueAtTime).toLocaleString() : 'No Date';
+        const rescheduledActivity = await prisma.activity.create({
+          data: {
+            leadId: req.params.id,
+            createdById: currentUserId || null,
+            type: 'TASK_SCHEDULED',
+            title: `Follow-up Rescheduled: ${updated.type || 'Task'}`,
+            description: `Rescheduled ${updated.type || 'task'} to ${formattedNewDate}${note ? `: "${note}"` : ''}`,
+            occurredAt: new Date()
+          },
+          include: {
+            createdBy: { select: { id: true, name: true, email: true, role: true, avatar: true } }
+          }
+        });
+
+        if (io) {
+          io.to(`tenant:${tenantId}`).emit('lead_activity_created', { leadId: req.params.id, activity: rescheduledActivity });
+        }
+      } catch (actErr) {
+        console.warn('[Activity] Failed to create TASK_SCHEDULED activity on reschedule:', actErr.message);
+      }
+    }
+
+    if (io) {
+      io.to(`tenant:${tenantId}`).emit('lead_followup_updated', { leadId: req.params.id, followup: updated });
     }
 
     res.status(200).json({ success: true, data: updated, activity: completedActivity });
@@ -998,7 +1044,7 @@ router.put('/:id/followups/:followupId', async (req, res) => {
 });
 
 // DELETE: Delete a follow-up activity (Admins and Team Leads only)
-router.delete('/:id/followups/:followupId', async (req, res) => {
+router.delete('/:id/followups/:followupId', authenticate, async (req, res) => {
   try {
     const store = tenantStorage.getStore();
     const tenantId = req.user?.tenantId || store?.tenantId;
