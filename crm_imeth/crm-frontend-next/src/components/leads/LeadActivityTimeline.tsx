@@ -110,6 +110,8 @@ interface LeadActivityTimelineProps {
   agents: { id: string; name?: string; email: string; role: string; avatar?: string }[];
   /** Current logged-in user ID */
   currentUserId?: string;
+  /** Current logged-in user role */
+  currentUserRole?: string;
   /** Current user display name */
   currentUserName?: string;
   /** Current user email */
@@ -143,6 +145,7 @@ export default memo(function LeadActivityTimeline({
   canManageAssignment,
   agents,
   currentUserId,
+  currentUserRole,
   currentUserName,
   currentUserEmail,
   onCreateActivity,
@@ -151,6 +154,22 @@ export default memo(function LeadActivityTimeline({
   isSubmittingActivity,
   openActivityTrigger,
 }: LeadActivityTimelineProps) {
+  // Classification: Timeline entries vs user Activity items
+  const TIMELINE_TYPES = ["STAGE_CHANGE", "SYSTEM_ASSIGNMENT", "TASK_SCHEDULED", "TASK_COMPLETED"];
+
+  // Role-based deletion permission:
+  // - Admins: delete both timeline and activity items
+  // - Team Leads: delete activity items but NOT timeline entries
+  // - Sales Agents: restricted from deleting anything in Timeline & Activity
+  const canDeleteActivityItem = (activityType: string): boolean => {
+    if (!currentUserRole || currentUserRole === "AGENT") return false;
+    if (currentUserRole === "ADMIN" || currentUserRole === "SUPER_ADMIN") return true;
+    if (currentUserRole === "TEAM_LEAD") {
+      return !TIMELINE_TYPES.includes(activityType);
+    }
+    return false;
+  };
+
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const [activityForm, setActivityForm] = useState<{
     type: string;
@@ -401,12 +420,16 @@ export default memo(function LeadActivityTimeline({
                         <Pencil className="h-3.5 w-3.5" />
                       </button>
                     )}
-                    {!["TASK_SCHEDULED", "TASK_COMPLETED", "SYSTEM_ASSIGNMENT", "STAGE_CHANGE"].includes(activity.type) && (
+                    {canDeleteActivityItem(activity.type) && (
                       <button
                         type="button"
                         onClick={() => onDeleteActivity(activity.id)}
                         className="p-1.5 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                        title="Delete activity"
+                        title={
+                          TIMELINE_TYPES.includes(activity.type)
+                            ? "Delete timeline entry (Admin only)"
+                            : "Delete activity"
+                        }
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>

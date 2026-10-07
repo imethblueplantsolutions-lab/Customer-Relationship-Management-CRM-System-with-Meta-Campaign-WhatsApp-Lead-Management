@@ -409,7 +409,7 @@ export default function LeadDetailPage() {
   const handleDeleteActivity = async (activityId: string) => {
     if (!lead) return;
     try {
-      const res = await apiClient(`/leads/${lead.id}/activities/${activityId}`, {
+      const res = await apiClient<{ success?: boolean }>(`/leads/${lead.id}/activities/${activityId}`, {
         method: "DELETE",
       });
       if (res.success) {
@@ -420,9 +420,11 @@ export default function LeadDetailPage() {
             activities: (prev.activities || []).filter((a) => a.id !== activityId),
           };
         });
+        toast.success("Item deleted successfully");
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Failed to delete activity:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to delete activity");
     }
   };
 
@@ -621,6 +623,7 @@ export default function LeadDetailPage() {
               canManageAssignment={canManageAssignment}
               agents={agents}
               currentUserId={user?.id}
+              currentUserRole={user?.role}
               currentUserName={user?.name}
               currentUserEmail={user?.email}
               onCreateActivity={handleCreateActivity}

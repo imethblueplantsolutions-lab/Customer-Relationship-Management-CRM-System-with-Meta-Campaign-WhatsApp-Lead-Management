@@ -1191,13 +1191,30 @@ router.put('/:id/activities/:activityId', async (req, res) => {
   }
 });
 
-// DELETE: Remove an activity (creator or Admin/Team Lead)
-router.delete('/:id/activities/:activityId', async (req, res) => {
+// DELETE: Remove an activity or timeline item
+// Admins can delete both timeline and activity items
+// Team Leads can delete activity items but NOT timeline entries
+// Sales Agents are restricted from deleting anything in Timeline & Activity
+router.delete('/:id/activities/:activityId', authenticate, async (req, res) => {
   try {
     const store = tenantStorage.getStore();
     const tenantId = req.user?.tenantId || store?.tenantId;
-    const isAgent = req.user?.role === 'AGENT';
-    const currentUserId = req.user?.userId || req.user?.id;
+    const userRole = req.user?.role;
+
+    // RBAC Check 1: Sales Agents cannot delete anything in Timeline & Activity
+    if (userRole === 'AGENT') {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: Sales Agents are restricted from deleting items in Timeline & Activity',
+      });
+    }
+
+    if (!['ADMIN', 'SUPER_ADMIN', 'TEAM_LEAD'].includes(userRole)) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: Insufficient permissions to delete activity or timeline items',
+      });
+    }
 
     const activity = await prisma.activity.findFirst({
       where: { id: req.params.activityId, leadId: req.params.id },
@@ -1208,9 +1225,13 @@ router.delete('/:id/activities/:activityId', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Activity not found' });
     }
 
-    // Agents can only delete their own activities
-    if (isAgent && activity.createdById !== currentUserId) {
-      return res.status(403).json({ success: false, error: 'Forbidden: You can only delete your own activities' });
+    // RBAC Check 2: Team Leads cannot delete timeline entries (STAGE_CHANGE, SYSTEM_ASSIGNMENT, TASK_*)
+    const TIMELINE_TYPES = ['STAGE_CHANGE', 'SYSTEM_ASSIGNMENT', 'TASK_SCHEDULED', 'TASK_COMPLETED'];
+    if (userRole === 'TEAM_LEAD' && TIMELINE_TYPES.includes(activity.type)) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: Team Leads cannot delete timeline entries. Only Administrators can delete timeline records.',
+      });
     }
 
     await prisma.activity.delete({ where: { id: req.params.activityId } });
