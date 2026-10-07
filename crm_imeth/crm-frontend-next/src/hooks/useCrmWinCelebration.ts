@@ -61,7 +61,7 @@ export function fireConvertedButtonConfetti(targetContainer?: HTMLElement | null
     confettiButton({
       particleCount: 150,
       spread: 360,
-      startVelocity: 10,
+      startVelocity: 8,
       decay: 0.88,
       scalar: 0.9,
       ticks: 90,
