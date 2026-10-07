@@ -627,6 +627,49 @@ const updateLeadHandler = async (req, res) => {
       }
     }
 
+    // Automatically record STAGE_CHANGE activity if stage/status was changed
+    const isStatusChanged = Boolean(status && status !== existingLead.status);
+    if (isStatusChanged) {
+      try {
+        const STAGE_LABELS = {
+          NEW: 'New Lead',
+          CONTACTED: 'Contacted',
+          QUALIFIED: 'Qualified',
+          CONVERTED: 'Converted',
+          LOST: 'Lost',
+        };
+        const oldStageLabel = STAGE_LABELS[existingLead.status] || existingLead.status;
+        const newStageLabel = STAGE_LABELS[status] || status;
+        const title = `Stage Changed: ${oldStageLabel} → ${newStageLabel}`;
+        const description = `Lead pipeline stage was moved from "${oldStageLabel}" to "${newStageLabel}"`;
+
+        const stageActivity = await prisma.activity.create({
+          data: {
+            leadId: updatedLead.id,
+            createdById: currentUserId || null,
+            type: 'STAGE_CHANGE',
+            title,
+            description,
+            occurredAt: new Date(),
+          },
+          include: {
+            createdBy: { select: { id: true, name: true, email: true, role: true, avatar: true } },
+          },
+        });
+
+        try {
+          const { io } = require('../index');
+          if (io) {
+            io.to(`tenant:${tenantId}`).emit('lead_activity_created', { leadId: updatedLead.id, activity: stageActivity });
+          }
+        } catch (socketErr) {
+          console.warn('[Socket] Failed to emit lead_activity_created on stage change:', socketErr.message);
+        }
+      } catch (actErr) {
+        console.warn('[Activity] Failed to create stage change activity on update:', actErr.message);
+      }
+    }
+
     // Broadcast lead update to all clients in the tenant
     try {
       const { io } = require('../index');
@@ -1268,6 +1311,32 @@ router.post('/bulk-update', authenticate, authorize(['ADMIN', 'TEAM_LEAD', 'AGEN
       where: whereClause,
       data: updateData,
     });
+
+    if (status && leadIds.length > 0) {
+      try {
+        const STAGE_LABELS = {
+          NEW: 'New Lead',
+          CONTACTED: 'Contacted',
+          QUALIFIED: 'Qualified',
+          CONVERTED: 'Converted',
+          LOST: 'Lost',
+        };
+        const newStageLabel = STAGE_LABELS[status] || status;
+        const stageActivitiesData = leadIds.map((lId) => ({
+          leadId: lId,
+          createdById: req.user?.id || null,
+          type: 'STAGE_CHANGE',
+          title: `Stage Changed to ${newStageLabel}`,
+          description: `Lead bulk-updated to stage "${newStageLabel}"`,
+          occurredAt: new Date(),
+        }));
+        await prisma.activity.createMany({
+          data: stageActivitiesData,
+        });
+      } catch (bulkActErr) {
+        console.warn('[Activity] Failed to create bulk stage change activities:', bulkActErr.message);
+      }
+    }
 
     await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
 

@@ -17,6 +17,7 @@ import {
   Loader2,
   Pencil,
   User as UserIcon,
+  ArrowRightLeft,
   type LucideIcon,
 } from "lucide-react";
 import type { Activity } from "@/types";
@@ -66,6 +67,12 @@ const ACTIVITY_TYPE_CONFIG: Record<string, ActivityTypeStyle> = {
     Icon: UserCheck,
     label: "System Assignment",
     tagBg: "bg-indigo-50 text-indigo-700 border-indigo-200",
+  },
+  STAGE_CHANGE: {
+    circleBg: "bg-blue-100 text-blue-700 border border-blue-200",
+    Icon: ArrowRightLeft,
+    label: "Stage Changed",
+    tagBg: "bg-blue-50 text-blue-700 border-blue-200",
   },
   TASK_SCHEDULED: {
     circleBg: "bg-teal-50 text-teal-700 border border-teal-200",
@@ -384,15 +391,17 @@ export default memo(function LeadActivityTimeline({
 
                   {/* Action Buttons in top right corner */}
                   <div className="flex items-center gap-1 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => openEditModal(activity)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-                      title="Edit activity"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </button>
-                    {!["TASK_SCHEDULED", "TASK_COMPLETED", "SYSTEM_ASSIGNMENT"].includes(activity.type) && (
+                    {!["SYSTEM_ASSIGNMENT", "STAGE_CHANGE"].includes(activity.type) && (
+                      <button
+                        type="button"
+                        onClick={() => openEditModal(activity)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                        title="Edit activity"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                    {!["TASK_SCHEDULED", "TASK_COMPLETED", "SYSTEM_ASSIGNMENT", "STAGE_CHANGE"].includes(activity.type) && (
                       <button
                         type="button"
                         onClick={() => onDeleteActivity(activity.id)}

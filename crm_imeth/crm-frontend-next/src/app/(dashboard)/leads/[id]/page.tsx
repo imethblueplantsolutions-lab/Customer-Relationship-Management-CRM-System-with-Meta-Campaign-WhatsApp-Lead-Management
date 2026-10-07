@@ -92,8 +92,40 @@ export default function LeadDetailPage() {
   const handleUpdateStatus = async (newStatus: string) => {
     if (!lead || lead.status === newStatus) return;
 
+    const STAGE_LABELS: Record<string, string> = {
+      NEW: "New Lead",
+      CONTACTED: "Contacted",
+      QUALIFIED: "Qualified",
+      CONVERTED: "Converted",
+      LOST: "Lost",
+    };
+    const oldStageLabel = STAGE_LABELS[lead.status] || lead.status;
+    const newStageLabel = STAGE_LABELS[newStatus] || newStatus;
+
+    const optimisticActivity: Activity = {
+      id: `optimistic_${Date.now()}`,
+      leadId: lead.id,
+      type: "STAGE_CHANGE",
+      title: `Stage Changed: ${oldStageLabel} → ${newStageLabel}`,
+      description: `Lead pipeline stage was moved from "${oldStageLabel}" to "${newStageLabel}"`,
+      occurredAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      createdBy: user ? { id: user.id, name: user.name, email: user.email, role: user.role } : undefined,
+    };
+
     setStatusUpdating(true);
-    setLead((prev) => (prev ? { ...prev, status: newStatus, updatedAt: new Date().toISOString() } : null));
+    setLead((prev) => {
+      if (!prev) return null;
+      const updatedActivities = [...(prev.activities || []), optimisticActivity].sort(
+        (a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
+      );
+      return {
+        ...prev,
+        status: newStatus,
+        updatedAt: new Date().toISOString(),
+        activities: updatedActivities,
+      };
+    });
 
     try {
       await apiClient(`/leads/${lead.id}`, {
