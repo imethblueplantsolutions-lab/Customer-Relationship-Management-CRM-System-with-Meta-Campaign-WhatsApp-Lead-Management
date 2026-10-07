@@ -62,7 +62,7 @@ export function fireConvertedButtonConfetti(targetContainer?: HTMLElement | null
       particleCount: 150,
       spread: 360,
       startVelocity: 9,
-      decay: 0.5,
+      decay: 1,
       scalar: 0.9,
       ticks: 90,
     })?.then(() => {
