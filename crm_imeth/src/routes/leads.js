@@ -1215,6 +1215,8 @@ router.delete('/:id', authorize(['ADMIN', 'TEAM_LEAD']), async (req, res) => {
     console.error('Error deleting lead:', error);
     res.status(500).json({ success: false, error: 'Failed to delete lead' });
   }
+});
+
 // POST /bulk-update: Bulk update leads (status and/or assignee)
 router.post('/bulk-update', authenticate, authorize(['ADMIN', 'TEAM_LEAD', 'AGENT']), async (req, res) => {
   try {
