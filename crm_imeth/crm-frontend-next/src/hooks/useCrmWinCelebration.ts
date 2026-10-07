@@ -61,9 +61,9 @@ export function fireConvertedButtonConfetti(targetContainer?: HTMLElement | null
     confettiButton({
       particleCount: 200,
       spread: 360,
-      startVelocity: 15,
-      scalar: 0.9,
-      ticks: 90,
+      startVelocity: 14,
+      scalar: 0.5,
+      ticks: 60,
     })?.then(() => {
       if (canvas.parentNode) {
         canvas.parentNode.removeChild(canvas);
