@@ -59,11 +59,12 @@ export function fireConvertedButtonConfetti(targetContainer?: HTMLElement | null
     });
 
     confettiButton({
-      particleCount: 200,
+      particleCount: 150,
       spread: 360,
-      startVelocity: 14,
-      scalar: 0.5,
-      ticks: 60,
+      startVelocity: 10,
+      decay: 0.88,
+      scalar: 0.9,
+      ticks: 90,
     })?.then(() => {
       if (canvas.parentNode) {
         canvas.parentNode.removeChild(canvas);
