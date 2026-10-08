@@ -134,9 +134,9 @@ export default memo(function LeadFollowupsCard({
                 onChange={(e) => setFollowupType(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-blue-500 focus:outline-none"
               >
-                <option value="CALL">Phone Call</option>
-                <option value="MEETING">Video / Live Meeting</option>
-                <option value="DEMO">Product Demo</option>
+                <option value="CALL"> Call(Normal,WhatsApp,imo)</option>
+                <option value="MEETING">Video / Live Meeting(Google meet,Zoom,Skype)</option>
+                <option value="DEMO">Product Demonstration</option>
                 <option value="NOTE">General Note</option>
                 <option value="OTHER">Other</option>
               </select>
@@ -227,26 +227,24 @@ export default memo(function LeadFollowupsCard({
             return (
               <div
                 key={item.id}
-                className={`rounded-xl border p-3 sm:p-3.5 transition-colors ${
-                  item.completed
-                    ? "border-emerald-100 bg-emerald-50/40"
-                    : isOverdue
+                className={`rounded-xl border p-3 sm:p-3.5 transition-colors ${item.completed
+                  ? "border-emerald-100 bg-emerald-50/40"
+                  : isOverdue
                     ? "border-red-200 bg-red-50/30"
                     : "border-slate-100 bg-slate-50/70"
-                }`}
+                  }`}
               >
                 <div className="flex items-start gap-2.5 sm:items-center sm:gap-3">
                   {/* Completion Checkbox */}
                   <button
                     type="button"
                     onClick={() => onToggleComplete(item.id, item.completed)}
-                    className={`mt-0.5 sm:mt-0 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors cursor-pointer ${
-                      item.completed
-                        ? "bg-emerald-600 border-emerald-600 text-white"
-                        : isOverdue
+                    className={`mt-0.5 sm:mt-0 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors cursor-pointer ${item.completed
+                      ? "bg-emerald-600 border-emerald-600 text-white"
+                      : isOverdue
                         ? "border-red-300 bg-white hover:border-red-500"
                         : "border-slate-300 bg-white hover:border-blue-500"
-                    }`}
+                      }`}
                     title={item.completed ? "Mark as pending" : "Mark as completed"}
                   >
                     {item.completed && <Check className="h-3 w-3 stroke-[2.5]" />}
@@ -254,13 +252,12 @@ export default memo(function LeadFollowupsCard({
 
                   {/* Type Avatar Badge (Hidden on mobile per user request: hidden sm:flex) */}
                   <div
-                    className={`hidden sm:flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
-                      item.completed
-                        ? "bg-emerald-100 text-emerald-700"
-                        : isOverdue
+                    className={`hidden sm:flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${item.completed
+                      ? "bg-emerald-100 text-emerald-700"
+                      : isOverdue
                         ? "bg-red-100 text-red-700"
                         : "bg-amber-100 text-amber-700"
-                    }`}
+                      }`}
                   >
                     {item.type.charAt(0)}
                   </div>
@@ -270,13 +267,12 @@ export default memo(function LeadFollowupsCard({
                     {/* Header Row: Note/Title & Badges/Actions */}
                     <div className="flex items-start justify-between gap-2">
                       <p
-                        className={`text-xs sm:text-sm font-semibold leading-snug break-words ${
-                          item.completed
-                            ? "text-slate-400 line-through"
-                            : isOverdue
+                        className={`text-xs sm:text-sm font-semibold leading-snug break-words ${item.completed
+                          ? "text-slate-400 line-through"
+                          : isOverdue
                             ? "text-red-900 font-bold"
                             : "text-slate-800"
-                        }`}
+                          }`}
                       >
                         {item.note || item.type}
                       </p>
