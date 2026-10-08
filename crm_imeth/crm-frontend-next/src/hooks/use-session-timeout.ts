@@ -20,10 +20,11 @@ interface SessionSyncMessage {
   timestamp: number;
   newToken?: string;
   newUser?: User;
+  targetUserId?: string;
 }
 
 export function useSessionTimeout() {
-  const { isAuthenticated, setSession, logout } = useAuth();
+  const { user, isAuthenticated, setSession, logout } = useAuth();
   const [isIdleWarningActive, setIsIdleWarningActive] = useState(false);
   const [countdownSeconds, setCountdownSeconds] = useState(WARNING_COUNTDOWN_SECONDS);
   const [isExtending, setIsExtending] = useState(false);
@@ -40,7 +41,11 @@ export function useSessionTimeout() {
 
     // Notify other tabs
     try {
-      const msg: SessionSyncMessage = { type: "session_logout", timestamp: Date.now() };
+      const msg: SessionSyncMessage = {
+        type: "session_logout",
+        timestamp: Date.now(),
+        targetUserId: user?.id,
+      };
       channelRef.current?.postMessage(msg);
       localStorage.setItem(STORAGE_SYNC_KEY, JSON.stringify(msg));
     } catch {
@@ -175,14 +180,18 @@ export function useSessionTimeout() {
               resetIdleTimer();
             }
           } else if (msg.type === "session_extended") {
-            // Another tab extended session
+            // Another tab extended session: only adopt if matching current active user
             if (msg.newToken && msg.newUser) {
-              setSession(msg.newToken, msg.newUser);
+              if (!user?.id || user.id === msg.newUser.id) {
+                setSession(msg.newToken, msg.newUser);
+              }
             }
             resetIdleTimer();
           } else if (msg.type === "session_logout") {
-            // Another tab logged out
-            logout();
+            // Another tab logged out: only trigger logout if matching current active user
+            if (!msg.targetUserId || !user?.id || msg.targetUserId === user.id) {
+              logout();
+            }
           }
         };
       } catch {
@@ -200,11 +209,15 @@ export function useSessionTimeout() {
             resetIdleTimer();
           } else if (msg.type === "session_extended") {
             if (msg.newToken && msg.newUser) {
-              setSession(msg.newToken, msg.newUser);
+              if (!user?.id || user.id === msg.newUser.id) {
+                setSession(msg.newToken, msg.newUser);
+              }
             }
             resetIdleTimer();
           } else if (msg.type === "session_logout") {
-            logout();
+            if (!msg.targetUserId || !user?.id || msg.targetUserId === user.id) {
+              logout();
+            }
           }
         } catch {
           // Ignore invalid JSON

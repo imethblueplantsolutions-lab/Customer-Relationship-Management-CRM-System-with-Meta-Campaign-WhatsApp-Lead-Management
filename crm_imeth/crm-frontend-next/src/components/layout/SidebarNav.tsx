@@ -94,6 +94,9 @@ export default function SidebarNav({ user: propUser, isCollapsed, onNavigate }: 
     }
     // Items with explicit role restrictions
     if (item.allowedRoles) {
+      if (userRole === "SUPER_ADMIN") {
+        return true;
+      }
       if (!userRole || !item.allowedRoles.includes(userRole)) {
         return false;
       }

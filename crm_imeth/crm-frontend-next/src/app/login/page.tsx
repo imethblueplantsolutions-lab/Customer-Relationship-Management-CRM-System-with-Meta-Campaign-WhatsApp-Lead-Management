@@ -69,6 +69,10 @@ function LoginPageContent() {
   const getDestination = useCallback(
     (user?: User | null) => {
       if (returnUrlParam && returnUrlParam.startsWith("/") && !returnUrlParam.startsWith("//")) {
+        // Guard against non-SUPER_ADMIN being redirected to restricted hierarchy page
+        if (returnUrlParam.startsWith("/hierarchy") && user?.role !== "SUPER_ADMIN") {
+          return "/dashboard";
+        }
         return returnUrlParam;
       }
       return user?.role === "SUPER_ADMIN" ? "/hierarchy" : "/dashboard";

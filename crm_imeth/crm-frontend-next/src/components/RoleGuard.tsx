@@ -36,6 +36,8 @@ export function RoleGuard({
   // Stable evaluation of authorization status
   const isAuthorized = useMemo(() => {
     if (!user || !user.role) return false;
+    // SUPER_ADMIN has platform-wide unconditional access across all modules
+    if (user.role === "SUPER_ADMIN") return true;
     return allowedRoles.includes(user.role);
   }, [user, allowedRoles]);
 

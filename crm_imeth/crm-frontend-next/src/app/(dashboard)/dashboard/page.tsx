@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import type { DashboardStats } from "@/types";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
-import { LayoutDashboard, ArrowRight, Plus, CheckCircle2, Users, Zap, Briefcase } from "lucide-react";
+import { LayoutDashboard, ArrowRight, Plus, CheckCircle2, Users, Zap, Briefcase, Crown } from "lucide-react";
 import { RoleGuard } from "@/components/RoleGuard";
 
 const DashboardCharts = dynamic(() => import("./DashboardCharts"), {
@@ -34,7 +34,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function DashboardPage() {
   return (
-    <RoleGuard allowedRoles={["ADMIN", "TEAM_LEAD", "AGENT"]} redirectTo="/hierarchy">
+    <RoleGuard allowedRoles={["SUPER_ADMIN", "ADMIN", "TEAM_LEAD", "AGENT"]} redirectTo="/hierarchy">
       <DashboardContent />
     </RoleGuard>
   );
@@ -115,6 +115,12 @@ function DashboardContent() {
             <LayoutDashboard className="h-6 w-6 text-brand-primary" />
             Dashboard
           </h2>
+          {user?.role === "SUPER_ADMIN" && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-purple-800 border border-purple-200">
+              <Crown className="h-3.5 w-3.5 text-purple-600" />
+              Platform Super Admin
+            </span>
+          )}
           {user?.role === "TEAM_LEAD" && (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800 border border-amber-200">
               <Zap className="h-3.5 w-3.5 text-amber-600" />

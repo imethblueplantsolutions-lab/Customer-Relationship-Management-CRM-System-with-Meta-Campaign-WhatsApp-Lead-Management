@@ -35,6 +35,7 @@ function corsOriginHandler(origin, callback) {
 }
 
 const app = express();
+app.set('trust proxy', 1);
 const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 
@@ -150,12 +151,13 @@ const globalLimiter = rateLimit({
   skip: (req) => req.path === '/health', // Never rate-limit health checks
 });
 
-// Strict Auth Rate Limiter: 10 requests per 15 minutes on /api/auth/* (brute-force protection)
+// Auth Rate Limiter: Brute-force protection on authentication endpoints (skips background token refresh)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 60, // Increased capacity to allow concurrent logins across organizational users and admins
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => req.path === '/refresh', // Do NOT rate-limit background session refresh requests
   message: { success: false, error: 'Too many authentication attempts. Please wait 15 minutes.' },
 });
 

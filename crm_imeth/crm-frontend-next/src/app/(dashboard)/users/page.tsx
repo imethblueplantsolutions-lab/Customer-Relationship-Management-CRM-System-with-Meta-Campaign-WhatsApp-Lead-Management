@@ -359,7 +359,7 @@ export default function UserManagementPage() {
   }
 
   return (
-    <RoleGuard allowedRoles={["ADMIN", "TEAM_LEAD"]} redirectTo="/hierarchy">
+    <RoleGuard allowedRoles={["SUPER_ADMIN", "ADMIN", "TEAM_LEAD"]} redirectTo="/hierarchy">
       <div className="space-y-8 pb-16">
       
       {/* Top Page Header */}

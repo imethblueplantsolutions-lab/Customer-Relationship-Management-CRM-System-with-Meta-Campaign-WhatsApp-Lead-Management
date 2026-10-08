@@ -36,6 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("tenantId");
     applyTheme("default-crm", null, false);
     setToken(null);
     setUser(null);
@@ -106,8 +107,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const setSession = useCallback((newToken: string, newUser: User) => {
     localStorage.setItem("token", newToken);
     localStorage.setItem("user", JSON.stringify(newUser));
-    if (newUser.tenantId) {
+    if (newUser.tenantId && newUser.role !== "SUPER_ADMIN") {
       localStorage.setItem("tenantId", newUser.tenantId);
+    } else {
+      localStorage.removeItem("tenantId");
     }
     setToken(newToken);
     setUser(newUser);
