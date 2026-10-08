@@ -280,7 +280,7 @@ export default function FollowupsPage() {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Desktop Notification Request Banner */}
             {notifPermission === "default" && (
               <button
@@ -290,7 +290,7 @@ export default function FollowupsPage() {
                 title="Enable browser alerts for upcoming follow-ups"
               >
                 <BellRing className="h-3.5 w-3.5" />
-                Enable Desktop Alerts
+                <span className="hidden sm:inline">Enable Desktop Alerts</span>
               </button>
             )}
 
@@ -304,9 +304,10 @@ export default function FollowupsPage() {
                     ? "bg-blue-600 text-white shadow-xs"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 }`}
+                title="List View"
               >
                 <LayoutList className="h-3.5 w-3.5" />
-                List View
+                <span className="hidden sm:inline">List View</span>
               </button>
               <button
                 type="button"
@@ -316,9 +317,10 @@ export default function FollowupsPage() {
                     ? "bg-blue-600 text-white shadow-xs"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 }`}
+                title="Calendar View"
               >
                 <CalendarDays className="h-3.5 w-3.5" />
-                Calendar View
+                <span className="hidden sm:inline">Calendar View</span>
               </button>
             </div>
 
@@ -328,7 +330,7 @@ export default function FollowupsPage() {
               title="Refresh follow-ups"
             >
               <RefreshCw className={`h-3.5 w-3.5 text-blue-600 ${loading ? "animate-spin" : ""}`} />
-              Refresh
+              <span className="hidden sm:inline">Refresh</span>
             </button>
           </div>
         </div>
@@ -357,44 +359,44 @@ export default function FollowupsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {/* Tab Controls (For List View) */}
           {viewMode === "LIST" ? (
-            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 border border-slate-200/80 shadow-2xs max-w-xl">
+            <div className="grid grid-cols-3 gap-1 p-1 w-full rounded-xl bg-slate-100 border border-slate-200/80 shadow-2xs max-w-xl">
               <button
                 type="button"
                 onClick={() => setActiveTab("OVERDUE")}
-                className={`py-2 px-3.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                className={`py-2 px-2 sm:px-3.5 rounded-lg text-xs font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 cursor-pointer text-center ${
                   activeTab === "OVERDUE"
                     ? "bg-red-500 text-white shadow-xs"
                     : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
                 }`}
               >
-                <AlertTriangle className="h-3.5 w-3.5" />
-                Overdue ({overdueList.length})
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                <span>Overdue ({overdueList.length})</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setActiveTab("TODAY")}
-                className={`py-2 px-3.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                className={`py-2 px-2 sm:px-3.5 rounded-lg text-xs font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 cursor-pointer text-center ${
                   activeTab === "TODAY"
                     ? "bg-blue-600 text-white shadow-xs"
                     : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
                 }`}
               >
-                <Calendar className="h-3.5 w-3.5" />
-                Due Today ({todayList.length})
+                <Calendar className="h-3.5 w-3.5 shrink-0" />
+                <span>Due Today ({todayList.length})</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setActiveTab("UPCOMING")}
-                className={`py-2 px-3.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                className={`py-2 px-2 sm:px-3.5 rounded-lg text-xs font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 cursor-pointer text-center ${
                   activeTab === "UPCOMING"
                     ? "bg-blue-600 text-white shadow-xs"
                     : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
                 }`}
               >
-                <Clock className="h-3.5 w-3.5" />
-                Upcoming ({upcomingList.length})
+                <Clock className="h-3.5 w-3.5 shrink-0" />
+                <span>Upcoming ({upcomingList.length})</span>
               </button>
             </div>
           ) : (
@@ -450,7 +452,7 @@ export default function FollowupsPage() {
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div
                     key={`skel-fu-${i}`}
-                    className="rounded-2xl bg-white border border-slate-200/80 p-5 shadow-xs space-y-3"
+                    className="rounded-2xl bg-white border border-slate-200/80 p-3.5 sm:p-5 shadow-xs space-y-3"
                   >
                     <div className="flex items-center justify-between">
                       <Skeleton className="h-4 w-40" />
@@ -465,7 +467,7 @@ export default function FollowupsPage() {
                 ))}
               </div>
             ) : activeList.length === 0 ? (
-              <div className="rounded-2xl bg-white border border-slate-200/80 p-12 text-center shadow-xs">
+              <div className="rounded-2xl bg-white border border-slate-200/80 p-6 sm:p-12 text-center shadow-xs">
                 <CheckCircle2 className="mx-auto h-10 w-10 text-emerald-500 mb-2" />
                 <h3 className="text-base font-bold text-slate-800">
                   No {activeTab.toLowerCase()} follow-ups!
@@ -489,7 +491,7 @@ export default function FollowupsPage() {
                         setSelectedFollowup(f);
                         setIsDrawerOpen(true);
                       }}
-                      className={`rounded-2xl bg-white border shadow-xs transition-all p-5 space-y-3 cursor-pointer group ${
+                      className={`rounded-2xl bg-white border shadow-xs transition-all p-3.5 sm:p-5 space-y-3 cursor-pointer group ${
                         isOverdue
                           ? "border-red-300 bg-red-50/15 ring-1 ring-red-200"
                           : f.completed
@@ -498,8 +500,8 @@ export default function FollowupsPage() {
                       }`}
                     >
                       {/* Top Header Row */}
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
                           <button
                             type="button"
                             onClick={(e) => {
@@ -515,39 +517,47 @@ export default function FollowupsPage() {
                             <CheckCircle2 className="h-4 w-4" />
                           </button>
 
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="p-1.5 rounded-lg bg-slate-100 border border-slate-200/60">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="p-1.5 rounded-lg bg-slate-100 border border-slate-200/60 shrink-0">
                                 {getFollowupIcon(f.type)}
                               </span>
                               <h4
-                                className={`text-sm font-bold text-slate-800 ${
+                                className={`text-sm font-bold text-slate-800 truncate ${
                                   f.completed ? "line-through text-slate-400" : ""
                                 }`}
                               >
                                 {leadName}
                               </h4>
-                              <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-bold uppercase border border-slate-200/60">
+                              <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-bold uppercase border border-slate-200/60 shrink-0">
                                 {f.type}
                               </span>
                             </div>
                           </div>
                         </div>
+                      </div>
 
-                        {/* Status Badges & Quick Action Buttons */}
-                        <div className="flex items-center gap-2 self-start sm:self-auto">
+                      {/* Status Badges & Quick Action Buttons */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full mt-3">
+                        <div className="flex flex-wrap items-center gap-2">
                           {isOverdue && (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100 text-red-700 font-bold text-xs border border-red-200 animate-pulse">
-                              <AlertTriangle className="h-3.5 w-3.5" />
-                              OVERDUE
+                            <span
+                              title="Overdue"
+                              className="inline-flex items-center gap-1 px-2 py-1 sm:px-2.5 rounded-full bg-red-100 text-red-600 text-[10px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap"
+                            >
+                              <AlertTriangle className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
+                              <span className="hidden sm:inline">OVERDUE</span>
                             </span>
                           )}
 
-                          <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full flex items-center gap-1.5 border border-slate-200/60">
-                            <Clock className="h-3.5 w-3.5 text-slate-400" />
+                          <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full flex items-center gap-1.5 border border-slate-200/60 whitespace-nowrap">
+                            <Clock className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                             {f.dueAt ? formatDateTime(f.dueAt) : "No Date"}
                           </span>
+                        </div>
 
+                        {/* 4 Action Buttons */}
+                        <div className="flex items-center gap-1 self-end sm:self-auto">
                           {/* Quick Calendar Link */}
                           <a
                             href={generateGoogleCalendarUrl(f)}
