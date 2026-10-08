@@ -184,42 +184,7 @@ function renderStageChangeTitle(title: string) {
   return title;
 }
 
-function renderStageChangeDescription(description: string) {
-  // Matches: Lead pipeline stage was moved from "Qualified" to "Converted"
-  const match = description.match(/^(.*?from\s+)["']?([^"']+)["']?(\s+to\s+)["']?([^"']+)["']?(.*)$/i);
-  if (match) {
-    const prefix = match[1];
-    const fromStage = match[2].trim();
-    const mid = match[3];
-    const toStage = match[4].trim();
-    const suffix = match[5];
-    return (
-      <span className="inline-flex items-center flex-wrap gap-1.5 leading-normal">
-        <span>{prefix}</span>
-        <StagePill stage={fromStage} />
-        <span>{mid}</span>
-        <StagePill stage={toStage} />
-        {suffix && <span>{suffix}</span>}
-      </span>
-    );
-  }
 
-  // Fallback: check if description contains an arrow like "StageA → StageB"
-  const arrowMatch = description.match(/^(.*?)\s*["']?([^"'\s]+(?:\s+[^"'\s]+)?)["']?\s*(?:→|->|>)\s*["']?([^"'\s]+(?:\s+[^"'\s]+)?)["']?(.*)$/i);
-  if (arrowMatch) {
-    return (
-      <span className="inline-flex items-center flex-wrap gap-1.5 leading-normal">
-        {arrowMatch[1] && <span>{arrowMatch[1]}</span>}
-        <StagePill stage={arrowMatch[2].trim()} />
-        <ArrowRight className="h-3.5 w-3.5 text-slate-400 shrink-0 mx-0.5 inline-block" />
-        <StagePill stage={arrowMatch[3].trim()} />
-        {arrowMatch[4] && <span>{arrowMatch[4]}</span>}
-      </span>
-    );
-  }
-
-  return description;
-}
 
 /**
  * Props for the LeadActivityTimeline component.
@@ -498,14 +463,14 @@ export default memo(function LeadActivityTimeline({
                       </span>
                     </div>
 
-                    {/* Activity Description */}
-                    {activity.description && (
-                      <div className="text-xs text-slate-600 mt-2 leading-relaxed">
-                        {activity.type === "STAGE_CHANGE" || activity.description.toLowerCase().includes("stage was moved")
-                          ? renderStageChangeDescription(activity.description)
-                          : <p className="whitespace-pre-wrap">{activity.description}</p>}
-                      </div>
-                    )}
+                    {/* Activity Description (Omit redundant auto-generated stage-move description) */}
+                    {activity.description &&
+                      activity.type !== "STAGE_CHANGE" &&
+                      !activity.description.toLowerCase().includes("stage was moved") && (
+                        <div className="text-xs text-slate-600 mt-2 leading-relaxed">
+                          <p className="whitespace-pre-wrap">{activity.description}</p>
+                        </div>
+                      )}
 
                     {/* Footer with Creator & Timestamp */}
                     <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap">
