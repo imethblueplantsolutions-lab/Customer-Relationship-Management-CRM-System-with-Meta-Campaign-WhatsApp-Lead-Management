@@ -85,6 +85,7 @@ function LoginPageContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [loading, setLoading] = useState(false);
@@ -137,6 +138,19 @@ function LoginPageContent() {
     applyTheme("default-crm", null, false);
   }, []);
 
+  // Pre-fill email on mount if user previously checked "Remember me"
+  useEffect(() => {
+    try {
+      const savedEmail = localStorage.getItem("crm_remembered_email");
+      if (savedEmail) {
+        setEmail(savedEmail);
+        setRememberMe(true);
+      }
+    } catch {
+      // Ignore localStorage access restrictions
+    }
+  }, []);
+
   const { login, setSession } = useAuth();
   const router = useRouter();
 
@@ -180,6 +194,14 @@ function LoginPageContent() {
     lastAttemptedPasswordRef.current = password;
     try {
       const res = await login(email, password);
+
+      // Persist or remove remembered email based on Remember Me toggle
+      if (rememberMe) {
+        localStorage.setItem("crm_remembered_email", email.trim());
+      } else {
+        localStorage.removeItem("crm_remembered_email");
+      }
+
       if (res?.requireOtp) {
         setIsFirstLogin(!!res.isFirstLogin);
         setOtpPreview(res.otpPreview);
@@ -495,7 +517,15 @@ function LoginPageContent() {
               )}
 
               <div className="flex items-center justify-between text-[11px] px-0.5">
-                <span className="text-slate-400">Protected by Role Auth</span>
+                <label className="flex items-center gap-1.5 cursor-pointer text-slate-500 hover:text-slate-700 select-none">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-3.5 h-3.5 rounded-sm border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
+                  />
+                  <span>Remember me</span>
+                </label>
                 <button
                   type="button"
                   onClick={() => setIsForgotPasswordOpen(true)}
