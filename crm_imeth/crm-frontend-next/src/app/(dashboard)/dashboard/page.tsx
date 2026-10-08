@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import type { DashboardStats } from "@/types";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
-import { LayoutDashboard, ArrowRight, Plus, CheckCircle2, Users, Shield, Zap, Briefcase } from "lucide-react";
+import { LayoutDashboard, ArrowRight, Plus, CheckCircle2, Users, Zap, Briefcase } from "lucide-react";
 import { RoleGuard } from "@/components/RoleGuard";
 
 const DashboardCharts = dynamic(() => import("./DashboardCharts"), {
@@ -125,12 +125,6 @@ function DashboardContent() {
             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 border border-emerald-200">
               <Briefcase className="h-3.5 w-3.5 text-emerald-600" />
               My Assigned Leads
-            </span>
-          )}
-          {(user?.role === "ADMIN" || user?.role === "SUPER_ADMIN") && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-semibold text-brand-primary border border-brand-primary/20">
-              <Shield className="h-3.5 w-3.5 text-brand-primary" />
-              Tenant-Wide Analytics
             </span>
           )}
         </div>
