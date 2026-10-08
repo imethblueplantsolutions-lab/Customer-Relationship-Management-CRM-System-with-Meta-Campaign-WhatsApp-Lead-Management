@@ -403,8 +403,8 @@ function LoginPageContent() {
           {/* ================= 1. SIGN IN FORM PANEL (Left 50% Desktop) ================= */}
           <div
             className={`w-1/2 md:w-1/2 p-6 flex flex-col justify-between gap-4 bg-white login-form-panel transition-opacity duration-700 ease-in-out ${isSignUpActive
-                ? "md:opacity-0 md:z-10 md:pointer-events-none"
-                : "md:opacity-100 md:z-20 md:pointer-events-auto"
+              ? "md:opacity-0 md:z-10 md:pointer-events-none"
+              : "md:opacity-100 md:z-20 md:pointer-events-auto"
               }`}
           >
             {/* Top Bar */}
@@ -422,12 +422,9 @@ function LoginPageContent() {
             {/* Form Content */}
             <div className="w-full max-w-[360px] mx-auto flex flex-col gap-2.5">
               <div className="w-full flex flex-col items-center justify-center text-center">
-                <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight text-center">
+                <h1 className="text-md sm:text-md font-extrabold text-slate-900 tracking-tight text-center">
                   Welcome Back!
                 </h1>
-                <p className="mt-0.5 text-xs text-slate-500 max-w-xs text-center leading-relaxed">
-                  Log in to your account to manage your WhatsApp leads, pipelines & automations.
-                </p>
               </div>
 
               {error && (
@@ -464,8 +461,8 @@ function LoginPageContent() {
                     placeholder="Your email address"
                     style={{ paddingLeft: "38px", paddingRight: "12px" }}
                     className={`w-full h-10 rounded-xl text-xs transition-all focus:bg-white focus:outline-hidden ${hasAuthError
-                        ? "bg-red-50/30 border border-red-500 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-500/15"
-                        : "bg-[#f4f7f6] border border-transparent text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                      ? "bg-red-50/30 border border-red-500 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-500/15"
+                      : "bg-[#f4f7f6] border border-transparent text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
                       }`}
                   />
                 </div>
@@ -489,8 +486,8 @@ function LoginPageContent() {
                     placeholder="Your password"
                     style={{ paddingLeft: "38px", paddingRight: "38px" }}
                     className={`w-full h-10 rounded-xl text-xs transition-all focus:bg-white focus:outline-hidden ${hasAuthError
-                        ? "bg-red-50/30 border border-red-500 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-500/15"
-                        : "bg-[#f4f7f6] border border-transparent text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                      ? "bg-red-50/30 border border-red-500 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-500/15"
+                      : "bg-[#f4f7f6] border border-transparent text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
                       }`}
                   />
                   <button
@@ -599,8 +596,8 @@ function LoginPageContent() {
           {/* ================= 2. SIGN UP FORM PANEL (Right 50% Desktop) ================= */}
           <div
             className={`w-1/2 md:w-1/2 p-6 flex flex-col justify-between gap-4 bg-white login-form-panel transition-opacity duration-700 ease-in-out ${isSignUpActive
-                ? "md:opacity-100 md:z-20 md:pointer-events-auto"
-                : "md:opacity-0 md:z-10 md:pointer-events-none"
+              ? "md:opacity-100 md:z-20 md:pointer-events-auto"
+              : "md:opacity-0 md:z-10 md:pointer-events-none"
               }`}
           >
             {/* Top Bar */}
@@ -618,12 +615,9 @@ function LoginPageContent() {
             {/* Form Content */}
             <div className="w-full max-w-[360px] mx-auto flex flex-col gap-2">
               <div className="w-full flex flex-col items-center justify-center text-center">
-                <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight text-center">
+                <h1 className="text-md sm:text-md font-extrabold text-slate-900 tracking-tight text-center">
                   Create Account
                 </h1>
-                <p className="mt-0.5 text-xs text-slate-500 max-w-xs text-center leading-relaxed">
-                  Join MyCRM to launch lead pipelines, automated follow-ups & team hierarchy.
-                </p>
               </div>
 
               {signUpError && (
