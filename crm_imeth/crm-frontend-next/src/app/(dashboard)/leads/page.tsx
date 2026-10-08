@@ -730,8 +730,8 @@ function LeadsPageContent() {
                   className="flex-1 py-3.5 pr-4 pl-0 sm:py-4 sm:pr-5 min-w-0 flex items-center justify-between gap-3 group"
                 >
                   <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0 flex-1">
-                    {/* Initials Avatar */}
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#0F4C75] to-[#3282B8] text-white text-xs font-bold shadow-xs mt-0.5 sm:mt-0">
+                    {/* Initials Avatar (Hidden on mobile per user request: hidden sm:flex) */}
+                    <div className="hidden sm:flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#0F4C75] to-[#3282B8] text-white text-xs font-bold shadow-xs mt-0.5 sm:mt-0">
                       {(lead.name || lead.phoneNumber).charAt(0).toUpperCase()}
                     </div>
 
