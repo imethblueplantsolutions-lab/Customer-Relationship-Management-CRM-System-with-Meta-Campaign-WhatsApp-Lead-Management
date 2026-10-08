@@ -801,6 +801,9 @@ router.post('/register', async (req, res) => {
 
 // POST: Seed initial tenant and admin user for testing
 router.post('/seed', async (req, res) => {
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(403).json({ success: false, error: 'Database seeding endpoint is disabled in production.' });
+  }
   try {
     const hashedPassword = await bcrypt.hash('admin123', 10);
     

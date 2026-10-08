@@ -17,7 +17,6 @@ import {
   Sparkles,
   MessageSquare,
   ArrowRight,
-  Database,
   CheckCircle2,
   Layers,
   User as UserIcon,
@@ -123,7 +122,6 @@ function LoginPageContent() {
   const [signUpLoading, setSignUpLoading] = useState(false);
 
   // General State
-  const [seeding, setSeeding] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
 
   // OTP Modal state
@@ -256,28 +254,6 @@ function LoginPageContent() {
     setShowOtpModal(false);
     setSession(data.token, data.user);
     router.push(getDestination(data.user));
-  };
-
-  const handleSeedDatabase = async () => {
-    setSeeding(true);
-    setError("");
-    setSuccessMsg("");
-    try {
-      const res = await apiClient<{ message?: string }>("/auth/seed", {
-        method: "POST",
-      });
-      setSuccessMsg(
-        res.message || "Admin account & demo organization created successfully!"
-      );
-    } catch (err: unknown) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Database seeding failed. Ensure backend & Postgres are running."
-      );
-    } finally {
-      setSeeding(false);
-    }
   };
 
   const [googleInitialized, setGoogleInitialized] = useState(false);
@@ -577,19 +553,6 @@ function LoginPageContent() {
                   <span>Sign in with Google</span>
                 </button>
               )}
-            </div>
-
-            <div className="text-center pt-0.5">
-              <button
-                suppressHydrationWarning
-                type="button"
-                onClick={handleSeedDatabase}
-                disabled={seeding}
-                className="inline-flex items-center gap-1.5 text-[10px] font-medium text-slate-400 hover:text-blue-600 transition-colors cursor-pointer disabled:opacity-50"
-              >
-                <Database className="w-3 h-3 text-blue-600" />
-                {seeding ? "Initializing database..." : "First time setup? Seed default database"}
-              </button>
             </div>
 
             {/* Mobile-only toggle link */}
