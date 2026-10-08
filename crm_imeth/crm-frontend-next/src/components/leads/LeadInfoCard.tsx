@@ -7,7 +7,6 @@ import {
   X,
   Save,
   Loader2,
-  ChevronDown,
 } from "lucide-react";
 import type { Lead } from "@/types";
 
@@ -57,7 +56,6 @@ export default memo(function LeadInfoCard({
   const [editEmail, setEditEmail] = useState("");
   const [editNotes, setEditNotes] = useState("");
   const [savingDetails, setSavingDetails] = useState(false);
-  const [isMobileExpanded, setIsMobileExpanded] = useState(true);
 
   const enterEditMode = () => {
     setEditName(lead.name || "");
@@ -91,43 +89,22 @@ export default memo(function LeadInfoCard({
   return (
     <div className="space-y-6">
       {/* ─── Lead Details & Metadata Card ──────────────────────── */}
-      <div className="rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-6 shadow-sm transition-all">
-        <div
-          onClick={() => setIsMobileExpanded((prev) => !prev)}
-          className="flex items-center justify-between cursor-pointer sm:cursor-default select-none"
-        >
-          <div className="flex items-center gap-2 min-w-0">
-            <UserIcon className="h-4 w-4 text-slate-500 shrink-0" />
-            <h3 className="text-sm font-bold text-slate-800 truncate">
-              Lead Overview
-            </h3>
-            {/* Mobile collapsible toggle chevron */}
-            <span className="sm:hidden inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400 ml-1">
-              <ChevronDown
-                className={`h-4 w-4 transition-transform duration-200 ${
-                  isMobileExpanded ? "rotate-180" : ""
-                }`}
-              />
-            </span>
-          </div>
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+            <UserIcon className="h-4 w-4 text-slate-500" /> Lead Overview
+          </h3>
 
           {!editMode ? (
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsMobileExpanded(true);
-                enterEditMode();
-              }}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-[#0F4C75] hover:underline cursor-pointer transition-colors shrink-0 ml-2"
+              onClick={enterEditMode}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-[#0F4C75] hover:underline cursor-pointer transition-colors"
             >
               <Pencil className="h-3 w-3" />
               Edit Details
             </button>
           ) : (
-            <div
-              className="flex items-center gap-2 shrink-0 ml-2"
-              onClick={(e) => e.stopPropagation()}
-            >
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setEditMode(false)}
                 className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-slate-700 cursor-pointer"
@@ -150,9 +127,6 @@ export default memo(function LeadInfoCard({
             </div>
           )}
         </div>
-
-        {/* ─── Accordion Body (Collapsible on mobile, always visible on sm:) ─── */}
-        <div className={isMobileExpanded ? "block mt-4" : "hidden sm:block sm:mt-4"}>
 
         {editMode ? (
           /* ─── Edit Mode ─── */
@@ -406,7 +380,6 @@ export default memo(function LeadInfoCard({
             </div>
           </div>
         )}
-        </div>
       </div>
     </div>
   );
