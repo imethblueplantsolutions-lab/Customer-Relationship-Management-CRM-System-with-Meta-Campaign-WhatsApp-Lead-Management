@@ -629,11 +629,6 @@ function LoginPageContent() {
                 <span className="text-lg font-bold text-blue-600 tracking-tight">MyCRM</span>
               </div>
             </div>
-
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-[10px] font-semibold text-purple-700 shrink-0">
-              <Sparkles className="w-3 h-3 text-purple-600" />
-              <span>SaaS Onboarding</span>
-            </div>
           </div>
 
           {/* Form Content */}
