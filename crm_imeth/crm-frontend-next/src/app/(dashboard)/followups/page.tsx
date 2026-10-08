@@ -482,6 +482,8 @@ export default function FollowupsPage() {
               <div className="space-y-3">
                 {activeList.map((f) => {
                   const isOverdue = !f.completed && f.dueAt && new Date(f.dueAt) < now;
+                  const isToday = !f.completed && f.dueAt && new Date(f.dueAt) >= now && new Date(f.dueAt) <= endOfToday;
+                  const isUpcoming = !f.completed && (!f.dueAt || new Date(f.dueAt) > endOfToday);
                   const leadName = f.lead?.name || f.lead?.phoneNumber || "Unassigned Lead";
 
                   return (
@@ -499,7 +501,7 @@ export default function FollowupsPage() {
                           : "border-slate-200/80 hover:border-blue-300 hover:shadow-sm"
                       }`}
                     >
-                      {/* Top Header Row */}
+                      {/* Top Header Row with Status Badge at Top-Right Corner */}
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
                           <button
@@ -535,29 +537,54 @@ export default function FollowupsPage() {
                             </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Status Badges & Quick Action Buttons */}
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full mt-3">
-                        <div className="flex flex-wrap items-center gap-2">
-                          {isOverdue && (
+                        {/* Top-Right Corner Status Badge: Overdue, Today, or Upcoming */}
+                        <div className="shrink-0 flex items-center">
+                          {isOverdue ? (
                             <span
                               title="Overdue"
-                              className="inline-flex items-center gap-1 px-2 py-1 sm:px-2.5 rounded-full bg-red-100 text-red-600 text-[10px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap"
+                              className="inline-flex items-center gap-1 px-2 py-1 sm:px-2.5 rounded-full bg-red-100 text-red-600 text-[10px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap animate-pulse"
                             >
                               <AlertTriangle className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
                               <span className="hidden sm:inline">OVERDUE</span>
                             </span>
+                          ) : isToday ? (
+                            <span
+                              title="Due Today"
+                              className="inline-flex items-center gap-1 px-2 py-1 sm:px-2.5 rounded-full bg-blue-100 text-blue-700 text-[10px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap"
+                            >
+                              <Calendar className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
+                              <span className="hidden sm:inline">TODAY</span>
+                            </span>
+                          ) : !f.completed ? (
+                            <span
+                              title="Upcoming"
+                              className="inline-flex items-center gap-1 px-2 py-1 sm:px-2.5 rounded-full bg-slate-100 text-slate-600 text-[10px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap"
+                            >
+                              <Clock className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
+                              <span className="hidden sm:inline">UPCOMING</span>
+                            </span>
+                          ) : (
+                            <span
+                              title="Completed"
+                              className="inline-flex items-center gap-1 px-2 py-1 sm:px-2.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
+                              <span className="hidden sm:inline">DONE</span>
+                            </span>
                           )}
-
-                          <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full flex items-center gap-1.5 border border-slate-200/60 whitespace-nowrap">
-                            <Clock className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                            {f.dueAt ? formatDateTime(f.dueAt) : "No Date"}
-                          </span>
                         </div>
+                      </div>
+
+                      {/* Second Row: Date & Quick Action Buttons */}
+                      <div className="flex items-center justify-between gap-3 w-full mt-2.5">
+                        <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full flex items-center gap-1.5 border border-slate-200/60 whitespace-nowrap">
+                          <Clock className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                          {f.dueAt ? formatDateTime(f.dueAt) : "No Date"}
+                        </span>
 
                         {/* 4 Action Buttons */}
-                        <div className="flex items-center gap-1 self-end sm:self-auto">
+                        <div className="flex items-center gap-1 shrink-0">
                           {/* Quick Calendar Link */}
                           <a
                             href={generateGoogleCalendarUrl(f)}
