@@ -375,42 +375,42 @@ export default memo(function LeadActivityTimeline({
         <button
           type="button"
           onClick={() => openActivityModal("PHONE_CALL")}
-          className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-blue-50 hover:border-blue-200 transition-all cursor-pointer group"
+          className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-brand-muted/20 bg-brand-bg/50 hover:bg-brand-surface hover:border-brand-primary/40 transition-all cursor-pointer group shadow-2xs"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600 group-hover:bg-blue-200 transition-colors">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-colors">
             <Phone className="h-4 w-4" />
           </div>
-          <span className="text-[10px] font-bold text-slate-500 group-hover:text-blue-700">Call</span>
+          <span className="text-[10px] font-bold text-brand-muted group-hover:text-brand-primary transition-colors">Call</span>
         </button>
         <button
           type="button"
           onClick={() => openActivityModal("MESSAGE")}
-          className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-emerald-50 hover:border-emerald-200 transition-all cursor-pointer group"
+          className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-brand-muted/20 bg-brand-bg/50 hover:bg-brand-surface hover:border-brand-primary/40 transition-all cursor-pointer group shadow-2xs"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 group-hover:bg-emerald-200 transition-colors">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-colors">
             <MessageCircle className="h-4 w-4" />
           </div>
-          <span className="text-[10px] font-bold text-slate-500 group-hover:text-emerald-700">Message</span>
+          <span className="text-[10px] font-bold text-brand-muted group-hover:text-brand-primary transition-colors">Message</span>
         </button>
         <button
           type="button"
           onClick={() => openActivityModal("MEETING")}
-          className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-purple-50 hover:border-purple-200 transition-all cursor-pointer group"
+          className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-brand-muted/20 bg-brand-bg/50 hover:bg-brand-surface hover:border-brand-primary/40 transition-all cursor-pointer group shadow-2xs"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100 text-purple-600 group-hover:bg-purple-200 transition-colors">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-colors">
             <Calendar className="h-4 w-4" />
           </div>
-          <span className="text-[10px] font-bold text-slate-500 group-hover:text-purple-700">Meeting</span>
+          <span className="text-[10px] font-bold text-brand-muted group-hover:text-brand-primary transition-colors">Meeting</span>
         </button>
         <button
           type="button"
           onClick={() => openActivityModal("NOTE")}
-          className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-amber-50 hover:border-amber-200 transition-all cursor-pointer group"
+          className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-brand-muted/20 bg-brand-bg/50 hover:bg-brand-surface hover:border-brand-primary/40 transition-all cursor-pointer group shadow-2xs"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-600 group-hover:bg-amber-200 transition-colors">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-colors">
             <FileText className="h-4 w-4" />
           </div>
-          <span className="text-[10px] font-bold text-slate-500 group-hover:text-amber-700">Note</span>
+          <span className="text-[10px] font-bold text-brand-muted group-hover:text-brand-primary transition-colors">Note</span>
         </button>
       </div>
 
@@ -479,7 +479,7 @@ export default memo(function LeadActivityTimeline({
                     <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap">
                       {activity.createdBy && (
                         <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center gap-1.5 rounded-lg border border-blue-500/40 bg-[#BBE1FA]/30 px-2 py-1 text-xs font-bold text-[#0F4C75] shadow-xs">
+                          <span className="inline-flex items-center gap-1.5 rounded-lg border border-brand-primary/30 bg-brand-primary/10 px-2 py-1 text-xs font-bold text-brand-primary shadow-xs">
                             {activity.createdBy.avatar ? (
                               <img
                                 src={activity.createdBy.avatar}
@@ -553,7 +553,7 @@ export default memo(function LeadActivityTimeline({
             {/* Modal Header */}
             <div className="flex items-center justify-between rounded-t-2xl border-b border-slate-100 bg-slate-50 px-6 py-4">
               <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                <Layers className="h-4 w-4 text-blue-600" />
+                <Layers className="h-4 w-4 text-brand-primary" />
                 Log Activity
               </h3>
               <button
@@ -642,7 +642,7 @@ export default memo(function LeadActivityTimeline({
                 <button
                   type="submit"
                   disabled={isSubmittingActivity}
-                  className="flex-1 rounded-xl bg-blue-600 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  className="flex-1 rounded-xl bg-brand-primary py-2.5 text-xs font-bold text-white shadow-sm hover:bg-brand-accent disabled:opacity-50 transition-all cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   {isSubmittingActivity ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -746,7 +746,7 @@ export default memo(function LeadActivityTimeline({
                 <button
                   type="submit"
                   disabled={isUpdatingActivity}
-                  className="flex-1 rounded-xl bg-blue-600 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  className="flex-1 rounded-xl bg-brand-primary py-2.5 text-xs font-bold text-white shadow-sm hover:bg-brand-accent disabled:opacity-50 transition-all cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   {isUpdatingActivity ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
