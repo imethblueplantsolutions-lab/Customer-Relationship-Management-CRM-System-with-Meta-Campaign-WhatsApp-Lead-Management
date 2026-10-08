@@ -620,7 +620,7 @@ function LoginPageContent() {
                       value={signUpName}
                       onChange={(e) => setSignUpName(e.target.value)}
                       required
-                      placeholder="Full Name (e.g. Sarah Jenkins)"
+                      placeholder="Full name"
                       className="w-full h-9.5 px-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
                     />
                   </div>
