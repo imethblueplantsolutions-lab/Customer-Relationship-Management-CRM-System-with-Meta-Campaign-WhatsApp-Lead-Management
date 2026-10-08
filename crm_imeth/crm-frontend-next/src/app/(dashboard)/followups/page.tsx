@@ -576,23 +576,24 @@ export default function FollowupsPage() {
                         </div>
                       </div>
 
-                      {/* Second Row: Date & Quick Action Buttons */}
-                      <div className="flex items-center justify-between gap-3 w-full mt-2.5">
-                        <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full flex items-center gap-1.5 border border-slate-200/60 whitespace-nowrap">
+                      {/* Row 2: Date & Action Buttons (Responsive Wrap Fix) */}
+                      <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 w-full mt-2.5">
+                        {/* Date Pill */}
+                        <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-slate-200/60 whitespace-nowrap">
                           <Clock className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                           {f.dueAt ? formatDateTime(f.dueAt) : "No Date"}
                         </span>
 
-                        {/* 4 Action Buttons */}
-                        <div className="flex items-center gap-1 shrink-0">
+                        {/* 4 Action Buttons - Uses ml-auto to right-align when wrapped on mobile */}
+                        <div className="flex items-center gap-1 ml-auto shrink-0">
                           {/* Quick Calendar Link */}
                           <a
                             href={generateGoogleCalendarUrl(f)}
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                            title="Add to Google Calendar"
+                            className="p-2 text-brand-muted hover:text-brand-primary hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
+                            title="Google Calendar"
                           >
                             <Calendar className="h-4 w-4" />
                           </a>
@@ -604,8 +605,8 @@ export default function FollowupsPage() {
                               e.stopPropagation();
                               downloadIcsFile(f);
                             }}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-                            title="Download .ics file"
+                            className="p-2 text-brand-muted hover:text-brand-primary hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
+                            title="Share"
                           >
                             <Share2 className="h-4 w-4" />
                           </button>
@@ -618,8 +619,8 @@ export default function FollowupsPage() {
                               setSelectedFollowup(f);
                               setIsDrawerOpen(true);
                             }}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-                            title="Edit or Reschedule"
+                            className="p-2 text-brand-muted hover:text-brand-primary hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
+                            title="Edit"
                           >
                             <Pencil className="h-4 w-4" />
                           </button>
@@ -632,8 +633,8 @@ export default function FollowupsPage() {
                                 handleDeleteFollowup(f);
                               }}
                               disabled={deletingId === f.id}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-50"
-                              title="Delete Follow-up (Admin & Team Lead)"
+                              className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+                              title="Delete"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
