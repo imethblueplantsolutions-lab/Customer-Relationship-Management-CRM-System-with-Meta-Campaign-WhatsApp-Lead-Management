@@ -69,11 +69,11 @@ function DashboardContent() {
     return (
       <div className="space-y-8">
         {/* Skeleton stat cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="rounded-2xl bg-white border border-slate-200/60 p-6 shadow-sm animate-pulse">
-              <div className="h-3 w-24 bg-slate-200 rounded mb-4" />
-              <div className="h-10 w-16 bg-slate-200 rounded" />
+            <div key={i} className="rounded-2xl bg-white border border-slate-200/60 p-4 sm:p-6 shadow-sm animate-pulse">
+              <div className="h-3 w-16 sm:w-24 bg-slate-200 rounded mb-3 sm:mb-4" />
+              <div className="h-8 sm:h-10 w-12 sm:w-16 bg-slate-200 rounded" />
             </div>
           ))}
         </div>
@@ -132,21 +132,21 @@ function DashboardContent() {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
         {/* Total Leads */}
-        <div className="rounded-2xl bg-white border border-slate-200/60 p-6 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col justify-between">
+        <div className="rounded-2xl bg-white border border-slate-200/60 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col justify-between">
           <div>
-            <p className="text-[15px] font-semibold text-slate-500 uppercase tracking-wider">
+            <p className="text-xs sm:text-[15px] font-semibold text-slate-500 uppercase tracking-wider">
               Total Leads
             </p>
-            <p className="text-4xl sm:text-[40px] font-extrabold text-slate-800 mt-2.5 leading-none">
+            <p className="text-2xl sm:text-4xl lg:text-[40px] font-extrabold text-slate-800 mt-1.5 sm:mt-2.5 leading-none">
               {stats.totalLeads}
             </p>
           </div>
           {stats.totalLeads === 0 && (
             <Link
               href="/leads"
-              className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-brand-primary hover:text-brand-accent"
+              className="mt-2.5 sm:mt-3 inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-brand-primary hover:text-brand-accent"
             >
               Add your first lead <ArrowRight className="h-3 w-3" />
             </Link>
@@ -154,43 +154,43 @@ function DashboardContent() {
         </div>
 
         {/* Converted */}
-        <div className="rounded-2xl bg-white border border-slate-200/60 p-6 shadow-sm hover:shadow-md transition-shadow text-left">
-          <p className="text-[15px] font-semibold text-slate-500 uppercase tracking-wider">
+        <div className="rounded-2xl bg-white border border-slate-200/60 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow text-left">
+          <p className="text-xs sm:text-[15px] font-semibold text-slate-500 uppercase tracking-wider">
             Converted
           </p>
-          <p className="text-4xl sm:text-[40px] font-extrabold text-slate-800 mt-2.5 leading-none">
+          <p className="text-2xl sm:text-4xl lg:text-[40px] font-extrabold text-slate-800 mt-1.5 sm:mt-2.5 leading-none">
             {stats.statusBreakdown.CONVERTED || 0}
           </p>
         </div>
 
         {/* Qualified */}
-        <div className="rounded-2xl bg-white border border-slate-200/60 p-6 shadow-sm hover:shadow-md transition-shadow text-left">
-          <p className="text-[15px] font-semibold text-slate-500 uppercase tracking-wider">
+        <div className="rounded-2xl bg-white border border-slate-200/60 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow text-left">
+          <p className="text-xs sm:text-[15px] font-semibold text-slate-500 uppercase tracking-wider">
             Qualified
           </p>
-          <p className="text-4xl sm:text-[40px] font-extrabold text-slate-800 mt-2.5 leading-none">
+          <p className="text-2xl sm:text-4xl lg:text-[40px] font-extrabold text-slate-800 mt-1.5 sm:mt-2.5 leading-none">
             {stats.statusBreakdown.QUALIFIED || 0}
           </p>
         </div>
 
         {/* Pending Follow-ups */}
-        <div className="rounded-2xl bg-white border border-slate-200/60 p-6 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col justify-between">
+        <div className="rounded-2xl bg-white border border-slate-200/60 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col justify-between">
           <div>
-            <p className="text-[15px] font-semibold text-slate-500 uppercase tracking-wider">
+            <p className="text-xs sm:text-[15px] font-semibold text-slate-500 uppercase tracking-wider">
               Pending Follow-ups
             </p>
-            <p className="text-4xl sm:text-[40px] font-extrabold text-slate-800 mt-2.5 leading-none">
+            <p className="text-2xl sm:text-4xl lg:text-[40px] font-extrabold text-slate-800 mt-1.5 sm:mt-2.5 leading-none">
               {stats.pendingFollowups}
             </p>
           </div>
           {stats.pendingFollowups === 0 ? (
-            <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-emerald-600">
+            <span className="mt-2.5 sm:mt-3 inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-emerald-600">
               <CheckCircle2 className="h-3 w-3" /> All caught up! 🎉
             </span>
           ) : (
             <Link
               href="/followups"
-              className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-brand-primary hover:text-brand-accent"
+              className="mt-2.5 sm:mt-3 inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-brand-primary hover:text-brand-accent"
             >
               View tasks <ArrowRight className="h-3 w-3" />
             </Link>
