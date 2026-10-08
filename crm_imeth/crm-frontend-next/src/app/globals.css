@@ -10,13 +10,13 @@
 }
 
 :root {
-  /* Dynamic Semantic Brand Tokens */
-  --brand-primary: #2563EB;
-  --brand-accent: #1D4ED8;
-  --brand-muted: #64748b;
-  --brand-surface: #ffffff;
-  --brand-bg: #f8fafc;
-  --brand-text: #0f172a;
+  /* Dynamic Semantic Brand Tokens: Vibrant Blue Main CRM Theme */
+  --brand-primary: #1B7BED;
+  --brand-accent: #18DBF5;
+  --brand-muted: #476685;
+  --brand-surface: #DEEEFD;
+  --brand-bg: #F3F8FE;
+  --brand-text: #0A2540;
 
   /* WhatsApp Palette Tokens */
   --wa-dark-teal: #1B262C;
@@ -28,12 +28,12 @@
 
   /* Legacy Semantic Token Aliases */
   --color-bg: var(--brand-bg);
-  --color-bg-gradient: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 50%, #EEF2F6 100%);
+  --color-bg-gradient: linear-gradient(135deg, #F3F8FE 0%, #DEEEFD 50%, #E8F2FC 100%);
   --color-bg-card: var(--brand-surface);
-  --color-bg-sidebar: #1B262C;
+  --color-bg-sidebar: #0A2540;
   --color-text: var(--brand-text);
   --color-text-muted: var(--brand-muted);
-  --color-border: #e2e8f0;
+  --color-border: #C8E0F8;
   --color-primary: var(--brand-primary);
   --color-primary-hover: var(--brand-accent);
 }
@@ -130,12 +130,13 @@
 }
 
 [data-theme="default-crm"] {
-  --brand-primary: #2563EB;
-  --brand-accent: #1D4ED8;
-  --brand-muted: #64748b;
-  --brand-surface: #ffffff;
-  --brand-bg: #f8fafc;
-  --brand-text: #0f172a;
+  --brand-primary: #1B7BED;
+  --brand-accent: #18DBF5;
+  --brand-muted: #476685;
+  --brand-surface: #DEEEFD;
+  --brand-bg: #F3F8FE;
+  --brand-text: #0A2540;
+  --color-border: #C8E0F8;
 }
 
 .text-fluid-nav {

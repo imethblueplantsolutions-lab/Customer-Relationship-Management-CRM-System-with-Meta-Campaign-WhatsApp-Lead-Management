@@ -35,7 +35,42 @@ export interface ThemeConfig {
   swatches: ColorSwatch[];
 }
 
-export const THEMES: ThemeConfig[] = [
+export const MAIN_CRM_THEME: ThemeConfig = {
+  id: "default-crm",
+  name: "Vibrant Blue",
+  category: "light",
+  tagline: "Vibrant Blue & Cyan (Main CRM)",
+  description: "Official CRM palette featuring Vibrant Blue, Bright Cyan, Pale Blue-Gray surfaces, and Deep Navy typography on an icy white canvas.",
+  colors: {
+    background: "#F3F8FE",
+    surface: "#DEEEFD",
+    border: "#C8E0F8",
+    textPrimary: "#0A2540",
+    textSecondary: "#476685",
+    primary: "#1B7BED",
+    accent: "#18DBF5",
+    sidebar: "#0A2540",
+  },
+  swatches: [
+    { label: "C1 (Brand) Vibrant Blue", hex: "#1B7BED" },
+    { label: "C2 (Accent) Bright Cyan", hex: "#18DBF5" },
+    { label: "C3 (Base) Icy White", hex: "#F3F8FE" },
+    { label: "C4 (Surface) Pale Blue-Gray", hex: "#DEEEFD" },
+    { label: "C5 (Neutral) Deep Navy", hex: "#0A2540" },
+  ],
+};
+
+/**
+ * Active Theme Registry:
+ * Currently locked to the official Main CRM theme.
+ * Other themes are hidden and preserved in ARCHIVED_THEMES below.
+ */
+export const THEMES: ThemeConfig[] = [MAIN_CRM_THEME];
+
+/**
+ * Preserved / Archived themes (hidden right now)
+ */
+export const ARCHIVED_THEMES: ThemeConfig[] = [
   {
     id: "graphite",
     name: "Graphite",
@@ -339,21 +374,12 @@ export function getThemeStorageKey(userId?: string | null): string {
  * Never returns another user's theme!
  */
 export function getActiveThemeId(userId?: string | null): ThemeId {
-  if (typeof window === "undefined") return "default-crm";
-  try {
-    const key = getThemeStorageKey(userId);
-    const saved = localStorage.getItem(key) as ThemeId;
-    if (saved && THEMES.some((t) => t.id === saved)) {
-      return saved;
-    }
-  } catch {
-    // Ignore localStorage access issues
-  }
+  // Always use the official Main CRM theme right now
   return "default-crm";
 }
 
 export function getThemeById(id: string): ThemeConfig {
-  return THEMES.find((t) => t.id === id) || THEMES[0];
+  return THEMES.find((t) => t.id === id) || ARCHIVED_THEMES.find((t) => t.id === id) || MAIN_CRM_THEME;
 }
 
 /**
