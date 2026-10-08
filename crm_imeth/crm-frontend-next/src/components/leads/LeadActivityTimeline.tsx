@@ -455,12 +455,15 @@ export default memo(function LeadActivityTimeline({
                           ? renderStageChangeTitle(activity.title || config.label)
                           : activity.title || config.label}
                       </h4>
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-bold ${config.tagBg}`}
-                      >
-                        <IconComponent className="h-3 w-3" />
-                        {config.label}
-                      </span>
+                      {activity.type !== "STAGE_CHANGE" &&
+                        !activity.title?.toLowerCase().includes("stage changed") && (
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-bold ${config.tagBg}`}
+                          >
+                            <IconComponent className="h-3 w-3" />
+                            {config.label}
+                          </span>
+                        )}
                     </div>
 
                     {/* Activity Description (Omit redundant auto-generated stage-move description) */}
