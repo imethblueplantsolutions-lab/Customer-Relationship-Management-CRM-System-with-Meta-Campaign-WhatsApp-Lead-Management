@@ -14,11 +14,9 @@ import {
   Mail,
   Eye,
   EyeOff,
-  Sparkles,
   MessageSquare,
   ArrowRight,
   CheckCircle2,
-  Layers,
   User as UserIcon,
   Building2,
   AlertCircle,
@@ -125,9 +123,6 @@ function LoginPageContent() {
   const [signUpSuccess, setSignUpSuccess] = useState("");
   const [signUpLoading, setSignUpLoading] = useState(false);
 
-  // General State
-  const [activeSlide, setActiveSlide] = useState(0);
-
   // OTP Modal state
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [isFirstLogin, setIsFirstLogin] = useState(false);
@@ -156,35 +151,6 @@ function LoginPageContent() {
 
   const { login, setSession } = useAuth();
   const router = useRouter();
-
-  const slides = [
-    {
-      title: "Lead Management with Role-Based System",
-      description:
-        "Comprehensive lead tracking with multi-tier role-based hierarchy, scheduled follow-ups, smart reminders, and pipeline supervision.",
-      tag: "Lead Management",
-    },
-    {
-      title: "Real-time Omnichannel WhatsApp Inbox (Coming Soon)",
-      description:
-        "Manage two-way customer conversations with live socket synchronization and instant webhook responses.",
-      tag: "Live Inbox",
-    },
-    {
-      title: "Enterprise Multi-Tenant & Node Flow Engine (Coming Soon)",
-      description:
-        "Drag-and-drop visual workflow builders, conditional branching, and role-based permissions for teams.",
-      tag: "Flow Engine",
-    },
-  ];
-
-  // Auto-advance slides every 6 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % slides.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [slides.length]);
 
   // Sign In Form Handler
   const handleSubmit = async (e: React.FormEvent) => {
@@ -406,69 +372,10 @@ function LoginPageContent() {
       <div className="absolute top-20 right-16 w-12 h-12 bg-white/80 backdrop-blur-md rounded-2xl rotate-45 shadow-xs pointer-events-none" />
       <div className="absolute bottom-24 right-1/4 w-9 h-9 bg-blue-600/20 backdrop-blur-md rounded-xl rotate-6 shadow-xs pointer-events-none" />
 
-      {/* Main Dual-Auth Card */}
-      <div className="relative z-10 w-full max-w-4xl bg-white rounded-3xl shadow-[0_20px_60px_rgba(27,38,44,0.14)] border border-slate-100 overflow-hidden flex flex-col md:flex-row items-stretch">
-
-        {/* ================= LEFT SIDE: AUTO-PLAYING FEATURE SHOWCASE (Image 3) ================= */}
-        <div className="hidden md:flex w-1/2 p-8 flex-col justify-between relative overflow-hidden bg-gradient-to-br from-[#1B262C] via-[#0F4C75] to-[#3282B8] text-white">
-          {/* Background Lighting & Grid Effects */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_30%,rgba(187,225,250,0.35),transparent_65%)] pointer-events-none" />
-          <div className="absolute inset-0 opacity-15 bg-[linear-gradient(to_right,#ffffff15_1px,transparent_1px),linear-gradient(to_bottom,#ffffff15_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
-
-          {/* Top Header Badge */}
-          <div className="w-full flex items-center justify-between z-10">
-            <div className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[10px] font-semibold text-white flex items-center gap-1.5 shadow-lg">
-              <Layers className="w-3.5 h-3.5 text-white" />
-              <span>Enterprise Edition</span>
-            </div>
-          </div>
-
-          {/* Center Showcase Card (Image 3 - Feature Carousel with Auto-Play & Dots) */}
-          <div className="relative z-10 w-full rounded-2xl bg-white/15 backdrop-blur-2xl border border-white/30 p-6 text-white shadow-2xl flex flex-col gap-3.5 my-auto">
-            {/* Header Icon Ring */}
-            <div className="w-10 h-10 rounded-xl border-2 border-white/40 border-t-white flex items-center justify-center bg-white/10 backdrop-blur-md shadow-sm">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-
-            {/* Content Text */}
-            <div className="flex flex-col gap-1.5">
-              <span className="self-start px-2.5 py-0.5 rounded-full bg-white/20 border border-white/30 text-[9px] font-bold tracking-wider text-white uppercase">
-                {slides[activeSlide].tag}
-              </span>
-              <h2 className="text-lg font-bold leading-snug tracking-tight text-white drop-shadow-xs">
-                {slides[activeSlide].title}
-              </h2>
-              <p className="text-xs text-white/90 leading-relaxed font-normal">
-                {slides[activeSlide].description}
-              </p>
-            </div>
-
-            {/* Slider Dots (Auto-playing indicator) */}
-            <div className="flex items-center gap-1.5 pt-3 border-t border-white/20">
-              {slides.map((_, idx) => (
-                <button
-                  suppressHydrationWarning
-                  key={idx}
-                  type="button"
-                  onClick={() => setActiveSlide(idx)}
-                  className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                    activeSlide === idx ? "w-7 bg-white" : "w-1.5 bg-white/40 hover:bg-white/70"
-                  }`}
-                  aria-label={`Go to slide ${idx + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Bottom Branding */}
-          <div className="relative z-10 text-xs text-white/70 flex items-center justify-between font-medium">
-            <span>MyCRM Cloud Platform</span>
-            <span>Enterprise v2.4</span>
-          </div>
-        </div>
-
-        {/* ================= RIGHT SIDE: AUTH FORM PANEL (Images 1 & 2) ================= */}
-        <div className="w-full md:w-1/2 p-6 sm:p-8 flex flex-col justify-between bg-white">
+      {/* Main Auth Card */}
+      <div className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-[0_20px_60px_rgba(27,38,44,0.14)] border border-slate-100 overflow-hidden">
+        {/* Auth Form Panel */}
+        <div className="w-full p-6 sm:p-8 flex flex-col justify-between bg-white">
           <div className="w-full max-w-[360px] mx-auto flex flex-col gap-4">
 
             {/* Top Brand Logo */}
@@ -488,11 +395,10 @@ function LoginPageContent() {
                   setError("");
                   setSuccessMsg("");
                 }}
-                className={`py-2 text-xs sm:text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer ${
-                  !isSignUpActive
-                    ? "bg-[#0F4C75] text-white shadow-md"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
-                }`}
+                className={`py-2 text-xs sm:text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer ${!isSignUpActive
+                  ? "bg-[#0F4C75] text-white shadow-md"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
+                  }`}
               >
                 Login
               </button>
@@ -503,11 +409,10 @@ function LoginPageContent() {
                   setSignUpError("");
                   setSignUpSuccess("");
                 }}
-                className={`py-2 text-xs sm:text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer ${
-                  isSignUpActive
-                    ? "bg-[#0F4C75] text-white shadow-md"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
-                }`}
+                className={`py-2 text-xs sm:text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer ${isSignUpActive
+                  ? "bg-[#0F4C75] text-white shadow-md"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
+                  }`}
               >
                 Sign Up
               </button>
@@ -533,9 +438,8 @@ function LoginPageContent() {
                 <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
                   {/* Email / Username Input */}
                   <div
-                    className={`flex rounded-xl border bg-white overflow-hidden transition-all focus-within:ring-2 focus-within:ring-blue-500/10 ${
-                      hasAuthError ? "border-red-500" : "border-slate-300 focus-within:border-blue-500"
-                    }`}
+                    className={`flex rounded-xl border bg-white overflow-hidden transition-all focus-within:ring-2 focus-within:ring-blue-500/10 ${hasAuthError ? "border-red-500" : "border-slate-300 focus-within:border-blue-500"
+                      }`}
                   >
                     <div className="w-10 bg-slate-50 border-r border-slate-200 flex items-center justify-center shrink-0 text-slate-400">
                       <Mail className="w-4 h-4" />
@@ -560,9 +464,8 @@ function LoginPageContent() {
 
                   {/* Password Input */}
                   <div
-                    className={`flex rounded-xl border bg-white overflow-hidden transition-all focus-within:ring-2 focus-within:ring-blue-500/10 relative ${
-                      hasAuthError ? "border-red-500" : "border-slate-300 focus-within:border-blue-500"
-                    }`}
+                    className={`flex rounded-xl border bg-white overflow-hidden transition-all focus-within:ring-2 focus-within:ring-blue-500/10 relative ${hasAuthError ? "border-red-500" : "border-slate-300 focus-within:border-blue-500"
+                      }`}
                   >
                     <div className="w-10 bg-slate-50 border-r border-slate-200 flex items-center justify-center shrink-0 text-slate-400">
                       <Lock className="w-4 h-4" />
@@ -824,15 +727,6 @@ function LoginPageContent() {
 
           </div>
 
-          {/* Footer Note */}
-          <div className="pt-3 text-center border-t border-slate-100 mt-4">
-            <p className="text-[10px] text-slate-400">
-              Need assistance?{" "}
-              <a href="mailto:imethblueplantsolutions@gmail.com" className="text-blue-600 font-semibold hover:underline">
-                imethblueplantsolutions@gmail.com
-              </a>
-            </p>
-          </div>
         </div>
       </div>
 
