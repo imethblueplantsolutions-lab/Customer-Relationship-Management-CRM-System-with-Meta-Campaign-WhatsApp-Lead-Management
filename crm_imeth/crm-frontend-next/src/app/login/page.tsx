@@ -361,16 +361,8 @@ function LoginPageContent() {
 
 
   return (
-    <div id="login-page-root" className="relative min-h-screen w-full bg-[#f4f9fd] flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans overflow-x-hidden">
-      {/* Decorative Ambient Background Glows */}
-      <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-[#BBE1FA]/50 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-blue-600/20 blur-3xl pointer-events-none" />
+    <div id="login-page-root" className="relative min-h-screen w-full bg-[#ffffff] flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans overflow-x-hidden">
 
-      {/* Subtle Floating Shapes */}
-      <div className="absolute top-12 left-1/4 w-10 h-10 bg-white/70 backdrop-blur-md rounded-2xl rotate-12 shadow-xs pointer-events-none" />
-      <div className="absolute bottom-16 left-12 w-8 h-8 bg-[#BBE1FA]/40 backdrop-blur-md rounded-xl -rotate-12 shadow-xs pointer-events-none" />
-      <div className="absolute top-20 right-16 w-12 h-12 bg-white/80 backdrop-blur-md rounded-2xl rotate-45 shadow-xs pointer-events-none" />
-      <div className="absolute bottom-24 right-1/4 w-9 h-9 bg-blue-600/20 backdrop-blur-md rounded-xl rotate-6 shadow-xs pointer-events-none" />
 
       {/* Main Auth Card */}
       <div className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-[0_20px_60px_rgba(27,38,44,0.14)] border border-slate-100 overflow-hidden">
