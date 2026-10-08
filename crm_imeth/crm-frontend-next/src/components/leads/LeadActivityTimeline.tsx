@@ -18,6 +18,7 @@ import {
   Pencil,
   User as UserIcon,
   ArrowRightLeft,
+  ArrowRight,
   type LucideIcon,
 } from "lucide-react";
 import type { Activity } from "@/types";
@@ -94,6 +95,131 @@ const DEFAULT_ACTIVITY_STYLE: ActivityTypeStyle = {
   label: "Activity",
   tagBg: "bg-slate-50 text-slate-700 border-slate-200",
 };
+
+function getStageConfig(stageStr: string) {
+  const norm = stageStr.toUpperCase().replace(/\s+/g, "_").replace(/["']/g, "").trim();
+  if (norm.includes("QUALIF")) {
+    return {
+      label: "Qualified",
+      bg: "bg-purple-50 dark:bg-purple-950/40",
+      text: "text-purple-600 dark:text-purple-300",
+      border: "border-purple-200/60 dark:border-purple-800/40",
+      style: { backgroundColor: "rgba(139, 92, 246, 0.12)", color: "#8b5cf6" },
+    };
+  }
+  if (norm.includes("CONVERT")) {
+    return {
+      label: "Converted",
+      bg: "bg-emerald-50 dark:bg-emerald-950/40",
+      text: "text-emerald-600 dark:text-emerald-300",
+      border: "border-emerald-200/60 dark:border-emerald-800/40",
+      style: { backgroundColor: "rgba(34, 197, 94, 0.12)", color: "#16a34a" },
+    };
+  }
+  if (norm.includes("CONTACT")) {
+    return {
+      label: "Contacted",
+      bg: "bg-amber-50 dark:bg-amber-950/40",
+      text: "text-amber-600 dark:text-amber-300",
+      border: "border-amber-200/60 dark:border-amber-800/40",
+      style: { backgroundColor: "rgba(234, 179, 8, 0.12)", color: "#d97706" },
+    };
+  }
+  if (norm.includes("NEW")) {
+    return {
+      label: "New Lead",
+      bg: "bg-blue-50 dark:bg-blue-950/40",
+      text: "text-blue-600 dark:text-blue-300",
+      border: "border-blue-200/60 dark:border-blue-800/40",
+      style: { backgroundColor: "rgba(59, 130, 246, 0.12)", color: "#2563eb" },
+    };
+  }
+  if (norm.includes("LOST")) {
+    return {
+      label: "Lost",
+      bg: "bg-rose-50 dark:bg-rose-950/40",
+      text: "text-rose-600 dark:text-rose-300",
+      border: "border-rose-200/60 dark:border-rose-800/40",
+      style: { backgroundColor: "rgba(239, 68, 68, 0.12)", color: "#dc2626" },
+    };
+  }
+  const cleanLabel = stageStr.replace(/["']/g, "").trim();
+  const titleCased = cleanLabel.charAt(0).toUpperCase() + cleanLabel.slice(1).toLowerCase();
+  return {
+    label: titleCased || stageStr,
+    bg: "bg-slate-50 dark:bg-slate-800/40",
+    text: "text-slate-600 dark:text-slate-300",
+    border: "border-slate-200/60 dark:border-slate-700/40",
+    style: { backgroundColor: "rgba(100, 116, 139, 0.12)", color: "#475569" },
+  };
+}
+
+function StagePill({ stage }: { stage: string }) {
+  const config = getStageConfig(stage);
+  return (
+    <span
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border transition-colors shadow-2xs ${config.bg} ${config.text} ${config.border}`}
+      style={config.style}
+    >
+      {config.label}
+    </span>
+  );
+}
+
+function renderStageChangeTitle(title: string) {
+  const arrowMatch = title.match(/^(Stage Changed:\s*)?(.*?)\s*(?:→|->|>)\s*(.*)$/i);
+  if (arrowMatch && (arrowMatch[2] || arrowMatch[3])) {
+    const prefix = arrowMatch[1] || "Stage Changed: ";
+    const fromStage = arrowMatch[2].trim();
+    const toStage = arrowMatch[3].trim();
+    return (
+      <span className="inline-flex items-center flex-wrap gap-1.5 font-bold text-slate-900">
+        <span>{prefix}</span>
+        <StagePill stage={fromStage} />
+        <ArrowRight className="h-3.5 w-3.5 text-slate-400 shrink-0 mx-0.5 inline-block" />
+        <StagePill stage={toStage} />
+      </span>
+    );
+  }
+  return title;
+}
+
+function renderStageChangeDescription(description: string) {
+  // Matches: Lead pipeline stage was moved from "Qualified" to "Converted"
+  const match = description.match(/^(.*?from\s+)["']?([^"']+)["']?(\s+to\s+)["']?([^"']+)["']?(.*)$/i);
+  if (match) {
+    const prefix = match[1];
+    const fromStage = match[2].trim();
+    const mid = match[3];
+    const toStage = match[4].trim();
+    const suffix = match[5];
+    return (
+      <span className="inline-flex items-center flex-wrap gap-1.5 leading-normal">
+        <span>{prefix}</span>
+        <StagePill stage={fromStage} />
+        <span>{mid}</span>
+        <StagePill stage={toStage} />
+        {suffix && <span>{suffix}</span>}
+      </span>
+    );
+  }
+
+  // Fallback: check if description contains an arrow like "StageA → StageB"
+  const arrowMatch = description.match(/^(.*?)\s*["']?([^"'\s]+(?:\s+[^"'\s]+)?)["']?\s*(?:→|->|>)\s*["']?([^"'\s]+(?:\s+[^"'\s]+)?)["']?(.*)$/i);
+  if (arrowMatch) {
+    return (
+      <span className="inline-flex items-center flex-wrap gap-1.5 leading-normal">
+        {arrowMatch[1] && <span>{arrowMatch[1]}</span>}
+        <StagePill stage={arrowMatch[2].trim()} />
+        <ArrowRight className="h-3.5 w-3.5 text-slate-400 shrink-0 mx-0.5 inline-block" />
+        <StagePill stage={arrowMatch[3].trim()} />
+        {arrowMatch[4] && <span>{arrowMatch[4]}</span>}
+      </span>
+    );
+  }
+
+  return description;
+}
 
 /**
  * Props for the LeadActivityTimeline component.
@@ -359,8 +485,10 @@ export default memo(function LeadActivityTimeline({
                   <div className="flex-1 min-w-0">
                     {/* Title & Type Badge */}
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="text-sm font-bold text-slate-900 tracking-tight">
-                        {activity.title || config.label}
+                      <h4 className="text-sm font-bold text-slate-900 tracking-tight flex items-center flex-wrap gap-1.5">
+                        {activity.type === "STAGE_CHANGE" || activity.title?.toLowerCase().includes("stage changed")
+                          ? renderStageChangeTitle(activity.title || config.label)
+                          : activity.title || config.label}
                       </h4>
                       <span
                         className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-bold ${config.tagBg}`}
@@ -372,9 +500,11 @@ export default memo(function LeadActivityTimeline({
 
                     {/* Activity Description */}
                     {activity.description && (
-                      <p className="text-xs text-slate-600 mt-2 whitespace-pre-wrap leading-relaxed">
-                        {activity.description}
-                      </p>
+                      <div className="text-xs text-slate-600 mt-2 leading-relaxed">
+                        {activity.type === "STAGE_CHANGE" || activity.description.toLowerCase().includes("stage was moved")
+                          ? renderStageChangeDescription(activity.description)
+                          : <p className="whitespace-pre-wrap">{activity.description}</p>}
+                      </div>
                     )}
 
                     {/* Footer with Creator & Timestamp */}
