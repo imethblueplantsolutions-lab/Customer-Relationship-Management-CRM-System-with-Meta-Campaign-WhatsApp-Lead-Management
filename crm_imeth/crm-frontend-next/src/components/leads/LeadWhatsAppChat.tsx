@@ -169,7 +169,7 @@ export default memo(function LeadWhatsAppChat({
           value={messageText}
           onChange={(e) => setMessageText(e.target.value)}
           disabled={sendingMessage}
-          className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+          className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-base sm:text-xs text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
         />
         <button
           type="submit"

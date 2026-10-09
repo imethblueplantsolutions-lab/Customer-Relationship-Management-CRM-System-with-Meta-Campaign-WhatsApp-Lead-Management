@@ -102,7 +102,7 @@ export default function DashboardLayout({
       {/* ================= SIDEBAR (DESKTOP & MOBILE DRAWER) ================= */}
       <aside
         style={{ backgroundColor: "var(--color-bg-sidebar, #1B262C)" }}
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col text-white shadow-2xl transition-all duration-300 ease-in-out md:static ${
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col text-white shadow-2xl transition-all duration-300 ease-in-out pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] md:pt-0 md:pb-0 md:static ${
           mobileOpen ? "translate-x-0 w-72" : "-translate-x-full md:translate-x-0"
         } ${isCollapsed ? "md:w-20" : "md:w-64"}`}
       >
@@ -161,7 +161,7 @@ export default function DashboardLayout({
       {/* ================= MAIN CONTENT AREA ================= */}
       <div className="flex flex-1 flex-col overflow-hidden min-w-0">
         {/* Sticky Top Header with 4-Line Hamburger Menu Icon for Mobile */}
-        <header className="flex h-16 items-center justify-between border-b border-brand-muted/30 bg-brand-surface px-4 sm:px-6 md:hidden shadow-xs">
+        <header className="flex h-[calc(4rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] items-center justify-between border-b border-brand-muted/30 bg-brand-surface px-4 sm:px-6 md:hidden shadow-xs">
           <div className="flex items-center gap-3">
             <button
               type="button"

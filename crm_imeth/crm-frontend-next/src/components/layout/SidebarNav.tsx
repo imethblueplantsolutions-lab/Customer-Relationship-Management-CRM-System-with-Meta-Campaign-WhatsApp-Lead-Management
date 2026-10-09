@@ -119,7 +119,7 @@ export default function SidebarNav({ user: propUser, isCollapsed, onNavigate }: 
             href={item.href}
             onClick={onNavigate}
             title={isCollapsed ? itemLabel : undefined}
-            className={`flex items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all group ${
+            className={`flex items-center gap-3.5 rounded-xl px-3.5 py-3 sm:py-2.5 text-sm sm:text-xs font-semibold transition-all group ${
               isActive
                 ? "bg-brand-primary text-white shadow-md shadow-brand-primary/30"
                 : "text-slate-300 hover:bg-white/10 hover:text-white"

@@ -418,7 +418,7 @@ function LeadsPageContent() {
                     required
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-base sm:text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
                     placeholder="e.g. Katherine Lim"
                   />
                 </div>
@@ -435,7 +435,7 @@ function LeadsPageContent() {
                     type="text"
                     value={formDisplayName}
                     onChange={(e) => setFormDisplayName(e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-base sm:text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
                     placeholder="e.g. Katherine"
                   />
                 </div>
@@ -459,7 +459,7 @@ function LeadsPageContent() {
                     type="text"
                     value={formCompanyName}
                     onChange={(e) => setFormCompanyName(e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-base sm:text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
                     placeholder="e.g. Acme Corp"
                   />
                 </div>
@@ -476,7 +476,7 @@ function LeadsPageContent() {
                     type="text"
                     value={formDesignation}
                     onChange={(e) => setFormDesignation(e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-base sm:text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
                     placeholder="e.g. Procurement Lead"
                   />
                 </div>
@@ -497,7 +497,7 @@ function LeadsPageContent() {
                     required
                     value={formPhone}
                     onChange={(e) => setFormPhone(e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 font-mono placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-base sm:text-sm text-slate-900 font-mono placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
                     placeholder="e.g. +94 1234 5678"
                   />
                 </div>
@@ -515,7 +515,7 @@ function LeadsPageContent() {
                       type="tel"
                       value={formWhatsappNumber}
                       onChange={(e) => setFormWhatsappNumber(e.target.value)}
-                      className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 font-mono placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                      className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-base sm:text-sm text-slate-900 font-mono placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
                       placeholder="e.g. +94 1234 5678"
                     />
                   </div>
@@ -536,7 +536,7 @@ function LeadsPageContent() {
                     type="email"
                     value={formEmail}
                     onChange={(e) => setFormEmail(e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-base sm:text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
                     placeholder="e.g. katherine@example.com"
                   />
                 </div>
@@ -552,7 +552,7 @@ function LeadsPageContent() {
                   <select
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value)}
-                    className="w-full appearance-none rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-8 text-sm text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all cursor-pointer"
+                    className="w-full appearance-none rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-8 text-base sm:text-sm text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all cursor-pointer"
                   >
                     {CATEGORY_OPTIONS.map((cat) => (
                       <option key={cat} value={cat}>
@@ -575,7 +575,7 @@ function LeadsPageContent() {
                   <select
                     value={formAssignedTo}
                     onChange={(e) => setFormAssignedTo(e.target.value)}
-                    className="w-full appearance-none rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-8 text-sm text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all cursor-pointer"
+                    className="w-full appearance-none rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-8 text-base sm:text-sm text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all cursor-pointer"
                   >
                     <option value="">Unassigned</option>
                     {agents.map((ag) => (
@@ -599,7 +599,7 @@ function LeadsPageContent() {
                   value={formNotes}
                   onChange={(e) => setFormNotes(e.target.value)}
                   rows={3}
-                  className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all resize-none"
+                  className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-base sm:text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all resize-none"
                   placeholder="Add notes about your client here..."
                 />
               </div>

@@ -140,7 +140,7 @@ export default memo(function LeadInfoCard({
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 placeholder="e.g. Katherine Lim"
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base sm:text-xs text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
               />
             </div>
 
@@ -153,7 +153,7 @@ export default memo(function LeadInfoCard({
                 value={editDisplayName}
                 onChange={(e) => setEditDisplayName(e.target.value)}
                 placeholder="e.g. Katherine"
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base sm:text-xs text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
               />
               <p className="text-[10px] text-slate-400 mt-0.5">Display name is what your clients will see</p>
             </div>
@@ -167,7 +167,7 @@ export default memo(function LeadInfoCard({
                 value={editCompanyName}
                 onChange={(e) => setEditCompanyName(e.target.value)}
                 placeholder="e.g. Acme Corp"
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base sm:text-xs text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
               />
             </div>
 
@@ -180,7 +180,7 @@ export default memo(function LeadInfoCard({
                 value={editDesignation}
                 onChange={(e) => setEditDesignation(e.target.value)}
                 placeholder="e.g. Procurement Lead"
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base sm:text-xs text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
               />
             </div>
 
@@ -194,7 +194,7 @@ export default memo(function LeadInfoCard({
                   value={editWhatsappNumber}
                   onChange={(e) => setEditWhatsappNumber(e.target.value)}
                   placeholder="e.g. +94 1234 5678"
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 font-mono placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base sm:text-xs text-slate-800 font-mono placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
                 />
               </div>
             )}
@@ -208,7 +208,7 @@ export default memo(function LeadInfoCard({
                 value={editEmail}
                 onChange={(e) => setEditEmail(e.target.value)}
                 placeholder="e.g. katherine@example.com"
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base sm:text-xs text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
               />
             </div>
 
@@ -221,7 +221,7 @@ export default memo(function LeadInfoCard({
                 onChange={(e) => setEditNotes(e.target.value)}
                 rows={3}
                 placeholder="Add notes about your client here..."
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all resize-none"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base sm:text-xs text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all resize-none"
               />
             </div>
           </div>

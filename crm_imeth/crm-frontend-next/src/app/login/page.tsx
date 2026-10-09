@@ -454,7 +454,7 @@ function LoginPageContent() {
                       }}
                       required
                       placeholder="Username / Email"
-                      className="w-full h-10 px-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
+                      className="w-full h-10 px-3 text-base sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
                     />
                   </div>
 
@@ -480,7 +480,7 @@ function LoginPageContent() {
                       }}
                       required
                       placeholder="Password"
-                      className="w-full h-10 pl-3 pr-10 text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
+                      className="w-full h-10 pl-3 pr-10 text-base sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
                     />
                     <button
                       suppressHydrationWarning
@@ -601,7 +601,7 @@ function LoginPageContent() {
                       onChange={(e) => setSignUpEmail(e.target.value)}
                       required
                       placeholder="Email"
-                      className="w-full h-9.5 px-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
+                      className="w-full h-9.5 px-3 text-base sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
                     />
                   </div>
 
@@ -617,7 +617,7 @@ function LoginPageContent() {
                       onChange={(e) => setSignUpName(e.target.value)}
                       required
                       placeholder="Full name"
-                      className="w-full h-9.5 px-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
+                      className="w-full h-9.5 px-3 text-base sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
                     />
                   </div>
 
@@ -633,7 +633,7 @@ function LoginPageContent() {
                       onChange={(e) => setSignUpPassword(e.target.value)}
                       required
                       placeholder="Password"
-                      className="w-full h-9.5 pl-3 pr-10 text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
+                      className="w-full h-9.5 pl-3 pr-10 text-base sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
                     />
                     <button
                       suppressHydrationWarning
@@ -657,7 +657,7 @@ function LoginPageContent() {
                       onChange={(e) => setSignUpConfirmPassword(e.target.value)}
                       required
                       placeholder="Confirm Password"
-                      className="w-full h-9.5 pl-3 pr-10 text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
+                      className="w-full h-9.5 pl-3 pr-10 text-base sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
                     />
                     <button
                       suppressHydrationWarning

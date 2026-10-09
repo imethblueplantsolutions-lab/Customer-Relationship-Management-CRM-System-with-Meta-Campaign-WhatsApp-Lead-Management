@@ -574,7 +574,7 @@ export default memo(function LeadActivityTimeline({
                 <select
                   value={activityForm.type}
                   onChange={(e) => setActivityForm({ ...activityForm, type: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none transition-all"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-base sm:text-xs font-semibold text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none transition-all"
                 >
                   <option value="PHONE_CALL">📞 Phone Call</option>
                   <option value="MESSAGE">💬 Direct Message</option>
@@ -591,7 +591,7 @@ export default memo(function LeadActivityTimeline({
                   <select
                     value={activityForm.createdById || currentUserId || ""}
                     onChange={(e) => setActivityForm({ ...activityForm, createdById: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none transition-all"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-base sm:text-xs font-semibold text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none transition-all"
                   >
                     <option value={currentUserId || ""}>
                       Me ({currentUserName || currentUserEmail?.split("@")[0] || "Me"})
@@ -627,7 +627,7 @@ export default memo(function LeadActivityTimeline({
                   rows={4}
                   value={activityForm.description}
                   onChange={(e) => setActivityForm({ ...activityForm, description: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none transition-all resize-none"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-base sm:text-xs text-slate-700 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none transition-all resize-none"
                 />
               </div>
 
@@ -689,7 +689,7 @@ export default memo(function LeadActivityTimeline({
                   <select
                     value={editForm.type}
                     onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none transition-all"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-base sm:text-xs font-semibold text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none transition-all"
                   >
                     <option value="PHONE_CALL">📞 Phone Call</option>
                     <option value="MESSAGE">💬 Direct Message</option>
@@ -728,7 +728,7 @@ export default memo(function LeadActivityTimeline({
                   rows={4}
                   value={editForm.description}
                   onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none transition-all resize-none"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-base sm:text-xs text-slate-700 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none transition-all resize-none"
                 />
               </div>
 

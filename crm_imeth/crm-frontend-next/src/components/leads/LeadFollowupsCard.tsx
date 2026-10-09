@@ -152,7 +152,7 @@ export default memo(function LeadFollowupsCard({
                     placeholder="e.g. Site Visit, Send Contract..."
                     value={customFollowupType}
                     onChange={(e) => setCustomFollowupType(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-blue-500 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-base sm:text-xs text-slate-700 focus:border-blue-500 focus:outline-none"
                   />
                 </div>
               )}
@@ -178,7 +178,7 @@ export default memo(function LeadFollowupsCard({
               <select
                 value={followupAssignee}
                 onChange={(e) => setFollowupAssignee(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-base sm:text-xs text-slate-700 focus:border-blue-500 focus:outline-none"
               >
                 <option value="">Assign to myself ({userEmail || "Me"})</option>
                 {agents.map((ag) => (
@@ -200,7 +200,7 @@ export default memo(function LeadFollowupsCard({
               value={followupNote}
               onChange={(e) => setFollowupNote(e.target.value)}
               required
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-base sm:text-xs text-slate-700 focus:border-blue-500 focus:outline-none"
             />
           </div>
           <div className="flex justify-end">

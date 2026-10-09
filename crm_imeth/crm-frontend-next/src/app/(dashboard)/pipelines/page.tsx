@@ -293,7 +293,7 @@ export default function PipelinesPage() {
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="e.g. Sales Pipeline"
-              className="mt-4 w-full rounded-xl border border-brand-muted/30 bg-brand-bg/60 px-4 py-3 text-sm text-brand-text placeholder:text-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none"
+              className="mt-4 w-full rounded-xl border border-brand-muted/30 bg-brand-bg/60 px-4 py-3 text-base sm:text-sm text-brand-text placeholder:text-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none"
               onKeyDown={(e) => e.key === "Enter" && handleCreatePipeline()}
               autoFocus
             />
@@ -327,7 +327,7 @@ export default function PipelinesPage() {
                 value={dealTitle}
                 onChange={(e) => setDealTitle(e.target.value)}
                 placeholder="Deal title"
-                className="w-full rounded-xl border border-brand-muted/30 bg-brand-bg/60 px-4 py-3 text-sm text-brand-text placeholder:text-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none"
+                className="w-full rounded-xl border border-brand-muted/30 bg-brand-bg/60 px-4 py-3 text-base sm:text-sm text-brand-text placeholder:text-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none"
                 autoFocus
               />
               <input
@@ -335,12 +335,12 @@ export default function PipelinesPage() {
                 value={dealValue}
                 onChange={(e) => setDealValue(e.target.value)}
                 placeholder="Value (USD)"
-                className="w-full rounded-xl border border-brand-muted/30 bg-brand-bg/60 px-4 py-3 text-sm text-brand-text placeholder:text-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none"
+                className="w-full rounded-xl border border-brand-muted/30 bg-brand-bg/60 px-4 py-3 text-base sm:text-sm text-brand-text placeholder:text-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none"
               />
               <select
                 value={dealStageId}
                 onChange={(e) => setDealStageId(e.target.value)}
-                className="w-full rounded-xl border border-brand-muted/30 bg-brand-bg/60 px-4 py-3 text-sm text-brand-text focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none cursor-pointer"
+                className="w-full rounded-xl border border-brand-muted/30 bg-brand-bg/60 px-4 py-3 text-base sm:text-sm text-brand-text focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 focus:outline-none cursor-pointer"
               >
                 {stages.map((s) => (
                   <option key={s.id} value={s.id} className="bg-brand-surface text-brand-text">{s.name}</option>
