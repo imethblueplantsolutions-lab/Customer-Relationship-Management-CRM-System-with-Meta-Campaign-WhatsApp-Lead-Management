@@ -386,8 +386,8 @@ export default function UserManagementPage() {
         )}
       </div>
 
-      {/* Overview Stat Cards: Intrinsic Grid + Container Queries + Fluid Clamp (2x2 on Mobile, 4 Cols on Desktop) */}
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,140px),1fr))] gap-[clamp(0.75rem,1.2vw,1rem)]">
+      {/* Overview Stat Cards: Strict 2 Columns & 2 Rows on Mobile, 4 Columns on Desktop */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* 1. Total Accounts */}
         <div className="@container rounded-2xl bg-white border border-slate-200/80 p-[clamp(0.75rem,1.2vw+0.2vh,1.25rem)] shadow-xs flex flex-col justify-between sm:flex-row sm:items-center gap-2.5 sm:gap-4">
           <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-sky-50 text-blue-600 flex items-center justify-center shrink-0">

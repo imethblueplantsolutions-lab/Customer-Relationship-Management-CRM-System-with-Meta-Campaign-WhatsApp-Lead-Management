@@ -68,10 +68,10 @@ function DashboardContent() {
   if (loading) {
     return (
       <div className="space-y-8">
-        {/* Skeleton stat cards */}
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,200px),1fr))] gap-[clamp(0.75rem,1.5vw,1.5rem)]">
+        {/* Skeleton stat cards: 2 Columns & 2 Rows on Mobile, 4 Columns on Desktop */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="rounded-2xl bg-white border border-slate-200/60 p-[clamp(0.875rem,1.5vw,1.5rem)] shadow-sm animate-pulse">
+            <div key={i} className="rounded-2xl bg-white border border-slate-200/60 p-3.5 sm:p-5 lg:p-6 shadow-sm animate-pulse">
               <div className="h-3 w-16 sm:w-24 bg-slate-200 rounded mb-3 sm:mb-4" />
               <div className="h-8 sm:h-10 w-12 sm:w-16 bg-slate-200 rounded" />
             </div>
@@ -137,68 +137,72 @@ function DashboardContent() {
         <p className="text-[clamp(0.8125rem,1vw,0.875rem)] text-slate-500 mt-1">Campaign & Lead Analytics Overview</p>
       </div>
 
-      {/* Stat Cards: Intrinsic Grid + Container Queries + Fluid Clamp */}
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,200px),1fr))] gap-[clamp(0.75rem,1.5vw,1.5rem)]">
+      {/* Stat Cards: 2 Columns & 2 Rows on Mobile, 4 Columns on Desktop */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {/* Total Leads */}
-        <div className="@container rounded-2xl bg-white border border-slate-200/60 p-[clamp(0.875rem,1.5vw,1.5rem)] shadow-sm hover:shadow-md transition-shadow text-left flex flex-col justify-between">
+        <div className="rounded-2xl bg-white border border-slate-200/60 p-3.5 sm:p-5 lg:p-6 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col justify-between">
           <div>
-            <p className="text-[clamp(0.6875rem,0.65rem+0.2vw,0.875rem)] font-semibold text-slate-500 uppercase tracking-wider">
+            <p className="text-[11px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
               Total Leads
             </p>
-            <p className="text-[clamp(1.5rem,2.8vw,2.5rem)] font-extrabold text-slate-800 mt-1.5 leading-none">
+            <p className="text-2xl sm:text-3xl lg:text-[38px] font-extrabold text-slate-800 mt-1 sm:mt-2 leading-none">
               {stats.totalLeads}
             </p>
           </div>
           {stats.totalLeads === 0 && (
             <Link
               href="/leads"
-              className="mt-2.5 sm:mt-3 inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-brand-primary hover:text-brand-accent"
+              className="mt-2.5 sm:mt-3 inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-brand-primary hover:text-brand-accent truncate"
             >
-              Add your first lead <ArrowRight className="h-3 w-3" />
+              Add your first lead <ArrowRight className="h-3 w-3 shrink-0" />
             </Link>
           )}
         </div>
 
         {/* Converted */}
-        <div className="@container rounded-2xl bg-white border border-slate-200/60 p-[clamp(0.875rem,1.5vw,1.5rem)] shadow-sm hover:shadow-md transition-shadow text-left">
-          <p className="text-[clamp(0.6875rem,0.65rem+0.2vw,0.875rem)] font-semibold text-slate-500 uppercase tracking-wider">
-            Converted
-          </p>
-          <p className="text-[clamp(1.5rem,2.8vw,2.5rem)] font-extrabold text-slate-800 mt-1.5 leading-none">
-            {stats.statusBreakdown.CONVERTED || 0}
-          </p>
+        <div className="rounded-2xl bg-white border border-slate-200/60 p-3.5 sm:p-5 lg:p-6 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col justify-between">
+          <div>
+            <p className="text-[11px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
+              Converted
+            </p>
+            <p className="text-2xl sm:text-3xl lg:text-[38px] font-extrabold text-slate-800 mt-1 sm:mt-2 leading-none">
+              {stats.statusBreakdown.CONVERTED || 0}
+            </p>
+          </div>
         </div>
 
         {/* Qualified */}
-        <div className="@container rounded-2xl bg-white border border-slate-200/60 p-[clamp(0.875rem,1.5vw,1.5rem)] shadow-sm hover:shadow-md transition-shadow text-left">
-          <p className="text-[clamp(0.6875rem,0.65rem+0.2vw,0.875rem)] font-semibold text-slate-500 uppercase tracking-wider">
-            Qualified
-          </p>
-          <p className="text-[clamp(1.5rem,2.8vw,2.5rem)] font-extrabold text-slate-800 mt-1.5 leading-none">
-            {stats.statusBreakdown.QUALIFIED || 0}
-          </p>
+        <div className="rounded-2xl bg-white border border-slate-200/60 p-3.5 sm:p-5 lg:p-6 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col justify-between">
+          <div>
+            <p className="text-[11px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
+              Qualified
+            </p>
+            <p className="text-2xl sm:text-3xl lg:text-[38px] font-extrabold text-slate-800 mt-1 sm:mt-2 leading-none">
+              {stats.statusBreakdown.QUALIFIED || 0}
+            </p>
+          </div>
         </div>
 
         {/* Pending Follow-ups */}
-        <div className="@container rounded-2xl bg-white border border-slate-200/60 p-[clamp(0.875rem,1.5vw,1.5rem)] shadow-sm hover:shadow-md transition-shadow text-left flex flex-col justify-between">
+        <div className="rounded-2xl bg-white border border-slate-200/60 p-3.5 sm:p-5 lg:p-6 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col justify-between">
           <div>
-            <p className="text-[clamp(0.6875rem,0.65rem+0.2vw,0.875rem)] font-semibold text-slate-500 uppercase tracking-wider">
+            <p className="text-[11px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
               Pending Follow-ups
             </p>
-            <p className="text-[clamp(1.5rem,2.8vw,2.5rem)] font-extrabold text-slate-800 mt-1.5 leading-none">
+            <p className="text-2xl sm:text-3xl lg:text-[38px] font-extrabold text-slate-800 mt-1 sm:mt-2 leading-none">
               {stats.pendingFollowups}
             </p>
           </div>
           {stats.pendingFollowups === 0 ? (
-            <span className="mt-2.5 sm:mt-3 inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-emerald-600">
-              <CheckCircle2 className="h-3 w-3" /> All caught up! 🎉
+            <span className="mt-2.5 sm:mt-3 inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-emerald-600 truncate">
+              <CheckCircle2 className="h-3 w-3 shrink-0" /> All caught up! 🎉
             </span>
           ) : (
             <Link
               href="/followups"
-              className="mt-2.5 sm:mt-3 inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-brand-primary hover:text-brand-accent"
+              className="mt-2.5 sm:mt-3 inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-brand-primary hover:text-brand-accent truncate"
             >
-              View tasks <ArrowRight className="h-3 w-3" />
+              View tasks <ArrowRight className="h-3 w-3 shrink-0" />
             </Link>
           )}
         </div>
