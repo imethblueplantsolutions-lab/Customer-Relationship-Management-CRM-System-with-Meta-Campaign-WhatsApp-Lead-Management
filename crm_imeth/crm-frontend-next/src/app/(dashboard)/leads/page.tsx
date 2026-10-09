@@ -161,6 +161,12 @@ function LeadsPageContent() {
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    const handleOpen = () => setShowAddForm(true);
+    window.addEventListener("crm:open-add-lead", handleOpen);
+    return () => window.removeEventListener("crm:open-add-lead", handleOpen);
+  }, []);
+
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > pagination.totalPages) return;
     const params = new URLSearchParams(searchParams.toString());

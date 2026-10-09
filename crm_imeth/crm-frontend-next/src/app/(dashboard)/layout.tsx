@@ -56,6 +56,22 @@ export default function DashboardLayout({
     }
   }, [isAuthenticated, isLoading, router]);
 
+  // Check if current route is a sub-detail page (e.g. /leads/[id] or /flows/[id])
+  // where page-specific action bars exist and global mobile bottom nav / FAB must hide
+  const isLeadDetailPage = Boolean(
+    pathname &&
+      pathname.startsWith("/leads/") &&
+      pathname !== "/leads" &&
+      pathname !== "/leads/"
+  );
+  const isFlowDetailPage = Boolean(
+    pathname &&
+      pathname.startsWith("/flows/") &&
+      pathname !== "/flows" &&
+      pathname !== "/flows/"
+  );
+  const isSubDetailPage = isLeadDetailPage || isFlowDetailPage;
+
   // Close profile dropdown on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -279,7 +295,11 @@ export default function DashboardLayout({
 
         {/* Page Content with Vertical Elasticity & Fluid Padding + Mobile Bottom Nav Clearance */}
         <main
-          className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden transition-colors duration-200 bg-brand-bg text-brand-text p-[clamp(0.875rem,1.8vw+0.4vh,2rem)] pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-[clamp(0.875rem,1.8vw+0.4vh,2rem)]"
+          className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden transition-colors duration-200 bg-brand-bg text-brand-text p-[clamp(0.875rem,1.8vw+0.4vh,2rem)] ${
+            isSubDetailPage
+              ? "pb-[clamp(0.875rem,1.8vw+0.4vh,2rem)]"
+              : "pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-[clamp(0.875rem,1.8vw+0.4vh,2rem)]"
+          }`}
         >
           <div className="mx-auto max-w-7xl">
             {children}
@@ -287,14 +307,16 @@ export default function DashboardLayout({
         </main>
       </div>
 
-      {/* Persistent Floating Action Button on Mobile */}
-      <MobileFAB />
+      {/* Persistent Floating Action Button on Mobile (hidden on detail views) */}
+      {!isSubDetailPage && <MobileFAB />}
 
-      {/* Native Mobile Bottom Navigation Bar */}
-      <MobileBottomNav
-        user={user}
-        onOpenDrawer={() => setMobileOpen(true)}
-      />
+      {/* Native Mobile Bottom Navigation Bar (hidden on detail views) */}
+      {!isSubDetailPage && (
+        <MobileBottomNav
+          user={user}
+          onOpenDrawer={() => setMobileOpen(true)}
+        />
+      )}
 
       {/* Session Inactivity Timeout Warning Modal */}
       <SessionTimeoutModal
