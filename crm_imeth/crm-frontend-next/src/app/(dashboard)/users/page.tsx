@@ -386,24 +386,33 @@ export default function UserManagementPage() {
         )}
       </div>
 
-      {/* Overview Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-2xl bg-white border border-slate-200/80 p-5 shadow-xs flex items-center gap-4">
-          <div className="h-12 w-12 rounded-xl bg-sky-50 text-blue-600 flex items-center justify-center shrink-0">
-            <Users className="h-6 w-6" />
+      {/* Overview Stat Cards (2 Columns & 2 Rows on Mobile, 4 Columns on Desktop) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* 1. Total Accounts */}
+        <div className="rounded-2xl bg-white border border-slate-200/80 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between sm:flex-row sm:items-center gap-2.5 sm:gap-4">
+          <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-sky-50 text-blue-600 flex items-center justify-center shrink-0">
+            <Users className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Accounts</p>
-            <p className="text-2xl font-black text-slate-900 mt-0.5">{usersList.length}</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">Total Accounts</p>
+            <p className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5">{usersList.length}</p>
           </div>
         </div>
 
-        <div className="rounded-2xl bg-white border border-slate-200/80 p-5 shadow-xs flex items-center gap-4">
-          <div className="h-12 w-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-            <ShieldCheck className="h-6 w-6" />
+        {/* 2. Team Leaders */}
+        <div className="rounded-2xl bg-white border border-slate-200/80 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between sm:flex-row sm:items-center gap-2.5 sm:gap-4">
+          <div className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
+            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+              <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6" />
+            </div>
+            {quotaStatus && (
+              <span className="sm:hidden text-[9px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 shrink-0">
+                Cap: {quotaStatus.teamLeads.max}
+              </span>
+            )}
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between">
+          <div className="flex-1 min-w-0 w-full sm:w-auto">
+            <div className="hidden sm:flex items-center justify-between">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Team Leaders</p>
               {quotaStatus && (
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
@@ -411,10 +420,11 @@ export default function UserManagementPage() {
                 </span>
               )}
             </div>
-            <p className="text-2xl font-black text-slate-900 mt-0.5">
+            <p className="sm:hidden text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">Team Leaders</p>
+            <p className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5">
               {usersList.filter((u) => u.role === "TEAM_LEAD").length}
               {quotaStatus && (
-                <span className="text-xs font-normal text-slate-400 ml-1.5">
+                <span className="text-[10px] sm:text-xs font-normal text-slate-400 ml-1">
                   / {quotaStatus.teamLeads.max} allowed
                 </span>
               )}
@@ -422,12 +432,20 @@ export default function UserManagementPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl bg-white border border-slate-200/80 p-5 shadow-xs flex items-center gap-4">
-          <div className="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-            <UserCheck className="h-6 w-6" />
+        {/* 3. Sales Agents */}
+        <div className="rounded-2xl bg-white border border-slate-200/80 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between sm:flex-row sm:items-center gap-2.5 sm:gap-4">
+          <div className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
+            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <UserCheck className="h-5 w-5 sm:h-6 sm:w-6" />
+            </div>
+            {quotaStatus && (
+              <span className={`sm:hidden text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${quotaStatus.agents.canCreate ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-800"}`}>
+                {quotaStatus.agents.canCreate ? `Cap: ${quotaStatus.agents.max}` : "Limit reached"}
+              </span>
+            )}
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between">
+          <div className="flex-1 min-w-0 w-full sm:w-auto">
+            <div className="hidden sm:flex items-center justify-between">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Sales Agents</p>
               {quotaStatus && (
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${quotaStatus.agents.canCreate ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-800"}`}>
@@ -435,10 +453,11 @@ export default function UserManagementPage() {
                 </span>
               )}
             </div>
-            <p className="text-2xl font-black text-slate-900 mt-0.5">
+            <p className="sm:hidden text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">Sales Agents</p>
+            <p className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5">
               {usersList.filter((u) => u.role === "AGENT").length}
               {quotaStatus && (
-                <span className="text-xs font-normal text-slate-400 ml-1.5">
+                <span className="text-[10px] sm:text-xs font-normal text-slate-400 ml-1">
                   / {quotaStatus.agents.max} allowed
                 </span>
               )}
@@ -446,13 +465,14 @@ export default function UserManagementPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl bg-white border border-slate-200/80 p-5 shadow-xs flex items-center gap-4">
-          <div className="h-12 w-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-            <Clock className="h-6 w-6" />
+        {/* 4. Pending First OTP */}
+        <div className="rounded-2xl bg-white border border-slate-200/80 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between sm:flex-row sm:items-center gap-2.5 sm:gap-4">
+          <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+            <Clock className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pending First OTP</p>
-            <p className="text-2xl font-black text-slate-900 mt-0.5">
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">Pending First OTP</p>
+            <p className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5">
               {usersList.filter((u) => u.isFirstLogin).length}
             </p>
           </div>
