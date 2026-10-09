@@ -10,6 +10,8 @@ import UserCard from "@/components/layout/UserCard";
 import { useTheme } from "@/hooks/use-theme";
 import { useSessionTimeout } from "@/hooks/use-session-timeout";
 import SessionTimeoutModal from "@/components/auth/SessionTimeoutModal";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
+import MobileFAB from "@/components/layout/MobileFAB";
 
 export default function DashboardLayout({
   children,
@@ -275,15 +277,24 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        {/* Page Content with Vertical Elasticity & Fluid Padding */}
+        {/* Page Content with Vertical Elasticity & Fluid Padding + Mobile Bottom Nav Clearance */}
         <main
-          className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden transition-colors duration-200 bg-brand-bg text-brand-text p-[clamp(0.875rem,1.8vw+0.4vh,2rem)]"
+          className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden transition-colors duration-200 bg-brand-bg text-brand-text p-[clamp(0.875rem,1.8vw+0.4vh,2rem)] pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-[clamp(0.875rem,1.8vw+0.4vh,2rem)]"
         >
           <div className="mx-auto max-w-7xl">
             {children}
           </div>
         </main>
       </div>
+
+      {/* Persistent Floating Action Button on Mobile */}
+      <MobileFAB />
+
+      {/* Native Mobile Bottom Navigation Bar */}
+      <MobileBottomNav
+        user={user}
+        onOpenDrawer={() => setMobileOpen(true)}
+      />
 
       {/* Session Inactivity Timeout Warning Modal */}
       <SessionTimeoutModal

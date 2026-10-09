@@ -155,6 +155,12 @@ function LeadsPageContent() {
     fetchLeads();
   }, [fetchLeads]);
 
+  useEffect(() => {
+    if (searchParams.get("action") === "new") {
+      setShowAddForm(true);
+    }
+  }, [searchParams]);
+
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > pagination.totalPages) return;
     const params = new URLSearchParams(searchParams.toString());
