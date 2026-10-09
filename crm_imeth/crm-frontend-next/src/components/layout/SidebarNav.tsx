@@ -105,7 +105,7 @@ export default function SidebarNav({ user: propUser, isCollapsed, onNavigate }: 
   });
 
   return (
-    <nav className="flex flex-1 flex-col gap-1.5 px-3 py-4 overflow-y-auto">
+    <nav className="flex flex-1 min-h-0 flex-col gap-1.5 px-3 py-4 overflow-y-auto">
       {filteredItems.map((item) => {
         const isActive =
           pathname === item.href ||

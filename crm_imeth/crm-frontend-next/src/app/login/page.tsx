@@ -365,13 +365,12 @@ function LoginPageContent() {
 
 
   return (
-    <div id="login-page-root" className="relative min-h-screen w-full bg-[#ffffff] flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans overflow-x-hidden">
+    <div id="login-page-root" className="relative min-h-[100dvh] w-full bg-[#ffffff] flex items-center justify-center p-[clamp(0.875rem,2vw,2rem)] font-sans overflow-x-hidden overflow-y-auto">
 
-
-      {/* Main Auth Card */}
-      <div className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-[0_20px_60px_rgba(27,38,44,0.14)] border border-slate-100 overflow-hidden">
+      {/* Main Auth Card with Vertical Elasticity */}
+      <div className="relative z-10 w-full max-w-md max-h-[calc(100dvh-2rem)] flex flex-col bg-white rounded-3xl shadow-[0_20px_60px_rgba(27,38,44,0.14)] border border-slate-100 overflow-hidden my-auto">
         {/* Auth Form Panel */}
-        <div className="w-full p-6 sm:p-8 flex flex-col justify-between bg-white">
+        <div className="w-full p-[clamp(1rem,2vw,2rem)] flex flex-col min-h-0 overflow-y-auto bg-white">
           <div className="w-full max-w-[360px] mx-auto flex flex-col gap-4">
 
             {/* Top Brand Logo */}

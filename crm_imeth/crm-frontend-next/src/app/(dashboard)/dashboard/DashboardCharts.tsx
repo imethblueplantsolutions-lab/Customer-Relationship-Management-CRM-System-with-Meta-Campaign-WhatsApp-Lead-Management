@@ -26,10 +26,10 @@ interface DashboardChartsProps {
 
 export default function DashboardCharts({ statusData }: DashboardChartsProps) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,340px),1fr))] gap-[clamp(1rem,2vw,2rem)]">
       {/* Bar Chart */}
-      <div className="rounded-2xl bg-white border border-slate-200/60 p-6 shadow-sm">
-        <h3 className="text-base font-bold text-slate-800 text-center mb-6">Leads by Status</h3>
+      <div className="rounded-2xl bg-white border border-slate-200/60 p-[clamp(1rem,1.8vw,1.5rem)] shadow-sm">
+        <h3 className="text-[clamp(0.9375rem,1.1vw,1.0625rem)] font-bold text-slate-800 text-center mb-6">Leads by Status</h3>
         <ResponsiveContainer width="100%" height={290}>
           <BarChart data={statusData} barSize={36}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -52,8 +52,8 @@ export default function DashboardCharts({ statusData }: DashboardChartsProps) {
       </div>
 
       {/* Pie Chart */}
-      <div className="rounded-2xl bg-white border border-slate-200/60 p-6 shadow-sm">
-        <h3 className="text-base font-bold text-slate-800 text-center mb-6">Status Distribution</h3>
+      <div className="rounded-2xl bg-white border border-slate-200/60 p-[clamp(1rem,1.8vw,1.5rem)] shadow-sm">
+        <h3 className="text-[clamp(0.9375rem,1.1vw,1.0625rem)] font-bold text-slate-800 text-center mb-6">Status Distribution</h3>
         <ResponsiveContainer width="100%" height={290}>
           <PieChart>
             <Pie

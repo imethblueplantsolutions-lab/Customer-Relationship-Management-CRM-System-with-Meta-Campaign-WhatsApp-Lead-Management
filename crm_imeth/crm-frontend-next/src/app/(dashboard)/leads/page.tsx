@@ -314,11 +314,11 @@ function LeadsPageContent() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+          <h2 className="text-[clamp(1.25rem,2vw,1.75rem)] font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
             <Users className="h-6 w-6 text-brand-primary" />
             Leads Pipeline
           </h2>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-[clamp(0.8125rem,1vw,0.875rem)] text-slate-500 mt-1">
             {leads.length} leads total
           </p>
         </div>
@@ -936,8 +936,8 @@ function LeadsPageContent() {
       {/* ─── Bulk Status Modal ───────────────────────────────── */}
       {showBulkStatusModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="w-full max-w-sm max-h-[calc(100dvh-2rem)] flex flex-col rounded-2xl bg-white shadow-2xl overflow-hidden">
+            <div className="shrink-0 flex items-center justify-between border-b border-slate-100 p-5">
               <h4 className="text-sm font-bold text-slate-900">
                 Change Status ({selectedLeadIds.length} leads)
               </h4>
@@ -949,23 +949,25 @@ function LeadsPageContent() {
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              {["NEW", "CONTACTED", "QUALIFIED", "CONVERTED", "LOST"].map((st) => (
-                <button
-                  key={st}
-                  type="button"
-                  onClick={() => setSelectedBulkStatus(st)}
-                  className={`p-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                    selectedBulkStatus === st
-                      ? "bg-slate-900 text-white border-slate-900 shadow-xs"
-                      : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
-                  }`}
-                >
-                  {st}
-                </button>
-              ))}
+            <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-4">
+              <div className="grid grid-cols-2 gap-2">
+                {["NEW", "CONTACTED", "QUALIFIED", "CONVERTED", "LOST"].map((st) => (
+                  <button
+                    key={st}
+                    type="button"
+                    onClick={() => setSelectedBulkStatus(st)}
+                    className={`p-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                      selectedBulkStatus === st
+                        ? "bg-slate-900 text-white border-slate-900 shadow-xs"
+                        : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                    }`}
+                  >
+                    {st}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="shrink-0 flex justify-end gap-2 p-4 border-t border-slate-100 bg-slate-50/50">
               <button
                 type="button"
                 onClick={() => setShowBulkStatusModal(false)}
@@ -989,8 +991,8 @@ function LeadsPageContent() {
       {/* ─── Bulk Assign Modal ───────────────────────────────── */}
       {showBulkAssignModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="w-full max-w-sm max-h-[calc(100dvh-2rem)] flex flex-col rounded-2xl bg-white shadow-2xl overflow-hidden">
+            <div className="shrink-0 flex items-center justify-between border-b border-slate-100 p-5">
               <h4 className="text-sm font-bold text-slate-900">
                 Assign Agent ({selectedLeadIds.length} leads)
               </h4>
@@ -1002,22 +1004,24 @@ function LeadsPageContent() {
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1.5">Select Agent</label>
-              <select
-                value={selectedBulkAssignee}
-                onChange={(e) => setSelectedBulkAssignee(e.target.value)}
-                className="w-full rounded-xl border border-slate-300 p-2.5 text-xs font-semibold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              >
-                <option value="">Unassigned</option>
-                {agents.map((ag) => (
-                  <option key={ag.id} value={ag.id}>
-                    {ag.name ? `${ag.name} (${ag.role})` : ag.email}
-                  </option>
-                ))}
-              </select>
+            <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1.5">Select Agent</label>
+                <select
+                  value={selectedBulkAssignee}
+                  onChange={(e) => setSelectedBulkAssignee(e.target.value)}
+                  className="w-full rounded-xl border border-slate-300 p-2.5 text-xs font-semibold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                >
+                  <option value="">Unassigned</option>
+                  {agents.map((ag) => (
+                    <option key={ag.id} value={ag.id}>
+                      {ag.name ? `${ag.name} (${ag.role})` : ag.email}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="shrink-0 flex justify-end gap-2 p-4 border-t border-slate-100 bg-slate-50/50">
               <button
                 type="button"
                 onClick={() => setShowBulkAssignModal(false)}

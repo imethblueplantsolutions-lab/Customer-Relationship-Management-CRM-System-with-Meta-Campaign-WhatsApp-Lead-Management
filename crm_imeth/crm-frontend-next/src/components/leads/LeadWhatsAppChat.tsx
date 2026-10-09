@@ -81,9 +81,9 @@ export default memo(function LeadWhatsAppChat({
   };
 
   return (
-    <div className="flex flex-col rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden h-[540px]">
+    <div className="flex flex-col rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden h-[clamp(360px,50dvh,580px)] min-h-[320px]">
       {/* Chat Box Header */}
-      <div className="flex items-center justify-between border-b border-slate-100 bg-[#f8fafc] px-5 py-3.5">
+      <div className="shrink-0 flex items-center justify-between border-b border-slate-100 bg-[#f8fafc] px-5 py-3.5">
         <div className="flex items-center gap-3">
           <div className="relative">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white shadow-xs">
@@ -105,8 +105,8 @@ export default memo(function LeadWhatsAppChat({
         </span>
       </div>
 
-      {/* Chat Messages Stream */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-3.5 bg-[#f0f2f5] bg-opacity-60">
+      {/* Chat Messages Stream with Vertical Elasticity */}
+      <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-3.5 bg-[#f0f2f5] bg-opacity-60">
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center text-center p-6 text-slate-400">
             <MessageSquare className="h-10 w-10 text-slate-300 mb-2" />
@@ -161,7 +161,7 @@ export default memo(function LeadWhatsAppChat({
       {/* Outbound Message Composer */}
       <form
         onSubmit={handleSubmit}
-        className="flex items-center gap-2.5 border-t border-slate-200 bg-white p-3.5"
+        className="shrink-0 flex items-center gap-2.5 border-t border-slate-200 bg-white p-3.5"
       >
         <input
           type="text"

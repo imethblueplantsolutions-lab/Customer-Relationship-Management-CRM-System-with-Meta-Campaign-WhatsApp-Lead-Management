@@ -16,7 +16,7 @@ const { isRedisAvailable } = require('./config/redis');
 const { extractTenantMiddleware } = require('./middleware/tenant');
 const sanitizeMiddleware = require('./middleware/sanitize');
 
-// Allowed origins: Vercel production + local dev
+// Allowed origins: Vercel production + local dev + Capacitor mobile webview
 const ALLOWED_ORIGINS = [
   process.env.FRONTEND_URL || 'https://customer-relationship-management-cr-eight.vercel.app',
   'https://customer-relationship-management-crm-system-with-ojf1z9i48.vercel.app', // legacy preview URL
@@ -25,6 +25,9 @@ const ALLOWED_ORIGINS = [
   'http://localhost:4000',
   'http://127.0.0.1:3000',
   'http://127.0.0.1:3001',
+  'capacitor://localhost',
+  'http://localhost',
+  'https://localhost',
 ];
 
 function corsOriginHandler(origin, callback) {

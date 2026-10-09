@@ -88,7 +88,7 @@ export default function DashboardLayout({
 
   return (
     <div
-      className="flex h-screen overflow-hidden transition-colors duration-200 bg-brand-bg text-brand-text"
+      className="flex h-[100dvh] overflow-hidden transition-colors duration-200 bg-brand-bg text-brand-text"
     >
       {/* ================= MOBILE BACKDROP OVERLAY ================= */}
       {mobileOpen && (
@@ -102,12 +102,12 @@ export default function DashboardLayout({
       {/* ================= SIDEBAR (DESKTOP & MOBILE DRAWER) ================= */}
       <aside
         style={{ backgroundColor: "var(--color-bg-sidebar, #1B262C)" }}
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col text-white shadow-2xl transition-all duration-300 ease-in-out pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] md:pt-0 md:pb-0 md:static ${
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col h-[100dvh] text-white shadow-2xl transition-all duration-300 ease-in-out pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] md:pt-0 md:pb-0 md:static ${
           mobileOpen ? "translate-x-0 w-72" : "-translate-x-full md:translate-x-0"
         } ${isCollapsed ? "md:w-20" : "md:w-64"}`}
       >
         {/* Brand Header */}
-        <div className="flex h-18 items-center justify-between border-b border-white/10 px-4">
+        <div className="flex h-18 shrink-0 items-center justify-between border-b border-white/10 px-4">
           <div className="flex items-center gap-3 overflow-hidden">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-[#0F4C75] to-[#3282B8] text-xl shadow-md shadow-[#3282B8]/20">
               💬
@@ -152,16 +152,16 @@ export default function DashboardLayout({
         />
 
         {/* Footer with Notification Bell & User Card */}
-        <div className="border-t border-white/10 p-4 space-y-3">
+        <div className="border-t border-white/10 p-4 space-y-3 shrink-0">
           <NotificationDropdown isCollapsed={isCollapsed} />
           <UserCard user={user} isCollapsed={isCollapsed} onLogout={logout} />
         </div>
       </aside>
 
       {/* ================= MAIN CONTENT AREA ================= */}
-      <div className="flex flex-1 flex-col overflow-hidden min-w-0">
+      <div className="flex flex-1 flex-col overflow-hidden min-w-0 min-h-0">
         {/* Sticky Top Header with 4-Line Hamburger Menu Icon for Mobile */}
-        <header className="flex h-[calc(4rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] items-center justify-between border-b border-brand-muted/30 bg-brand-surface px-4 sm:px-6 md:hidden shadow-xs">
+        <header className="shrink-0 flex h-[calc(4rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] items-center justify-between border-b border-brand-muted/30 bg-brand-surface px-4 sm:px-6 md:hidden shadow-xs">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -275,11 +275,11 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        {/* Page Content */}
+        {/* Page Content with Vertical Elasticity & Fluid Padding */}
         <main
-          className="flex-1 overflow-y-auto overflow-x-hidden transition-colors duration-200 bg-brand-bg text-brand-text"
+          className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden transition-colors duration-200 bg-brand-bg text-brand-text p-[clamp(0.875rem,1.8vw+0.4vh,2rem)]"
         >
-          <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:px-10">
+          <div className="mx-auto max-w-7xl">
             {children}
           </div>
         </main>

@@ -386,21 +386,21 @@ export default function UserManagementPage() {
         )}
       </div>
 
-      {/* Overview Stat Cards (2 Columns & 2 Rows on Mobile, 4 Columns on Desktop) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* Overview Stat Cards: Intrinsic Grid + Container Queries + Fluid Clamp (2x2 on Mobile, 4 Cols on Desktop) */}
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,140px),1fr))] gap-[clamp(0.75rem,1.2vw,1rem)]">
         {/* 1. Total Accounts */}
-        <div className="rounded-2xl bg-white border border-slate-200/80 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between sm:flex-row sm:items-center gap-2.5 sm:gap-4">
+        <div className="@container rounded-2xl bg-white border border-slate-200/80 p-[clamp(0.75rem,1.2vw+0.2vh,1.25rem)] shadow-xs flex flex-col justify-between sm:flex-row sm:items-center gap-2.5 sm:gap-4">
           <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-sky-50 text-blue-600 flex items-center justify-center shrink-0">
             <Users className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">Total Accounts</p>
-            <p className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5">{usersList.length}</p>
+            <p className="text-[clamp(0.6875rem,0.65rem+0.2vw,0.75rem)] font-semibold text-slate-500 uppercase tracking-wider truncate">Total Accounts</p>
+            <p className="text-[clamp(1.15rem,1.8vw,1.5rem)] font-black text-slate-900 mt-0.5">{usersList.length}</p>
           </div>
         </div>
 
         {/* 2. Team Leaders */}
-        <div className="rounded-2xl bg-white border border-slate-200/80 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between sm:flex-row sm:items-center gap-2.5 sm:gap-4">
+        <div className="@container rounded-2xl bg-white border border-slate-200/80 p-[clamp(0.75rem,1.2vw+0.2vh,1.25rem)] shadow-xs flex flex-col justify-between sm:flex-row sm:items-center gap-2.5 sm:gap-4">
           <div className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
             <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
               <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -413,15 +413,15 @@ export default function UserManagementPage() {
           </div>
           <div className="flex-1 min-w-0 w-full sm:w-auto">
             <div className="hidden sm:flex items-center justify-between">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Team Leaders</p>
+              <p className="text-[clamp(0.6875rem,0.65rem+0.2vw,0.75rem)] font-semibold text-slate-500 uppercase tracking-wider">Team Leaders</p>
               {quotaStatus && (
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
                   Cap: {quotaStatus.teamLeads.max}
                 </span>
               )}
             </div>
-            <p className="sm:hidden text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">Team Leaders</p>
-            <p className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5">
+            <p className="sm:hidden text-[clamp(0.6875rem,0.65rem+0.2vw,0.75rem)] font-semibold text-slate-500 uppercase tracking-wider truncate">Team Leaders</p>
+            <p className="text-[clamp(1.15rem,1.8vw,1.5rem)] font-black text-slate-900 mt-0.5">
               {usersList.filter((u) => u.role === "TEAM_LEAD").length}
               {quotaStatus && (
                 <span className="text-[10px] sm:text-xs font-normal text-slate-400 ml-1">
@@ -433,7 +433,7 @@ export default function UserManagementPage() {
         </div>
 
         {/* 3. Sales Agents */}
-        <div className="rounded-2xl bg-white border border-slate-200/80 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between sm:flex-row sm:items-center gap-2.5 sm:gap-4">
+        <div className="@container rounded-2xl bg-white border border-slate-200/80 p-[clamp(0.75rem,1.2vw+0.2vh,1.25rem)] shadow-xs flex flex-col justify-between sm:flex-row sm:items-center gap-2.5 sm:gap-4">
           <div className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
             <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
               <UserCheck className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -446,15 +446,15 @@ export default function UserManagementPage() {
           </div>
           <div className="flex-1 min-w-0 w-full sm:w-auto">
             <div className="hidden sm:flex items-center justify-between">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Sales Agents</p>
+              <p className="text-[clamp(0.6875rem,0.65rem+0.2vw,0.75rem)] font-semibold text-slate-500 uppercase tracking-wider">Sales Agents</p>
               {quotaStatus && (
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${quotaStatus.agents.canCreate ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-800"}`}>
                   {quotaStatus.agents.canCreate ? `Cap: ${quotaStatus.agents.max}` : "Plan limit reached"}
                 </span>
               )}
             </div>
-            <p className="sm:hidden text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">Sales Agents</p>
-            <p className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5">
+            <p className="sm:hidden text-[clamp(0.6875rem,0.65rem+0.2vw,0.75rem)] font-semibold text-slate-500 uppercase tracking-wider truncate">Sales Agents</p>
+            <p className="text-[clamp(1.15rem,1.8vw,1.5rem)] font-black text-slate-900 mt-0.5">
               {usersList.filter((u) => u.role === "AGENT").length}
               {quotaStatus && (
                 <span className="text-[10px] sm:text-xs font-normal text-slate-400 ml-1">
@@ -466,13 +466,13 @@ export default function UserManagementPage() {
         </div>
 
         {/* 4. Pending First OTP */}
-        <div className="rounded-2xl bg-white border border-slate-200/80 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between sm:flex-row sm:items-center gap-2.5 sm:gap-4">
+        <div className="@container rounded-2xl bg-white border border-slate-200/80 p-[clamp(0.75rem,1.2vw+0.2vh,1.25rem)] shadow-xs flex flex-col justify-between sm:flex-row sm:items-center gap-2.5 sm:gap-4">
           <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
             <Clock className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">Pending First OTP</p>
-            <p className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5">
+            <p className="text-[clamp(0.6875rem,0.65rem+0.2vw,0.75rem)] font-semibold text-slate-500 uppercase tracking-wider truncate">Pending First OTP</p>
+            <p className="text-[clamp(1.15rem,1.8vw,1.5rem)] font-black text-slate-900 mt-0.5">
               {usersList.filter((u) => u.isFirstLogin).length}
             </p>
           </div>

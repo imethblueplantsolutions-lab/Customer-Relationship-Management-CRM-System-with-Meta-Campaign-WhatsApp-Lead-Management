@@ -69,18 +69,18 @@ function DashboardContent() {
     return (
       <div className="space-y-8">
         {/* Skeleton stat cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,200px),1fr))] gap-[clamp(0.75rem,1.5vw,1.5rem)]">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="rounded-2xl bg-white border border-slate-200/60 p-4 sm:p-6 shadow-sm animate-pulse">
+            <div key={i} className="rounded-2xl bg-white border border-slate-200/60 p-[clamp(0.875rem,1.5vw,1.5rem)] shadow-sm animate-pulse">
               <div className="h-3 w-16 sm:w-24 bg-slate-200 rounded mb-3 sm:mb-4" />
               <div className="h-8 sm:h-10 w-12 sm:w-16 bg-slate-200 rounded" />
             </div>
           ))}
         </div>
         {/* Skeleton charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,340px),1fr))] gap-[clamp(1rem,2vw,2rem)]">
           {[0, 1].map((i) => (
-            <div key={i} className="rounded-2xl bg-white border border-slate-200/60 p-6 shadow-sm animate-pulse">
+            <div key={i} className="rounded-2xl bg-white border border-slate-200/60 p-[clamp(1rem,1.8vw,1.5rem)] shadow-sm animate-pulse">
               <div className="h-4 w-32 bg-slate-200 rounded mx-auto mb-6" />
               <div className="h-[290px] bg-slate-100 rounded-xl" />
             </div>
@@ -111,7 +111,7 @@ function DashboardContent() {
     <div className="space-y-8">
       <div>
         <div className="flex flex-wrap items-center gap-3">
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+          <h2 className="text-[clamp(1.25rem,2vw,1.75rem)] font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
             <LayoutDashboard className="h-6 w-6 text-brand-primary" />
             Dashboard
           </h2>
@@ -134,18 +134,18 @@ function DashboardContent() {
             </span>
           )}
         </div>
-        <p className="text-sm text-slate-500 mt-1">Campaign & Lead Analytics Overview</p>
+        <p className="text-[clamp(0.8125rem,1vw,0.875rem)] text-slate-500 mt-1">Campaign & Lead Analytics Overview</p>
       </div>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
+      {/* Stat Cards: Intrinsic Grid + Container Queries + Fluid Clamp */}
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,200px),1fr))] gap-[clamp(0.75rem,1.5vw,1.5rem)]">
         {/* Total Leads */}
-        <div className="rounded-2xl bg-white border border-slate-200/60 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col justify-between">
+        <div className="@container rounded-2xl bg-white border border-slate-200/60 p-[clamp(0.875rem,1.5vw,1.5rem)] shadow-sm hover:shadow-md transition-shadow text-left flex flex-col justify-between">
           <div>
-            <p className="text-xs sm:text-[15px] font-semibold text-slate-500 uppercase tracking-wider">
+            <p className="text-[clamp(0.6875rem,0.65rem+0.2vw,0.875rem)] font-semibold text-slate-500 uppercase tracking-wider">
               Total Leads
             </p>
-            <p className="text-2xl sm:text-4xl lg:text-[40px] font-extrabold text-slate-800 mt-1.5 sm:mt-2.5 leading-none">
+            <p className="text-[clamp(1.5rem,2.8vw,2.5rem)] font-extrabold text-slate-800 mt-1.5 leading-none">
               {stats.totalLeads}
             </p>
           </div>
@@ -160,32 +160,32 @@ function DashboardContent() {
         </div>
 
         {/* Converted */}
-        <div className="rounded-2xl bg-white border border-slate-200/60 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow text-left">
-          <p className="text-xs sm:text-[15px] font-semibold text-slate-500 uppercase tracking-wider">
+        <div className="@container rounded-2xl bg-white border border-slate-200/60 p-[clamp(0.875rem,1.5vw,1.5rem)] shadow-sm hover:shadow-md transition-shadow text-left">
+          <p className="text-[clamp(0.6875rem,0.65rem+0.2vw,0.875rem)] font-semibold text-slate-500 uppercase tracking-wider">
             Converted
           </p>
-          <p className="text-2xl sm:text-4xl lg:text-[40px] font-extrabold text-slate-800 mt-1.5 sm:mt-2.5 leading-none">
+          <p className="text-[clamp(1.5rem,2.8vw,2.5rem)] font-extrabold text-slate-800 mt-1.5 leading-none">
             {stats.statusBreakdown.CONVERTED || 0}
           </p>
         </div>
 
         {/* Qualified */}
-        <div className="rounded-2xl bg-white border border-slate-200/60 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow text-left">
-          <p className="text-xs sm:text-[15px] font-semibold text-slate-500 uppercase tracking-wider">
+        <div className="@container rounded-2xl bg-white border border-slate-200/60 p-[clamp(0.875rem,1.5vw,1.5rem)] shadow-sm hover:shadow-md transition-shadow text-left">
+          <p className="text-[clamp(0.6875rem,0.65rem+0.2vw,0.875rem)] font-semibold text-slate-500 uppercase tracking-wider">
             Qualified
           </p>
-          <p className="text-2xl sm:text-4xl lg:text-[40px] font-extrabold text-slate-800 mt-1.5 sm:mt-2.5 leading-none">
+          <p className="text-[clamp(1.5rem,2.8vw,2.5rem)] font-extrabold text-slate-800 mt-1.5 leading-none">
             {stats.statusBreakdown.QUALIFIED || 0}
           </p>
         </div>
 
         {/* Pending Follow-ups */}
-        <div className="rounded-2xl bg-white border border-slate-200/60 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col justify-between">
+        <div className="@container rounded-2xl bg-white border border-slate-200/60 p-[clamp(0.875rem,1.5vw,1.5rem)] shadow-sm hover:shadow-md transition-shadow text-left flex flex-col justify-between">
           <div>
-            <p className="text-xs sm:text-[15px] font-semibold text-slate-500 uppercase tracking-wider">
+            <p className="text-[clamp(0.6875rem,0.65rem+0.2vw,0.875rem)] font-semibold text-slate-500 uppercase tracking-wider">
               Pending Follow-ups
             </p>
-            <p className="text-2xl sm:text-4xl lg:text-[40px] font-extrabold text-slate-800 mt-1.5 sm:mt-2.5 leading-none">
+            <p className="text-[clamp(1.5rem,2.8vw,2.5rem)] font-extrabold text-slate-800 mt-1.5 leading-none">
               {stats.pendingFollowups}
             </p>
           </div>

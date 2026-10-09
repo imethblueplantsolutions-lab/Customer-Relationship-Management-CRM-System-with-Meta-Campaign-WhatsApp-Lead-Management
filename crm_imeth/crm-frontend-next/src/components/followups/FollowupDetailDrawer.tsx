@@ -151,9 +151,9 @@ export default function FollowupDetailDrawer({
       />
 
       {/* Slide-over Drawer Panel */}
-      <div className="relative w-full max-w-lg bg-white shadow-2xl z-10 flex flex-col h-full border-l border-slate-200 animate-in slide-in-from-right duration-300">
+      <div className="relative w-full max-w-lg bg-white shadow-2xl z-10 flex flex-col h-[100dvh] border-l border-slate-200 animate-in slide-in-from-right duration-300">
         {/* Top Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-slate-50/80">
+        <div className="shrink-0 flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-slate-50/80">
           <div className="flex items-center gap-3 min-w-0">
             <span className="p-2 rounded-xl bg-white border border-slate-200/80 shadow-xs shrink-0">
               {getTypeIcon(followup.type)}
@@ -195,8 +195,8 @@ export default function FollowupDetailDrawer({
           </div>
         </div>
 
-        {/* Content Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        {/* Content Body with Vertical Elasticity */}
+        <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-6">
           {/* Status & Deadline Banner */}
           <div className="p-4 rounded-2xl border bg-slate-50/60 border-slate-200/80 space-y-3">
             <div className="flex items-center justify-between">
