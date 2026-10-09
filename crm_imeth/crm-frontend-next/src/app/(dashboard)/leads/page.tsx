@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/hooks/use-auth";
@@ -87,6 +87,8 @@ function LeadsPageContent() {
 
   // Add Lead form state
   const [showAddForm, setShowAddForm] = useState(false);
+  const addFormRef = useRef<HTMLDivElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
   const [showMergeModal, setShowMergeModal] = useState(false);
   const [formName, setFormName] = useState("");
   const [formDisplayName, setFormDisplayName] = useState("");
@@ -166,6 +168,16 @@ function LeadsPageContent() {
     window.addEventListener("crm:open-add-lead", handleOpen);
     return () => window.removeEventListener("crm:open-add-lead", handleOpen);
   }, []);
+
+  useEffect(() => {
+    if (showAddForm) {
+      const timer = setTimeout(() => {
+        addFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        nameInputRef.current?.focus();
+      }, 120);
+      return () => clearTimeout(timer);
+    }
+  }, [showAddForm]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > pagination.totalPages) return;
@@ -371,7 +383,10 @@ function LeadsPageContent() {
 
       {/* ─── Add Lead Inline Form ─────────────────────────────── */}
       {showAddForm && (
-        <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden animate-in slide-in-from-top-2 duration-200">
+        <div
+          ref={addFormRef}
+          className="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden animate-in slide-in-from-top-2 duration-200"
+        >
           {/* Form Header */}
           <div className="flex items-center justify-between bg-slate-50/70 border-b border-slate-200/80 px-5 py-4">
             <div>
@@ -426,6 +441,7 @@ function LeadsPageContent() {
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <input
+                    ref={nameInputRef}
                     type="text"
                     required
                     value={formName}
