@@ -152,9 +152,11 @@ model Followup {
 model Attachment {
   id          String    @id @default(uuid())
   fileName    String
-  fileUrl     String
-  fileType    String
+  fileUrl     String?
+  fileType    String?
+  mimeType    String?
   fileSize    Int
+  fileData    Bytes?    // PostgreSQL bytea
   createdById String
   createdBy   User      @relation("AttachmentCreator", fields: [createdById], references: [id])
   leadId      String?

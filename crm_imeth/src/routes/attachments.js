@@ -1,24 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const path = require('path');
-const fs = require('fs');
 const prisma = require('../config/db');
 const { authenticate } = require('../middleware/auth');
 const { getLeadScopeCondition } = require('../utils/hierarchy');
 
+// Enforce mandatory JWT authentication across all attachment endpoints
 router.use(authenticate);
 
 /**
- * Helper to resolve the physical file path for an attachment.
- */
-function resolveAttachmentPath(fileUrl) {
-  if (!fileUrl) return null;
-  const fileName = path.basename(fileUrl);
-  return path.join(__dirname, '../../uploads', fileName);
-}
-
-/**
- * Helper to verify tenant and hierarchical permissions for an attachment.
+ * Verifies tenant boundaries and role-based hierarchy permissions for an attachment.
+ * Prevents Insecure Direct Object References (IDOR).
+ *
+ * @param {string} attachmentId
+ * @param {object} user - Authenticated user from JWT middleware
+ * @returns {Promise<object>}
  */
 async function authorizeAttachmentAccess(attachmentId, user) {
   const attachment = await prisma.attachment.findFirst({
@@ -79,49 +74,78 @@ async function authorizeAttachmentAccess(attachmentId, user) {
   return attachment;
 }
 
-// GET /:id/download: Securely download an attachment file with IDOR prevention
-router.get('/:id/download', async (req, res) => {
-  try {
-    const attachment = await authorizeAttachmentAccess(req.params.id, req.user);
-    const filePath = resolveAttachmentPath(attachment.fileUrl);
-
-    if (!filePath || !fs.existsSync(filePath)) {
-      return res.status(404).json({ success: false, error: 'Physical file not found on disk' });
-    }
-
-    return res.download(filePath, attachment.fileName);
-  } catch (error) {
-    const status = error.statusCode || 500;
-    return res.status(status).json({ success: false, error: error.message || 'Failed to download attachment' });
-  }
-});
-
-// GET /:id/view: Stream attachment inline (for browser rendering images, audio, video)
-router.get('/:id/view', async (req, res) => {
-  try {
-    const attachment = await authorizeAttachmentAccess(req.params.id, req.user);
-    const filePath = resolveAttachmentPath(attachment.fileUrl);
-
-    if (!filePath || !fs.existsSync(filePath)) {
-      return res.status(404).json({ success: false, error: 'Physical file not found on disk' });
-    }
-
-    res.setHeader('Content-Type', attachment.fileType || 'application/octet-stream');
-    return res.sendFile(filePath);
-  } catch (error) {
-    const status = error.statusCode || 500;
-    return res.status(status).json({ success: false, error: error.message || 'Failed to view attachment' });
-  }
-});
-
-// GET /:id: Fetch attachment metadata
+/**
+ * GET /api/attachments/:id
+ * Primary delivery route: Serves the fileData buffer directly from PostgreSQL bytea storage.
+ */
 router.get('/:id', async (req, res) => {
   try {
     const attachment = await authorizeAttachmentAccess(req.params.id, req.user);
-    return res.status(200).json({ success: true, data: attachment });
+
+    if (!attachment.fileData) {
+      return res.status(404).json({ success: false, error: 'Attachment binary content not found in database' });
+    }
+
+    const mimeType = attachment.mimeType || attachment.fileType || 'application/octet-stream';
+
+    res.setHeader('Content-Type', mimeType);
+    res.setHeader('Content-Length', attachment.fileSize || attachment.fileData.length);
+    res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(attachment.fileName)}"`);
+
+    return res.send(attachment.fileData);
   } catch (error) {
     const status = error.statusCode || 500;
-    return res.status(status).json({ success: false, error: error.message || 'Failed to fetch attachment' });
+    return res.status(status).json({
+      success: false,
+      error: error.message || 'Failed to serve attachment',
+    });
+  }
+});
+
+/**
+ * GET /api/attachments/:id/download
+ * Explicit download endpoint: Forces download disposition attachment header.
+ */
+router.get('/:id/download', async (req, res) => {
+  try {
+    const attachment = await authorizeAttachmentAccess(req.params.id, req.user);
+
+    if (!attachment.fileData) {
+      return res.status(404).json({ success: false, error: 'Attachment binary content not found in database' });
+    }
+
+    const mimeType = attachment.mimeType || attachment.fileType || 'application/octet-stream';
+
+    res.setHeader('Content-Type', mimeType);
+    res.setHeader('Content-Length', attachment.fileSize || attachment.fileData.length);
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(attachment.fileName)}"`);
+
+    return res.send(attachment.fileData);
+  } catch (error) {
+    const status = error.statusCode || 500;
+    return res.status(status).json({
+      success: false,
+      error: error.message || 'Failed to download attachment',
+    });
+  }
+});
+
+/**
+ * GET /api/attachments/:id/info
+ * Returns attachment metadata without loading binary payload into JSON response.
+ */
+router.get('/:id/info', async (req, res) => {
+  try {
+    const attachment = await authorizeAttachmentAccess(req.params.id, req.user);
+    const { fileData, ...metadata } = attachment;
+
+    return res.status(200).json({ success: true, data: metadata });
+  } catch (error) {
+    const status = error.statusCode || 500;
+    return res.status(status).json({
+      success: false,
+      error: error.message || 'Failed to fetch attachment metadata',
+    });
   }
 });
 
