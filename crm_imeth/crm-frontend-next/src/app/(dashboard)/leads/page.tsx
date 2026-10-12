@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { apiClient } from "@/lib/api-client";
+import { apiClient, ApiError } from "@/lib/api-client";
 import { useAuth } from "@/hooks/use-auth";
 import type { Lead } from "@/types";
 import {
@@ -290,6 +290,14 @@ function LeadsPageContent() {
     setFormError("");
     setFormSuccess("");
 
+    // Validate and clean phone number before submitting
+    const cleanedPhone = formPhone.trim().replace(/[\s()-]/g, "");
+    if (!/^\+?[1-9]\d{7,14}$/.test(cleanedPhone)) {
+      setFormError("Invalid phone number: Must be a valid international format (e.g. +94770660647 or +12345678901). Letters are not allowed.");
+      setFormSubmitting(false);
+      return;
+    }
+
     try {
       await apiClient<Lead>("/leads", {
         method: "POST",
@@ -298,9 +306,9 @@ function LeadsPageContent() {
           displayName: formDisplayName || undefined,
           companyName: formCompanyName ? formCompanyName.trim() : undefined,
           designation: formDesignation ? formDesignation.trim() : undefined,
-          phoneNumber: formPhone,
-          whatsappNumber: formWhatsappNumber || undefined,
-          email: formEmail || undefined,
+          phoneNumber: cleanedPhone,
+          whatsappNumber: formWhatsappNumber ? formWhatsappNumber.trim().replace(/[\s()-]/g, "") : undefined,
+          email: formEmail ? formEmail.trim() : undefined,
           notes: formNotes || undefined,
           category: formCategory,
           assignedToId: canAssign && formAssignedTo ? formAssignedTo : undefined,
@@ -326,8 +334,17 @@ function LeadsPageContent() {
         setFormSuccess("");
       }, 1200);
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to create lead";
+      let message = "Failed to create lead";
+      if (err instanceof ApiError) {
+        const errData = err.data as { details?: Array<{ field?: string; message: string }> } | undefined;
+        if (errData?.details && Array.isArray(errData.details) && errData.details.length > 0) {
+          message = errData.details.map((d) => d.message).join(" • ");
+        } else {
+          message = err.message || "Failed to create lead";
+        }
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
       setFormError(message);
     } finally {
       setFormSubmitting(false);
@@ -526,9 +543,12 @@ function LeadsPageContent() {
                     value={formPhone}
                     onChange={(e) => setFormPhone(e.target.value)}
                     className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-base sm:text-sm text-slate-900 font-mono placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
-                    placeholder="e.g. +94 1234 5678"
+                    placeholder="e.g. +94770660647"
                   />
                 </div>
+                <p className="text-[11px] text-slate-400 mt-1 ml-1">
+                  Must be in international format (e.g. +94770660647 or +12345678901)
+                </p>
               </div>
 
               {/* WhatsApp Number */}
