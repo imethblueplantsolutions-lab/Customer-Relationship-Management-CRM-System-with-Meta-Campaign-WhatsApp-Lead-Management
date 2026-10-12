@@ -899,7 +899,7 @@ function LeadsPageContent() {
 
       {/* ─── Floating Bulk Action Bar ─────────────────────────── */}
       {selectedLeadIds.length > 0 && (
-        <div className="fixed bottom-4 inset-x-3 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-40 bg-slate-900/95 backdrop-blur-md text-white rounded-2xl sm:rounded-full px-4 py-3 sm:px-6 sm:py-3 shadow-2xl border border-slate-700/80 flex items-center justify-between sm:justify-center gap-3 sm:gap-6 animate-in slide-in-from-bottom duration-200">
+        <div className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] sm:bottom-4 inset-x-3 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-50 bg-slate-900/95 backdrop-blur-md text-white rounded-2xl sm:rounded-full px-4 py-3 sm:px-6 sm:py-3 shadow-2xl border border-slate-700/80 flex items-center justify-between sm:justify-center gap-3 sm:gap-6 animate-in slide-in-from-bottom duration-200">
           <div className="flex items-center gap-2 text-xs font-bold shrink-0">
             <span className="px-2 py-0.5 rounded-full bg-blue-500 text-white text-[11px]">
               {selectedLeadIds.length}
