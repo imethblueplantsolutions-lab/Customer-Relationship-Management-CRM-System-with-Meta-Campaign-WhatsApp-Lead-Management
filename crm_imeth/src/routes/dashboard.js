@@ -13,15 +13,34 @@ router.get('/stats', async (req, res) => {
     const role = req.user?.role || 'AGENT';
     const currentUserId = req.user?.userId || req.user?.id;
 
+    // ── Date range filtering via query params ──
+    const { from, to } = req.query;
+    let dateRangeSuffix = '';
+    const dateFilter = {};
+    if (from) {
+      const fromDate = new Date(from);
+      if (!isNaN(fromDate.getTime())) {
+        dateFilter.gte = fromDate;
+        dateRangeSuffix += `:from:${from}`;
+      }
+    }
+    if (to) {
+      const toDate = new Date(to);
+      if (!isNaN(toDate.getTime())) {
+        dateFilter.lte = toDate;
+        dateRangeSuffix += `:to:${to}`;
+      }
+    }
+
     let cacheKey;
     if (role === 'AGENT' && currentUserId) {
-      cacheKey = `tenant:${tenantId}:dashboard:stats:agent:${currentUserId}`;
+      cacheKey = `tenant:${tenantId}:dashboard:stats:agent:${currentUserId}${dateRangeSuffix}`;
     } else if (role === 'TEAM_LEAD' && currentUserId) {
-      cacheKey = `tenant:${tenantId}:dashboard:stats:teamlead:${currentUserId}`;
+      cacheKey = `tenant:${tenantId}:dashboard:stats:teamlead:${currentUserId}${dateRangeSuffix}`;
     } else if (role === 'ADMIN' && currentUserId) {
-      cacheKey = `tenant:${tenantId}:dashboard:stats:admin:${currentUserId}`;
+      cacheKey = `tenant:${tenantId}:dashboard:stats:admin:${currentUserId}${dateRangeSuffix}`;
     } else {
-      cacheKey = `tenant:${tenantId}:dashboard:stats:superadmin`;
+      cacheKey = `tenant:${tenantId}:dashboard:stats:superadmin${dateRangeSuffix}`;
     }
 
     // Check Redis cache first
@@ -32,6 +51,11 @@ router.get('/stats', async (req, res) => {
 
     const leadScope = await getLeadScopeCondition(req.user);
     const leadWhere = { tenantId, ...leadScope };
+
+    // Apply date range filter on lead createdAt
+    if (Object.keys(dateFilter).length > 0) {
+      leadWhere.createdAt = dateFilter;
+    }
 
     const scopedUserIds = await getHierarchyScopedUserIds(req.user);
     const followupWhere = {

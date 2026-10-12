@@ -40,16 +40,98 @@ export default function DashboardPage() {
   );
 }
 
+// ─── Date Range Options ─────────────────────────────────────
+type DateRangeKey =
+  | "today"
+  | "yesterday"
+  | "last7"
+  | "last14"
+  | "lastMonth"
+  | "thisMonth"
+  | "thisYear"
+  | "allTime";
+
+const DATE_RANGE_OPTIONS: { key: DateRangeKey; label: string }[] = [
+  { key: "allTime", label: "All Time" },
+  { key: "today", label: "Today" },
+  { key: "yesterday", label: "Yesterday" },
+  { key: "last7", label: "Last 7 Days" },
+  { key: "last14", label: "Last 14 Days" },
+  { key: "lastMonth", label: "Last Month" },
+  { key: "thisMonth", label: "This Month" },
+  { key: "thisYear", label: "This Year" },
+];
+
+function computeDateRange(key: DateRangeKey): { from?: string; to?: string } {
+  const now = new Date();
+  const startOfDay = (d: Date) => {
+    const s = new Date(d);
+    s.setHours(0, 0, 0, 0);
+    return s;
+  };
+  const endOfDay = (d: Date) => {
+    const s = new Date(d);
+    s.setHours(23, 59, 59, 999);
+    return s;
+  };
+
+  switch (key) {
+    case "allTime":
+      return {};
+    case "today":
+      return { from: startOfDay(now).toISOString(), to: endOfDay(now).toISOString() };
+    case "yesterday": {
+      const y = new Date(now);
+      y.setDate(y.getDate() - 1);
+      return { from: startOfDay(y).toISOString(), to: endOfDay(y).toISOString() };
+    }
+    case "last7": {
+      const d = new Date(now);
+      d.setDate(d.getDate() - 6);
+      return { from: startOfDay(d).toISOString(), to: endOfDay(now).toISOString() };
+    }
+    case "last14": {
+      const d = new Date(now);
+      d.setDate(d.getDate() - 13);
+      return { from: startOfDay(d).toISOString(), to: endOfDay(now).toISOString() };
+    }
+    case "lastMonth": {
+      const firstOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const lastOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+      return { from: startOfDay(firstOfLastMonth).toISOString(), to: endOfDay(lastOfLastMonth).toISOString() };
+    }
+    case "thisMonth": {
+      const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      return { from: startOfDay(firstOfMonth).toISOString(), to: endOfDay(now).toISOString() };
+    }
+    case "thisYear": {
+      const firstOfYear = new Date(now.getFullYear(), 0, 1);
+      return { from: startOfDay(firstOfYear).toISOString(), to: endOfDay(now).toISOString() };
+    }
+    default:
+      return {};
+  }
+}
+
 function DashboardContent() {
   const { user } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [dateRange, setDateRange] = useState<DateRangeKey>("allTime");
 
   useEffect(() => {
     async function fetchStats() {
+      setLoading(true);
+      setError("");
       try {
-        const res = await apiClient<DashboardStats>("/dashboard/stats");
+        const range = computeDateRange(dateRange);
+        const params = new URLSearchParams();
+        if (range.from) params.set("from", range.from);
+        if (range.to) params.set("to", range.to);
+        const qs = params.toString();
+        const url = `/dashboard/stats${qs ? `?${qs}` : ""}`;
+        const res = await apiClient<DashboardStats>(url);
         if (res.success && res.data) {
           setStats(res.data);
         } else {
@@ -63,11 +145,17 @@ function DashboardContent() {
       }
     }
     fetchStats();
-  }, []);
+  }, [dateRange]);
 
   if (loading) {
     return (
       <div className="space-y-8">
+        {/* Date range selector skeleton */}
+        <div className="flex flex-wrap gap-2">
+          {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+            <div key={i} className="h-8 w-20 bg-slate-200 rounded-full animate-pulse" />
+          ))}
+        </div>
         {/* Skeleton stat cards: 2 Columns & 2 Rows on Mobile, 4 Columns on Desktop */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           {[0, 1, 2, 3].map((i) => (
@@ -135,6 +223,33 @@ function DashboardContent() {
           )}
         </div>
         <p className="text-[clamp(0.8125rem,1vw,0.875rem)] text-slate-500 mt-1">Campaign & Lead Analytics Overview</p>
+      </div>
+
+      {/* ── Date Range Selector Pills ─────────────────────────── */}
+      <div className="flex flex-wrap gap-1.5 sm:gap-2">
+        {DATE_RANGE_OPTIONS.map((opt) => (
+          <button
+            key={opt.key}
+            type="button"
+            onClick={() => setDateRange(opt.key)}
+            className={`
+              inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold
+              transition-all duration-200 cursor-pointer select-none border
+              ${
+                dateRange === opt.key
+                  ? "bg-brand-primary text-white border-brand-primary shadow-sm shadow-brand-primary/25"
+                  : "bg-white text-slate-600 border-slate-200/80 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800"
+              }
+            `}
+          >
+            {dateRange === opt.key && (
+              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            )}
+            {opt.label}
+          </button>
+        ))}
       </div>
 
       {/* Stat Cards: 2 Columns & 2 Rows on Mobile, 4 Columns on Desktop */}
