@@ -157,16 +157,16 @@ export default function NotificationDropdown({ isCollapsed }: NotificationDropdo
     <div className="relative" ref={notifRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-slate-300 hover:bg-white/5 hover:text-white transition-colors cursor-pointer ${
+        className={`relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-slate-300 hover:bg-white/10 hover:text-white transition-all duration-200 active:scale-95 cursor-pointer group ${
           isCollapsed ? "justify-center" : ""
         }`}
         title="Notifications"
         aria-expanded={isOpen}
       >
-        <Bell className="h-5 w-5 shrink-0" />
+        <Bell className="h-5 w-5 shrink-0 group-hover:rotate-12 group-hover:scale-110 transition-transform duration-200" />
         {!isCollapsed && <span className="text-sm font-medium">Notifications</span>}
         {unreadCount > 0 && (
-          <span className="absolute top-1.5 left-6 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white">
+          <span className="absolute top-1.5 left-6 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white animate-pulse shadow-xs">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}

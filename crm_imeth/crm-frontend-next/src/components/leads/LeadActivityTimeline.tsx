@@ -394,7 +394,7 @@ export default memo(function LeadActivityTimeline({
             <button
               type="button"
               onClick={toggleAllActivities}
-              className="text-[11px] font-semibold text-brand-primary hover:underline cursor-pointer"
+              className="text-[11px] font-semibold text-brand-primary bg-brand-primary/10 hover:bg-brand-primary/20 px-2.5 py-1 rounded-lg transition-all duration-150 active:scale-95 cursor-pointer"
             >
               {areAllExpanded ? "Collapse All" : "Expand All"}
             </button>
@@ -410,9 +410,9 @@ export default memo(function LeadActivityTimeline({
         <button
           type="button"
           onClick={() => openActivityModal("PHONE_CALL")}
-          className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-brand-muted/20 bg-brand-bg/50 hover:bg-brand-surface hover:border-brand-primary/40 transition-all cursor-pointer group shadow-2xs"
+          className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-brand-muted/20 bg-brand-bg/50 hover:bg-brand-surface hover:border-brand-primary/40 hover:-translate-y-1 hover:shadow-md active:scale-95 transition-all duration-200 cursor-pointer group shadow-2xs"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-colors">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary group-hover:bg-brand-primary group-hover:text-white group-hover:scale-110 group-hover:rotate-[-6deg] transition-all duration-200">
             <Phone className="h-4 w-4" />
           </div>
           <span className="text-[10px] font-bold text-brand-muted group-hover:text-brand-primary transition-colors">Call</span>
@@ -420,9 +420,9 @@ export default memo(function LeadActivityTimeline({
         <button
           type="button"
           onClick={() => openActivityModal("MESSAGE")}
-          className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-brand-muted/20 bg-brand-bg/50 hover:bg-brand-surface hover:border-brand-primary/40 transition-all cursor-pointer group shadow-2xs"
+          className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-brand-muted/20 bg-brand-bg/50 hover:bg-brand-surface hover:border-brand-primary/40 hover:-translate-y-1 hover:shadow-md active:scale-95 transition-all duration-200 cursor-pointer group shadow-2xs"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-colors">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary group-hover:bg-brand-primary group-hover:text-white group-hover:scale-110 group-hover:rotate-[-6deg] transition-all duration-200">
             <MessageCircle className="h-4 w-4" />
           </div>
           <span className="text-[10px] font-bold text-brand-muted group-hover:text-brand-primary transition-colors">Message</span>
@@ -430,9 +430,9 @@ export default memo(function LeadActivityTimeline({
         <button
           type="button"
           onClick={() => openActivityModal("MEETING")}
-          className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-brand-muted/20 bg-brand-bg/50 hover:bg-brand-surface hover:border-brand-primary/40 transition-all cursor-pointer group shadow-2xs"
+          className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-brand-muted/20 bg-brand-bg/50 hover:bg-brand-surface hover:border-brand-primary/40 hover:-translate-y-1 hover:shadow-md active:scale-95 transition-all duration-200 cursor-pointer group shadow-2xs"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-colors">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary group-hover:bg-brand-primary group-hover:text-white group-hover:scale-110 group-hover:rotate-[-6deg] transition-all duration-200">
             <Calendar className="h-4 w-4" />
           </div>
           <span className="text-[10px] font-bold text-brand-muted group-hover:text-brand-primary transition-colors">Meeting</span>
@@ -440,9 +440,9 @@ export default memo(function LeadActivityTimeline({
         <button
           type="button"
           onClick={() => openActivityModal("NOTE")}
-          className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-brand-muted/20 bg-brand-bg/50 hover:bg-brand-surface hover:border-brand-primary/40 transition-all cursor-pointer group shadow-2xs"
+          className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-brand-muted/20 bg-brand-bg/50 hover:bg-brand-surface hover:border-brand-primary/40 hover:-translate-y-1 hover:shadow-md active:scale-95 transition-all duration-200 cursor-pointer group shadow-2xs"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-colors">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary group-hover:bg-brand-primary group-hover:text-white group-hover:scale-110 group-hover:rotate-[-6deg] transition-all duration-200">
             <FileText className="h-4 w-4" />
           </div>
           <span className="text-[10px] font-bold text-brand-muted group-hover:text-brand-primary transition-colors">Note</span>
@@ -520,44 +520,46 @@ export default memo(function LeadActivityTimeline({
                       e.stopPropagation();
                       toggleActivityExpand(activity.id);
                     }}
-                    className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
+                    className="p-1 rounded-lg text-slate-400 hover:text-brand-primary hover:bg-brand-primary/10 hover:scale-115 active:scale-90 transition-all duration-200 cursor-pointer shrink-0"
                     title={isExpanded ? "Collapse activity" : "Expand activity"}
                     aria-label={isExpanded ? "Collapse activity" : "Expand activity"}
                     aria-expanded={isExpanded}
                   >
-                    {isExpanded ? (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="h-4 w-4"
-                      >
-                        {/* Outer Circle */}
-                        <circle cx="12" cy="12" r="10" />
-                        {/* Inner Chevron (Pointed Up) */}
-                        <polyline points="8 14 12 10 16 14" />
-                      </svg>
-                    ) : (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="h-4 w-4"
-                      >
-                        {/* Outer Circle */}
-                        <circle cx="12" cy="12" r="10" />
-                        {/* Inner Chevron */}
-                        <polyline points="8 10 12 14 16 10" />
-                      </svg>
-                    )}
+                    <div className={`transition-transform duration-300 ${isExpanded ? "scale-105" : ""}`}>
+                      {isExpanded ? (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="h-4 w-4"
+                        >
+                          {/* Outer Circle */}
+                          <circle cx="12" cy="12" r="10" />
+                          {/* Inner Chevron (Pointed Up) */}
+                          <polyline points="8 14 12 10 16 14" />
+                        </svg>
+                      ) : (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="h-4 w-4"
+                        >
+                          {/* Outer Circle */}
+                          <circle cx="12" cy="12" r="10" />
+                          {/* Inner Chevron */}
+                          <polyline points="8 10 12 14 16 10" />
+                        </svg>
+                      )}
+                    </div>
                   </button>
                 </div>
 
@@ -608,10 +610,10 @@ export default memo(function LeadActivityTimeline({
                               e.stopPropagation();
                               openEditModal(activity);
                             }}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 hover:scale-115 active:scale-90 transition-all duration-150 cursor-pointer group"
                             title="Edit activity"
                           >
-                            <Pencil className="h-3.5 w-3.5" />
+                            <Pencil className="h-3.5 w-3.5 group-hover:rotate-12 transition-transform duration-150" />
                           </button>
                         )}
                         {canDeleteActivityItem(activity.type) && (
@@ -621,14 +623,14 @@ export default memo(function LeadActivityTimeline({
                               e.stopPropagation();
                               onDeleteActivity(activity.id);
                             }}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 hover:scale-115 active:scale-90 transition-all duration-150 cursor-pointer group"
                             title={
                               TIMELINE_TYPES.includes(activity.type)
                                 ? "Delete timeline entry (Admin only)"
                                 : "Delete activity"
                             }
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <Trash2 className="h-3.5 w-3.5 group-hover:rotate-6 transition-transform duration-150" />
                           </button>
                         )}
                       </div>

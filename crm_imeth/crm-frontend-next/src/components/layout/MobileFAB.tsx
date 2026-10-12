@@ -70,13 +70,13 @@ export default function MobileFAB() {
         type="button"
         onClick={() => setOpen((prev) => !prev)}
         aria-label={open ? "Close quick actions" : "Open quick actions"}
-        className={`relative z-40 flex h-13 w-13 items-center justify-center rounded-full text-white shadow-xl transition-all duration-200 active:scale-90 cursor-pointer ${
+        className={`relative z-40 flex h-13 w-13 items-center justify-center rounded-full text-white shadow-xl transition-all duration-300 active:scale-90 cursor-pointer ${
           open
-            ? "bg-slate-800 rotate-45 shadow-slate-900/30"
-            : "bg-gradient-to-tr from-[#0F4C75] via-[#1B7BED] to-[#3282B8] shadow-brand-primary/40 hover:shadow-2xl hover:scale-105"
+            ? "bg-slate-800 rotate-45 shadow-slate-900/30 scale-100"
+            : "bg-gradient-to-tr from-[#0F4C75] via-[#1B7BED] to-[#3282B8] shadow-brand-primary/40 hover:shadow-2xl hover:scale-110 animate-fab-pulse"
         }`}
       >
-        <Plus className="h-6 w-6 stroke-[2.5] transition-transform duration-200" />
+        <Plus className="h-6 w-6 stroke-[2.5] transition-transform duration-300" />
       </button>
     </div>
   );

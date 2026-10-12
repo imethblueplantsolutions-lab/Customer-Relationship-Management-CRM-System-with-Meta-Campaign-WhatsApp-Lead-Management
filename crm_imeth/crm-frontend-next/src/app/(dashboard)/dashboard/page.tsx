@@ -260,7 +260,7 @@ function DashboardContent() {
       {/* Stat Cards: 2 Columns & 2 Rows on Mobile, 4 Columns on Desktop */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {/* Total Leads */}
-        <div className="rounded-2xl bg-white border border-slate-200/60 p-3.5 sm:p-5 lg:p-6 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col justify-between">
+        <div className="interactive-card rounded-2xl bg-white border border-slate-200/60 p-3.5 sm:p-5 lg:p-6 shadow-sm hover:shadow-md transition-all text-left flex flex-col justify-between">
           <div>
             <p className="text-[11px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
               Total Leads
@@ -272,7 +272,7 @@ function DashboardContent() {
           {stats.totalLeads === 0 && (
             <Link
               href="/leads"
-              className="mt-2.5 sm:mt-3 inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-brand-primary hover:text-brand-accent truncate"
+              className="mt-2.5 sm:mt-3 inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-brand-primary hover:text-brand-accent truncate hover:translate-x-0.5 transition-transform"
             >
               Add your first lead <ArrowRight className="h-3 w-3 shrink-0" />
             </Link>
@@ -280,7 +280,7 @@ function DashboardContent() {
         </div>
 
         {/* Converted */}
-        <div className="rounded-2xl bg-white border border-slate-200/60 p-3.5 sm:p-5 lg:p-6 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col justify-between">
+        <div className="interactive-card rounded-2xl bg-white border border-slate-200/60 p-3.5 sm:p-5 lg:p-6 shadow-sm hover:shadow-md transition-all text-left flex flex-col justify-between">
           <div>
             <p className="text-[11px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
               Converted
@@ -292,7 +292,7 @@ function DashboardContent() {
         </div>
 
         {/* Qualified */}
-        <div className="rounded-2xl bg-white border border-slate-200/60 p-3.5 sm:p-5 lg:p-6 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col justify-between">
+        <div className="interactive-card rounded-2xl bg-white border border-slate-200/60 p-3.5 sm:p-5 lg:p-6 shadow-sm hover:shadow-md transition-all text-left flex flex-col justify-between">
           <div>
             <p className="text-[11px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
               Qualified
@@ -304,7 +304,7 @@ function DashboardContent() {
         </div>
 
         {/* Pending Follow-ups */}
-        <div className="rounded-2xl bg-white border border-slate-200/60 p-3.5 sm:p-5 lg:p-6 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col justify-between">
+        <div className="interactive-card rounded-2xl bg-white border border-slate-200/60 p-3.5 sm:p-5 lg:p-6 shadow-sm hover:shadow-md transition-all text-left flex flex-col justify-between">
           <div>
             <p className="text-[11px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
               Pending Follow-ups

@@ -115,15 +115,22 @@ export default memo(function LeadFollowupsCard({
         </div>
         <button
           onClick={() => setShowFollowupForm(!showFollowupForm)}
-          className="text-xs font-bold text-blue-600 hover:text-[#0F4C75] hover:underline cursor-pointer"
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
+            showFollowupForm
+              ? "bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-95"
+              : "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white shadow-2xs hover:shadow-xs hover:scale-[1.02] active:scale-95"
+          }`}
         >
-          {showFollowupForm ? "Cancel" : "+ Schedule Task"}
+          <span className={`inline-block font-bold text-sm leading-none transition-transform duration-200 ${showFollowupForm ? "rotate-45" : ""}`}>
+            +
+          </span>
+          <span>{showFollowupForm ? "Cancel" : "Schedule Task"}</span>
         </button>
       </div>
 
       {/* Add Follow-up Form */}
       {showFollowupForm && (
-        <form onSubmit={handleSubmit} className="mb-5 rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+        <form onSubmit={handleSubmit} className="mb-5 rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-[11px] font-semibold text-slate-600 mb-1">
@@ -207,9 +214,22 @@ export default memo(function LeadFollowupsCard({
             <button
               type="submit"
               disabled={addingFollowup || isSubmitting}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+              className="btn-shine inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-700 hover:shadow-md hover:shadow-blue-500/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
             >
-              {addingFollowup || isSubmitting ? "Saving..." : "Save Reminder"}
+              {addingFollowup || isSubmitting ? (
+                <>
+                  <svg className="animate-spin h-3.5 w-3.5 text-white" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <Calendar className="h-3.5 w-3.5" />
+                  <span>Save Reminder</span>
+                </>
+              )}
             </button>
           </div>
         </form>
@@ -227,7 +247,7 @@ export default memo(function LeadFollowupsCard({
             return (
               <div
                 key={item.id}
-                className={`rounded-xl border p-3 sm:p-3.5 transition-colors ${item.completed
+                className={`interactive-card rounded-xl border p-3 sm:p-3.5 transition-all duration-200 hover:border-slate-300/80 ${item.completed
                   ? "border-emerald-100 bg-emerald-50/40"
                   : isOverdue
                     ? "border-red-200 bg-red-50/30"
@@ -239,20 +259,20 @@ export default memo(function LeadFollowupsCard({
                   <button
                     type="button"
                     onClick={() => onToggleComplete(item.id, item.completed)}
-                    className={`mt-0.5 sm:mt-0 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors cursor-pointer ${item.completed
-                      ? "bg-emerald-600 border-emerald-600 text-white"
+                    className={`mt-0.5 sm:mt-0 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-all duration-200 hover:scale-110 active:scale-90 cursor-pointer ${item.completed
+                      ? "bg-emerald-600 border-emerald-600 text-white shadow-2xs shadow-emerald-600/30"
                       : isOverdue
-                        ? "border-red-300 bg-white hover:border-red-500"
-                        : "border-slate-300 bg-white hover:border-blue-500"
+                        ? "border-red-300 bg-white hover:border-red-500 hover:shadow-xs"
+                        : "border-slate-300 bg-white hover:border-blue-500 hover:shadow-xs"
                       }`}
                     title={item.completed ? "Mark as pending" : "Mark as completed"}
                   >
-                    {item.completed && <Check className="h-3 w-3 stroke-[2.5]" />}
+                    {item.completed && <Check className="h-3 w-3 stroke-[2.5] animate-checkmark-pop" />}
                   </button>
 
                   {/* Type Avatar Badge (Hidden on mobile per user request: hidden sm:flex) */}
                   <div
-                    className={`hidden sm:flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${item.completed
+                    className={`hidden sm:flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-transform group-hover:scale-105 ${item.completed
                       ? "bg-emerald-100 text-emerald-700"
                       : isOverdue
                         ? "bg-red-100 text-red-700"
@@ -291,10 +311,10 @@ export default memo(function LeadFollowupsCard({
                           <button
                             type="button"
                             onClick={() => onDeleteFollowup(item.id)}
-                            className="p-1 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                            className="p-1 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 hover:scale-110 active:scale-90 transition-all duration-150 cursor-pointer group"
                             title="Delete Follow-up"
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <Trash2 className="h-3.5 w-3.5 group-hover:rotate-6 transition-transform" />
                           </button>
                         )}
                       </div>
@@ -353,10 +373,10 @@ export default memo(function LeadFollowupsCard({
                       <button
                         type="button"
                         onClick={() => onDeleteFollowup(item.id)}
-                        className="p-1 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors cursor-pointer"
+                        className="p-1 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 hover:scale-110 active:scale-90 border border-transparent hover:border-red-200 transition-all duration-150 cursor-pointer group"
                         title="Delete Follow-up (Admin & Team Lead)"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3.5 w-3.5 group-hover:rotate-6 transition-transform" />
                       </button>
                     )}
                   </div>
