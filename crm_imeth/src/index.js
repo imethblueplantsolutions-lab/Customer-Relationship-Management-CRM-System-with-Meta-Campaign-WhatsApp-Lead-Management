@@ -16,11 +16,18 @@ const { isRedisAvailable } = require('./config/redis');
 const { extractTenantMiddleware } = require('./middleware/tenant');
 const { authenticate } = require('./middleware/auth');
 const sanitizeMiddleware = require('./middleware/sanitize');
+const { handleRouteError } = require('./utils/errorHandler');
 
-// Allowed origins: Vercel production + local dev + Capacitor mobile webview
-const ALLOWED_ORIGINS = [
+const isProduction = process.env.NODE_ENV === 'production';
+
+// Production origins: strictly frontend production domain + mobile webview
+const PRODUCTION_ORIGINS = [
   process.env.FRONTEND_URL || 'https://customer-relationship-management-cr-eight.vercel.app',
-  'https://customer-relationship-management-crm-system-with-ojf1z9i48.vercel.app', // legacy preview URL
+  'capacitor://localhost',
+].filter(Boolean);
+
+// Development origins: local dev ports and local webview
+const DEV_ORIGINS = [
   'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:4000',
@@ -31,11 +38,21 @@ const ALLOWED_ORIGINS = [
   'https://localhost',
 ];
 
+const ALLOWED_ORIGINS = isProduction ? PRODUCTION_ORIGINS : DEV_ORIGINS;
+
 function corsOriginHandler(origin, callback) {
-  // Allow requests with no origin (mobile apps, Postman, server-to-server)
+  if (isProduction) {
+    // In production, strictly only allow process.env.FRONTEND_URL and capacitor://localhost
+    if (origin && PRODUCTION_ORIGINS.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS: Origin '${origin}' is not authorized`));
+  }
+
+  // In development, allow requests with no origin (mobile apps, Postman) and dev origins
   if (!origin) return callback(null, true);
-  if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
-  callback(new Error(`CORS: Origin '${origin}' is not allowed`));
+  if (DEV_ORIGINS.includes(origin)) return callback(null, true);
+  callback(new Error(`CORS: Origin '${origin}' is not allowed in development`));
 }
 
 const app = express();
@@ -206,11 +223,8 @@ app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/admin-jobs', require('./routes/adminJobs'));
 app.use('/api/broadcast', require('./routes/broadcast'));
 
-// Global Error Handler
-app.use((err, req, res, next) => {
-  console.error('[Server Error]:', err.stack);
-  res.status(500).json({ error: 'Internal Server Error' });
-});
+// Global Centralized Error Handler (Masks internal errors in production)
+app.use(handleRouteError);
 
 // Start HTTP Server
 server.listen(PORT, '0.0.0.0', () => {
