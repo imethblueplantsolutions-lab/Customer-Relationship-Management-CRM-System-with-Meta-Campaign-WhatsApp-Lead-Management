@@ -10,6 +10,7 @@ const { validateHierarchyAssignment, validateBulkHierarchyAssignment } = require
 const { logAudit } = require('../utils/auditLogger');
 const { assertCanProvisionRole, getTenantQuotaStatus } = require('../utils/tenantQuota');
 const { getDownstreamUserIds } = require('../utils/hierarchy');
+const { otpLimiter } = require('../config/rateLimiters');
 const router = express.Router();
 
 // Enforce authentication on all user and profile management endpoints
@@ -298,7 +299,7 @@ router.post('/', authorize(['SUPER_ADMIN', 'ADMIN', 'TEAM_LEAD']), async (req, r
 });
 
 // POST: Profile Security - Request OTP to verify email or password changes (Rate Limited)
-router.post('/profile/request-otp', async (req, res) => {
+router.post('/profile/request-otp', otpLimiter, async (req, res) => {
   try {
     const currentUserId = req.user?.userId || req.user?.id;
     if (!currentUserId) {

@@ -6,6 +6,26 @@ const { tenantStorage } = require('../middleware/tenant');
 const { authenticate, authorize } = require('../middleware/auth');
 const { getHierarchyScopedUserIds, getLeadScopeCondition } = require('../utils/hierarchy');
 const { assertUserBelongsToTenant } = require('../utils/security');
+const { z } = require('zod');
+const { validateRequest } = require('../validators/zodMiddleware');
+
+// Zod validation schema for lead creation
+const createLeadSchema = z.object({
+  phoneNumber: z.string({
+    required_error: 'Phone number is required',
+  }).regex(/^\+?[1-9]\d{7,14}$/, 'Invalid phone number format: Must comply with E.164 standard (e.g. +12345678901)'),
+  name: z.string().trim().optional().nullable(),
+  displayName: z.string().trim().optional().nullable(),
+  companyName: z.string().trim().optional().nullable(),
+  designation: z.string().trim().optional().nullable(),
+  whatsappNumber: z.string().trim().optional().nullable(),
+  email: z.string().email('Invalid email address format').optional().nullable().or(z.literal('')),
+  status: z.string().trim().optional().nullable(),
+  category: z.string().trim().optional().nullable(),
+  notes: z.string().optional().nullable(),
+  tags: z.any().optional(),
+  assignedToId: z.string().optional().nullable(),
+}).passthrough();
 
 // GET /: Fetch leads for current tenant with RBAC, advanced filters & tags
 router.get('/', authenticate, async (req, res) => {
@@ -109,7 +129,7 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 // POST: Manually add a new customer lead (Accessible to Admin, Team Lead & Agent)
-router.post('/', authorize(['ADMIN', 'TEAM_LEAD', 'AGENT']), async (req, res) => {
+router.post('/', authorize(['ADMIN', 'TEAM_LEAD', 'AGENT']), validateRequest(createLeadSchema), async (req, res) => {
   try {
     const { phoneNumber, name, displayName, companyName, designation, whatsappNumber, email, notes, category, tags, assignedToId } = req.body;
     const store = tenantStorage.getStore();
