@@ -22,6 +22,7 @@ const prisma = basePrisma.$extends({
           return query(args);
         }
 
+        // Layer 1: Application-level tenant scoping fail-safes
         if (isTenantModel) {
           if (!tenantId) {
             // Fail-safe: if tenant context is missing for a non-superadmin query, force impossible match to prevent data leak
@@ -44,6 +45,16 @@ const prisma = basePrisma.$extends({
             }
           }
         }
+
+        // Layer 2: PostgreSQL Row Level Security (RLS) session variable enforcement
+        if (tenantId) {
+          return basePrisma.$transaction(async (tx) => {
+            const sanitizedTenantId = String(tenantId).replace(/[^a-zA-Z0-9_-]/g, '');
+            await tx.$executeRawUnsafe(`SET LOCAL app.current_tenant_id = '${sanitizedTenantId}';`);
+            return query(args);
+          });
+        }
+
         return query(args);
       },
     },
