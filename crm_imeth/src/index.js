@@ -14,6 +14,7 @@ const rateLimit = require('express-rate-limit');
 const redisClient = require('./config/redis');
 const { isRedisAvailable } = require('./config/redis');
 const { extractTenantMiddleware } = require('./middleware/tenant');
+const { authenticate } = require('./middleware/auth');
 const sanitizeMiddleware = require('./middleware/sanitize');
 
 // Allowed origins: Vercel production + local dev + Capacitor mobile webview
@@ -171,7 +172,12 @@ app.use('/api/auth/', authLimiter);
 const compression = require('compression');
 app.use(compression());
 
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({
+  limit: '10mb',
+  verify: (req, res, buf) => {
+    if (req.originalUrl.startsWith('/api/webhook')) req.rawBody = buf;
+  }
+}));
 app.use(express.urlencoded({ extended: true }));
 app.use(sanitizeMiddleware);
 
@@ -182,8 +188,9 @@ app.get('/health', (req, res) => res.status(200).json({ status: 'healthy', times
 app.use('/api/webhook', require('./routes/webhook'));
 app.use('/api/auth', require('./routes/auth'));
 
-// Protected Routes (Behind Tenant Context Injection)
+// Protected Routes (Behind Tenant Context Injection & Mandatory Authentication)
 app.use(extractTenantMiddleware);
+app.use(authenticate);
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/leads', require('./routes/leads'));
 app.use('/api/attachments', require('./routes/attachments'));

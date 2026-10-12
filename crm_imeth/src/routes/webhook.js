@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const prisma = require('../config/db');
 const webhookQueue = require('../queues/webhookQueue');
+const verifyMetaWebhook = require('../middleware/verifyMetaWebhook');
 
 // GET: Meta Webhook Verification Handshake
 router.get('/', (req, res) => {
@@ -16,8 +17,8 @@ router.get('/', (req, res) => {
   return res.status(403).json({ error: 'Verification failed' });
 });
 
-// High-throughput entry point: 200 OK within 5ms
-router.post('/', async (req, res) => {
+// High-throughput entry point: 200 OK within 5ms (HMAC-SHA256 verified)
+router.post('/', verifyMetaWebhook, async (req, res) => {
   // 1. Immediately acknowledge receipt to Meta to prevent timeout penalties
   res.status(200).send('EVENT_RECEIVED');
 
