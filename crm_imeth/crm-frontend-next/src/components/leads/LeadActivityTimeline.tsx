@@ -261,6 +261,30 @@ export default memo(function LeadActivityTimeline({
     return false;
   };
 
+  // State to track expanded activity items (collapsed by default)
+  const [expandedActivityIds, setExpandedActivityIds] = useState<Record<string, boolean>>({});
+
+  const toggleActivityExpand = (id: string) => {
+    setExpandedActivityIds((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const areAllExpanded = activities.length > 0 && activities.every((a) => expandedActivityIds[a.id]);
+
+  const toggleAllActivities = () => {
+    if (areAllExpanded) {
+      setExpandedActivityIds({});
+    } else {
+      const all: Record<string, boolean> = {};
+      activities.forEach((a) => {
+        all[a.id] = true;
+      });
+      setExpandedActivityIds(all);
+    }
+  };
+
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const [activityForm, setActivityForm] = useState<{
     type: string;
@@ -365,9 +389,20 @@ export default memo(function LeadActivityTimeline({
             Timeline & Activity
           </h3>
         </div>
-        <span className="text-[10px] font-medium text-slate-400">
-          {activities.length} entries
-        </span>
+        <div className="flex items-center gap-2">
+          {activities.length > 1 && (
+            <button
+              type="button"
+              onClick={toggleAllActivities}
+              className="text-[11px] font-semibold text-brand-primary hover:underline cursor-pointer"
+            >
+              {areAllExpanded ? "Collapse All" : "Expand All"}
+            </button>
+          )}
+          <span className="text-[10px] font-medium text-slate-400">
+            {activities.length > 1 ? "• " : ""}{activities.length} entries
+          </span>
+        </div>
       </div>
 
       {/* Quick-add Activity Buttons */}
@@ -435,6 +470,7 @@ export default memo(function LeadActivityTimeline({
           const config = ACTIVITY_TYPE_CONFIG[activity.type] || DEFAULT_ACTIVITY_STYLE;
           const IconComponent = config.Icon;
           const authorName = getAuthorDisplayName(activity.createdBy);
+          const isExpanded = Boolean(expandedActivityIds[activity.id]);
 
           return (
             <div key={activity.id} className="relative group/activity">
@@ -445,10 +481,14 @@ export default memo(function LeadActivityTimeline({
                 <IconComponent className="h-3.5 w-3.5" />
               </div>
 
-              <div className="ml-3 rounded-2xl border border-slate-200/80 bg-white p-4.5 shadow-xs hover:shadow-md transition-all">
-                <div className="flex items-start justify-between gap-3">
+              <div className="ml-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs hover:shadow-md transition-all">
+                {/* Header Row: Always visible. Shows Title, Badge, Time & Date, and Toggle Button in Top-Right */}
+                <div
+                  onClick={() => toggleActivityExpand(activity.id)}
+                  className="flex items-start justify-between gap-3 cursor-pointer select-none"
+                  title={isExpanded ? "Click to collapse" : "Click to expand"}
+                >
                   <div className="flex-1 min-w-0">
-                    {/* Title & Type Badge */}
                     <div className="flex items-center gap-2 flex-wrap">
                       <h4 className="text-sm font-bold text-slate-900 tracking-tight flex items-center flex-wrap gap-1.5">
                         {activity.type === "STAGE_CHANGE" || activity.title?.toLowerCase().includes("stage changed")
@@ -464,20 +504,78 @@ export default memo(function LeadActivityTimeline({
                             {config.label}
                           </span>
                         )}
-                    </div>
 
-                    {/* Activity Description (Omit redundant auto-generated stage-move description) */}
+                      {/* Time and Date in Header Row */}
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-400">
+                        <Clock className="h-3 w-3" />
+                        {formatDateTime(activity.occurredAt)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Top-Right Corner: Chevron Circle SVG Toggle Button */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleActivityExpand(activity.id);
+                    }}
+                    className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
+                    title={isExpanded ? "Collapse activity" : "Expand activity"}
+                    aria-label={isExpanded ? "Collapse activity" : "Expand activity"}
+                    aria-expanded={isExpanded}
+                  >
+                    {isExpanded ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-4 w-4"
+                      >
+                        {/* Outer Circle */}
+                        <circle cx="12" cy="12" r="10" />
+                        {/* Inner Chevron (Pointed Up) */}
+                        <polyline points="8 14 12 10 16 14" />
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-4 w-4"
+                      >
+                        {/* Outer Circle */}
+                        <circle cx="12" cy="12" r="10" />
+                        {/* Inner Chevron */}
+                        <polyline points="8 10 12 14 16 10" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+
+                {/* Collapsible Details Body: Reveals Description, Creator & Bottom-Right Actions */}
+                {isExpanded && (
+                  <div className="mt-3 pt-3 border-t border-slate-100 space-y-3 animate-in fade-in duration-200">
+                    {/* Activity Description */}
                     {activity.description &&
                       activity.type !== "STAGE_CHANGE" &&
                       !activity.description.toLowerCase().includes("stage was moved") && (
-                        <div className="text-xs text-slate-600 mt-2 leading-relaxed">
+                        <div className="text-xs text-slate-600 leading-relaxed">
                           <p className="whitespace-pre-wrap">{activity.description}</p>
                         </div>
                       )}
 
-                    {/* Footer with Creator & Timestamp */}
-                    <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap">
-                      {activity.createdBy && (
+                    {/* Footer Row: Creator on Left, Action Buttons on Bottom-Right */}
+                    <div className="flex items-center justify-between gap-3 flex-wrap pt-0.5">
+                      {activity.createdBy ? (
                         <div className="flex items-center gap-2">
                           <span className="inline-flex items-center gap-1.5 rounded-lg border border-brand-primary/30 bg-brand-primary/10 px-2 py-1 text-xs font-bold text-brand-primary shadow-xs">
                             {activity.createdBy.avatar ? (
@@ -497,43 +595,46 @@ export default memo(function LeadActivityTimeline({
                             </span>
                           )}
                         </div>
+                      ) : (
+                        <div />
                       )}
 
-                      <span className="flex items-center gap-1 text-[11px] font-medium text-slate-400 ml-auto">
-                        <Clock className="h-3 w-3" />
-                        {formatDateTime(activity.occurredAt)}
-                      </span>
+                      {/* Bottom-Right Corner: Edit and Delete Buttons */}
+                      <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+                        {!["SYSTEM_ASSIGNMENT", "STAGE_CHANGE"].includes(activity.type) && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEditModal(activity);
+                            }}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                            title="Edit activity"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                        {canDeleteActivityItem(activity.type) && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDeleteActivity(activity.id);
+                            }}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                            title={
+                              TIMELINE_TYPES.includes(activity.type)
+                                ? "Delete timeline entry (Admin only)"
+                                : "Delete activity"
+                            }
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-
-                  {/* Action Buttons in top right corner */}
-                  <div className="flex items-center gap-1 shrink-0">
-                    {!["SYSTEM_ASSIGNMENT", "STAGE_CHANGE"].includes(activity.type) && (
-                      <button
-                        type="button"
-                        onClick={() => openEditModal(activity)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-                        title="Edit activity"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-                    )}
-                    {canDeleteActivityItem(activity.type) && (
-                      <button
-                        type="button"
-                        onClick={() => onDeleteActivity(activity.id)}
-                        className="p-1.5 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                        title={
-                          TIMELINE_TYPES.includes(activity.type)
-                            ? "Delete timeline entry (Admin only)"
-                            : "Delete activity"
-                        }
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    )}
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           );
