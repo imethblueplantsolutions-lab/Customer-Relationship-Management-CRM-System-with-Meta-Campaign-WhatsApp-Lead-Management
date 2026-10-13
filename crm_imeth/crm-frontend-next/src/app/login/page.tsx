@@ -20,8 +20,6 @@ import {
   User as UserIcon,
   Building2,
   AlertCircle,
-  ShieldCheck,
-  TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -380,68 +378,22 @@ function LoginPageContent() {
 
 
   return (
-    // Phase 1.1: Root Layout - Switches from flex column on mobile to 50/50 grid on lg desktop
     <div
       id="login-page-root"
-      className="min-h-[100dvh] w-full flex flex-col lg:grid lg:grid-cols-2 bg-slate-50 lg:bg-white font-sans overflow-x-hidden"
+      className="relative min-h-[100dvh] w-full bg-slate-50 flex items-center justify-center p-[clamp(0.875rem,2vw,2rem)] font-sans overflow-x-hidden overflow-y-auto"
     >
-      {/* Phase 1.2: Left Showcase Panel (Hidden on Mobile) */}
-      <div className="hidden lg:flex flex-col justify-center items-center bg-gradient-to-br from-[#1B262C] via-[#0F4C75] to-[#3282B8] text-white p-12 relative overflow-hidden">
-        {/* Abstract Background Element */}
-        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-white opacity-5 rounded-full blur-3xl mix-blend-overlay"></div>
+      {/* Main Auth Card (Single centered card, slightly larger on desktop) */}
+      <div className="relative z-10 w-full max-w-md md:max-w-[490px] max-h-[calc(100dvh-2rem)] flex flex-col bg-white rounded-3xl shadow-[0_20px_60px_rgba(27,38,44,0.12)] border border-slate-200/80 overflow-hidden my-auto">
+        {/* Auth Form Panel */}
+        <div className="w-full p-[clamp(1.25rem,2.5vw,2.25rem)] flex flex-col min-h-0 overflow-y-auto bg-white">
+          <div className="w-full max-w-[360px] md:max-w-[410px] mx-auto flex flex-col gap-4">
 
-        <div className="max-w-md z-10 w-full">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-md">
-              <ShieldCheck className="w-6 h-6 text-blue-300" />
-            </div>
-            <h1 className="text-4xl font-bold tracking-tight">Meta CRM</h1>
-          </div>
-
-          <p className="text-lg text-blue-100 mb-10 leading-relaxed">
-            Manage your WhatsApp leads, track conversions, and automate your sales pipeline in real-time.
-          </p>
-
-          {/* Simulated Real-Time Analytics Card */}
-          <div className="bg-white/10 border border-white/20 backdrop-blur-md rounded-2xl p-6 shadow-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-blue-100 font-medium text-sm">Pipeline Performance</span>
-              <span className="flex items-center gap-1 text-emerald-300 text-xs font-bold bg-emerald-400/20 px-2 py-1 rounded-md">
-                <TrendingUp className="w-3.5 h-3.5" /> +28%
-              </span>
-            </div>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center border-b border-white/10 pb-3">
-                <span className="text-slate-300 text-sm">Active WhatsApp Leads</span>
-                <span className="font-mono text-xl font-semibold">1,248</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-300 text-sm">Conversion Rate</span>
-                <span className="font-mono text-xl font-semibold">42.4%</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-12 flex items-center gap-2 text-sm text-blue-200/70 font-medium">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" /> End-to-End Encrypted Architecture
-          </div>
-        </div>
-      </div>
-
-      {/* Phase 1.3: Right Auth Panel */}
-      <div className="flex items-center justify-center p-[clamp(1rem,2vw,2.5rem)] flex-1 min-h-[100dvh] lg:min-h-0 overflow-y-auto">
-        {/* Main Card Container 
-            Mobile: Elevated white card on slate-50 background. 
-            Desktop: Transparent background, no border, no shadow (blends into the right white panel). */}
-        <div className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-slate-100 p-6 sm:p-8 lg:p-10 lg:bg-transparent lg:shadow-none lg:border-none my-auto">
-          {/* Phase 2.1: Inner Form Container expanded to 400px on desktop */}
-          <div className="w-full max-w-[360px] md:max-w-[400px] mx-auto flex flex-col gap-5">
-            {/* Top Brand Logo - Mobile branding & desktop icon */}
-            <div className="flex items-center justify-center lg:justify-start gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#0F4C75] to-[#3282B8] flex items-center justify-center shadow-md shadow-[#3282B8]/20 shrink-0">
+            {/* Top Brand Logo */}
+            <div className="flex items-center justify-center gap-2.5">
+              <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-tr from-[#0F4C75] to-[#3282B8] flex items-center justify-center shadow-md shadow-[#3282B8]/20 shrink-0">
                 <MessageSquare className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-extrabold text-[#0F4C75] tracking-tight">MyCRM</span>
+              <span className="text-xl md:text-2xl font-extrabold text-[#0F4C75] tracking-tight">MyCRM</span>
             </div>
 
             {/* Segmented Two-Button Tab Control (Login / Sign Up) */}
@@ -481,11 +433,6 @@ function LoginPageContent() {
             {!isSignUpActive ? (
               /* ================= LOGIN FORM ================= */
               <div className="flex flex-col gap-3">
-                <div className="text-left mb-1">
-                  <h2 className="text-xl md:text-2xl font-bold text-slate-900">Welcome back</h2>
-                  <p className="text-xs md:text-sm text-slate-500 mt-0.5">Please enter your details to sign in.</p>
-                </div>
-
                 {error && (
                   <div className="rounded-lg bg-red-50 border border-red-200 p-2.5 text-[11px] md:text-xs text-red-700 font-medium flex items-start gap-2">
                     <span className="shrink-0 text-red-500 font-bold">⚠️</span>
@@ -500,48 +447,44 @@ function LoginPageContent() {
                   </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+                <form onSubmit={handleSubmit} className="flex flex-col gap-2.5 md:gap-3">
                   {/* Email / Username Input */}
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-semibold text-slate-700">Username / Email</label>
-                    <div
-                      className={`flex rounded-xl border bg-white overflow-hidden transition-all focus-within:ring-2 focus-within:ring-blue-500/10 ${
-                        hasAuthError ? "border-red-500" : "border-slate-300 focus-within:border-blue-500"
-                      }`}
-                    >
-                      <div className="w-10 md:w-12 bg-slate-50 border-r border-slate-200 flex items-center justify-center shrink-0 text-slate-400">
-                        <Mail className="w-4 h-4 md:w-5 md:h-5" />
-                      </div>
-                      <input
-                        ref={emailInputRef}
-                        suppressHydrationWarning
-                        type="email"
-                        autoComplete="username"
-                        value={email}
-                        onChange={(e) => {
-                          setEmail(e.target.value);
-                          if (hasAuthError && e.target.value !== lastAttemptedEmailRef.current) {
-                            setHasAuthError(false);
-                            setError("");
-                          }
-                        }}
-                        required
-                        placeholder="admin@crm.com"
-                        className="w-full h-10 md:h-12 px-3.5 text-base sm:text-base text-slate-800 placeholder-slate-400 focus:outline-none"
-                      />
+                  <div
+                    className={`flex rounded-xl border bg-white overflow-hidden transition-all focus-within:ring-2 focus-within:ring-blue-500/10 ${
+                      hasAuthError ? "border-red-500" : "border-slate-300 focus-within:border-blue-500"
+                    }`}
+                  >
+                    <div className="w-10 md:w-11 bg-slate-50 border-r border-slate-200 flex items-center justify-center shrink-0 text-slate-400">
+                      <Mail className="w-4 h-4" />
                     </div>
+                    <input
+                      ref={emailInputRef}
+                      suppressHydrationWarning
+                      type="email"
+                      autoComplete="username"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (hasAuthError && e.target.value !== lastAttemptedEmailRef.current) {
+                          setHasAuthError(false);
+                          setError("");
+                        }
+                      }}
+                      required
+                      placeholder="Username / Email"
+                      className="w-full h-10 md:h-11 px-3.5 text-base sm:text-sm md:text-base text-slate-800 placeholder-slate-400 focus:outline-none"
+                    />
                   </div>
 
                   {/* Password Input */}
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-semibold text-slate-700">Password</label>
                     <div
                       className={`flex rounded-xl border bg-white overflow-hidden transition-all focus-within:ring-2 focus-within:ring-blue-500/10 relative ${
                         hasAuthError ? "border-red-500" : "border-slate-300 focus-within:border-blue-500"
                       }`}
                     >
-                      <div className="w-10 md:w-12 bg-slate-50 border-r border-slate-200 flex items-center justify-center shrink-0 text-slate-400">
-                        <Lock className="w-4 h-4 md:w-5 md:h-5" />
+                      <div className="w-10 md:w-11 bg-slate-50 border-r border-slate-200 flex items-center justify-center shrink-0 text-slate-400">
+                        <Lock className="w-4 h-4" />
                       </div>
                       <input
                         ref={passwordInputRef}
@@ -559,8 +502,8 @@ function LoginPageContent() {
                           }
                         }}
                         required
-                        placeholder="••••••••"
-                        className="w-full h-10 md:h-12 pl-3.5 pr-10 text-base sm:text-base text-slate-800 placeholder-slate-400 focus:outline-none"
+                        placeholder="Password"
+                        className="w-full h-10 md:h-11 pl-3.5 pr-10 text-base sm:text-sm md:text-base text-slate-800 placeholder-slate-400 focus:outline-none"
                       />
                       <button
                         suppressHydrationWarning
@@ -572,9 +515,9 @@ function LoginPageContent() {
                       </button>
                     </div>
 
-                    {/* Phase 3.2: Caps Lock Warning */}
+                    {/* Caps Lock Warning */}
                     {isCapsLockOn && (
-                      <div className="flex items-center gap-1.5 mt-1 text-[11px] text-amber-600 font-medium">
+                      <div className="flex items-center gap-1.5 px-1 text-[11px] text-amber-600 font-medium">
                         <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                         <span>Caps Lock is ON</span>
                       </div>
@@ -589,13 +532,13 @@ function LoginPageContent() {
                   )}
 
                   {/* Remember me & Forgot Password */}
-                  <div className="flex items-center justify-between text-xs pt-0.5">
-                    <label className="flex items-center gap-1.5 cursor-pointer text-slate-600 hover:text-slate-800 select-none">
+                  <div className="flex items-center justify-between text-[11px] md:text-xs pt-0.5">
+                    <label className="flex items-center gap-1.5 cursor-pointer text-slate-500 hover:text-slate-700 select-none">
                       <input
                         type="checkbox"
                         checked={rememberMe}
                         onChange={(e) => setRememberMe(e.target.checked)}
-                        className="w-4 h-4 rounded-sm border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
+                        className="w-3.5 h-3.5 md:w-4 md:h-4 rounded-sm border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
                       />
                       <span>Remember me</span>
                     </label>
@@ -613,7 +556,7 @@ function LoginPageContent() {
                     suppressHydrationWarning
                     type="submit"
                     disabled={loading}
-                    className="w-full h-10 md:h-12 rounded-xl bg-[#0F4C75] hover:bg-[#1B262C] text-white font-bold text-xs md:text-sm transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-1.5 mt-1 active:scale-[0.99]"
+                    className="w-full h-10 md:h-11 rounded-xl bg-[#0F4C75] hover:bg-[#1B262C] text-white font-bold text-xs md:text-sm transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-1.5 mt-1 active:scale-[0.99]"
                   >
                     {loading ? (
                       <span className="flex items-center gap-2">
@@ -633,21 +576,21 @@ function LoginPageContent() {
                 </form>
 
                 {/* Google Sign In Divider */}
-                <div className="relative flex items-center justify-center my-1">
+                <div className="relative flex items-center justify-center my-0.5 md:my-1">
                   <div className="w-full border-t border-slate-200" />
-                  <span className="absolute bg-white lg:bg-transparent px-2 text-[10px] md:text-xs text-slate-400 font-medium uppercase tracking-wider">
+                  <span className="absolute bg-white px-2 text-[10px] md:text-xs text-slate-400 font-medium uppercase tracking-wider">
                     Or continue with
                   </span>
                 </div>
 
-                <div className="w-full flex flex-col items-center justify-center min-h-[44px]">
+                <div className="w-full flex flex-col items-center justify-center min-h-[40px] md:min-h-[44px]">
                   <div id="google-signin-btn" className="w-full flex justify-center" />
                   {!googleInitialized && (
                     <button
                       suppressHydrationWarning
                       type="button"
                       onClick={handleGoogleSignIn}
-                      className="w-full h-10 md:h-12 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium text-xs md:text-sm transition-all duration-150 shadow-xs hover:shadow flex items-center justify-center gap-2.5 focus:outline-hidden cursor-pointer"
+                      className="w-full h-10 md:h-11 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium text-xs md:text-sm transition-all duration-150 shadow-xs hover:shadow flex items-center justify-center gap-2 focus:outline-hidden cursor-pointer"
                     >
                       <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -663,69 +606,60 @@ function LoginPageContent() {
             ) : (
               /* ================= SIGN UP FORM ================= */
               <div className="flex flex-col gap-3">
-                <div className="text-left mb-1">
-                  <h2 className="text-xl md:text-2xl font-bold text-slate-900">Create Account</h2>
-                  <p className="text-xs md:text-sm text-slate-500 mt-0.5">Start managing leads and campaigns.</p>
-                </div>
-
                 {signUpError && (
-                  <div className="rounded-lg bg-red-50 border border-red-200 p-2.5 text-[11px] md:text-xs text-red-700 font-medium flex items-start gap-2">
+                  <div className="rounded-lg bg-red-50 border border-red-200 p-2 text-[11px] text-red-700 font-medium flex items-start gap-2">
                     <span className="shrink-0 text-red-500 font-bold">⚠️</span>
                     <span>{signUpError}</span>
                   </div>
                 )}
 
                 {signUpSuccess && (
-                  <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-2.5 text-[11px] md:text-xs text-emerald-800 font-medium flex items-start gap-2">
+                  <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-2 text-[11px] text-emerald-800 font-medium flex items-start gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
                     <span>{signUpSuccess}</span>
                   </div>
                 )}
 
-                <form onSubmit={handleSignUpSubmit} className="flex flex-col gap-2.5">
+                <form onSubmit={handleSignUpSubmit} className="flex flex-col gap-2 md:gap-2.5">
                   {/* Email */}
-                  <div className="flex flex-col gap-1">
-                    <div className="flex rounded-xl border border-slate-300 bg-white overflow-hidden transition-all focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/10">
-                      <div className="w-10 md:w-12 bg-slate-50 border-r border-slate-200 flex items-center justify-center shrink-0 text-slate-400">
-                        <Mail className="w-4 h-4 md:w-5 md:h-5" />
-                      </div>
-                      <input
-                        suppressHydrationWarning
-                        type="email"
-                        autoComplete="username"
-                        value={signUpEmail}
-                        onChange={(e) => setSignUpEmail(e.target.value)}
-                        required
-                        placeholder="Email"
-                        className="w-full h-10 md:h-11 px-3.5 text-base sm:text-base text-slate-800 placeholder-slate-400 focus:outline-none"
-                      />
+                  <div className="flex rounded-xl border border-slate-300 bg-white overflow-hidden transition-all focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/10">
+                    <div className="w-10 md:w-11 bg-slate-50 border-r border-slate-200 flex items-center justify-center shrink-0 text-slate-400">
+                      <Mail className="w-4 h-4" />
                     </div>
+                    <input
+                      suppressHydrationWarning
+                      type="email"
+                      autoComplete="username"
+                      value={signUpEmail}
+                      onChange={(e) => setSignUpEmail(e.target.value)}
+                      required
+                      placeholder="Email"
+                      className="w-full h-9.5 md:h-10.5 px-3.5 text-base sm:text-sm md:text-base text-slate-800 placeholder-slate-400 focus:outline-none"
+                    />
                   </div>
 
                   {/* Full Name */}
-                  <div className="flex flex-col gap-1">
-                    <div className="flex rounded-xl border border-slate-300 bg-white overflow-hidden transition-all focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/10">
-                      <div className="w-10 md:w-12 bg-slate-50 border-r border-slate-200 flex items-center justify-center shrink-0 text-slate-400">
-                        <UserIcon className="w-4 h-4 md:w-5 md:h-5" />
-                      </div>
-                      <input
-                        suppressHydrationWarning
-                        type="text"
-                        autoComplete="name"
-                        value={signUpName}
-                        onChange={(e) => setSignUpName(e.target.value)}
-                        required
-                        placeholder="Full name"
-                        className="w-full h-10 md:h-11 px-3.5 text-base sm:text-base text-slate-800 placeholder-slate-400 focus:outline-none"
-                      />
+                  <div className="flex rounded-xl border border-slate-300 bg-white overflow-hidden transition-all focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/10">
+                    <div className="w-10 md:w-11 bg-slate-50 border-r border-slate-200 flex items-center justify-center shrink-0 text-slate-400">
+                      <UserIcon className="w-4 h-4" />
                     </div>
+                    <input
+                      suppressHydrationWarning
+                      type="text"
+                      autoComplete="name"
+                      value={signUpName}
+                      onChange={(e) => setSignUpName(e.target.value)}
+                      required
+                      placeholder="Full name"
+                      className="w-full h-9.5 md:h-10.5 px-3.5 text-base sm:text-sm md:text-base text-slate-800 placeholder-slate-400 focus:outline-none"
+                    />
                   </div>
 
                   {/* Password */}
                   <div className="flex flex-col gap-1">
                     <div className="flex rounded-xl border border-slate-300 bg-white overflow-hidden transition-all focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/10 relative">
-                      <div className="w-10 md:w-12 bg-slate-50 border-r border-slate-200 flex items-center justify-center shrink-0 text-slate-400">
-                        <Lock className="w-4 h-4 md:w-5 md:h-5" />
+                      <div className="w-10 md:w-11 bg-slate-50 border-r border-slate-200 flex items-center justify-center shrink-0 text-slate-400">
+                        <Lock className="w-4 h-4" />
                       </div>
                       <input
                         suppressHydrationWarning
@@ -737,7 +671,7 @@ function LoginPageContent() {
                         onChange={(e) => setSignUpPassword(e.target.value)}
                         required
                         placeholder="Password"
-                        className="w-full h-10 md:h-11 pl-3.5 pr-10 text-base sm:text-base text-slate-800 placeholder-slate-400 focus:outline-none"
+                        className="w-full h-9.5 md:h-10.5 pl-3.5 pr-10 text-base sm:text-sm md:text-base text-slate-800 placeholder-slate-400 focus:outline-none"
                       />
                       <button
                         suppressHydrationWarning
@@ -753,8 +687,8 @@ function LoginPageContent() {
                   {/* Confirm Password */}
                   <div className="flex flex-col gap-1">
                     <div className="flex rounded-xl border border-slate-300 bg-white overflow-hidden transition-all focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/10 relative">
-                      <div className="w-10 md:w-12 bg-slate-50 border-r border-slate-200 flex items-center justify-center shrink-0 text-slate-400">
-                        <Lock className="w-4 h-4 md:w-5 md:h-5" />
+                      <div className="w-10 md:w-11 bg-slate-50 border-r border-slate-200 flex items-center justify-center shrink-0 text-slate-400">
+                        <Lock className="w-4 h-4" />
                       </div>
                       <input
                         suppressHydrationWarning
@@ -766,7 +700,7 @@ function LoginPageContent() {
                         onChange={(e) => setSignUpConfirmPassword(e.target.value)}
                         required
                         placeholder="Confirm Password"
-                        className="w-full h-10 md:h-11 pl-3.5 pr-10 text-base sm:text-base text-slate-800 placeholder-slate-400 focus:outline-none"
+                        className="w-full h-9.5 md:h-10.5 pl-3.5 pr-10 text-base sm:text-sm md:text-base text-slate-800 placeholder-slate-400 focus:outline-none"
                       />
                       <button
                         suppressHydrationWarning
@@ -779,7 +713,7 @@ function LoginPageContent() {
                     </div>
 
                     {isCapsLockOn && (
-                      <div className="flex items-center gap-1.5 mt-1 text-[11px] text-amber-600 font-medium">
+                      <div className="flex items-center gap-1.5 px-1 text-[11px] text-amber-600 font-medium">
                         <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                         <span>Caps Lock is ON</span>
                       </div>
@@ -788,8 +722,8 @@ function LoginPageContent() {
 
                   {/* Company / Organization (Optional) */}
                   <div className="flex rounded-xl border border-slate-300 bg-white overflow-hidden transition-all focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/10">
-                    <div className="w-10 md:w-12 bg-slate-50 border-r border-slate-200 flex items-center justify-center shrink-0 text-slate-400">
-                      <Building2 className="w-4 h-4 md:w-5 md:h-5" />
+                    <div className="w-10 md:w-11 bg-slate-50 border-r border-slate-200 flex items-center justify-center shrink-0 text-slate-400">
+                      <Building2 className="w-4 h-4" />
                     </div>
                     <input
                       suppressHydrationWarning
@@ -798,7 +732,7 @@ function LoginPageContent() {
                       value={signUpCompanyName}
                       onChange={(e) => setSignUpCompanyName(e.target.value)}
                       placeholder="Company / Organization (Optional)"
-                      className="w-full h-10 md:h-11 px-3.5 text-xs md:text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
+                      className="w-full h-9.5 md:h-10.5 px-3.5 text-xs md:text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
                     />
                   </div>
 
@@ -818,7 +752,7 @@ function LoginPageContent() {
                     suppressHydrationWarning
                     type="submit"
                     disabled={signUpLoading}
-                    className="w-full h-10 md:h-12 rounded-xl bg-[#0F4C75] hover:bg-[#1B262C] text-white font-bold text-xs md:text-sm transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-1.5 mt-1 active:scale-[0.99]"
+                    className="w-full h-10 md:h-11 rounded-xl bg-[#0F4C75] hover:bg-[#1B262C] text-white font-bold text-xs md:text-sm transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-1.5 mt-1 active:scale-[0.99]"
                   >
                     {signUpLoading ? (
                       <span className="flex items-center gap-2">
@@ -840,6 +774,7 @@ function LoginPageContent() {
             )}
 
           </div>
+
         </div>
       </div>
 
