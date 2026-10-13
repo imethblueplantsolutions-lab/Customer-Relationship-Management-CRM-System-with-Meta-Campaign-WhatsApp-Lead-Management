@@ -48,7 +48,7 @@ graph TD
 
 ---
 
-## 2. The 4 Critical Production Enhancements (Audit & Solutions)
+## 2. The 5 Critical Production Enhancements (Audit & Solutions)
 
 ### 2.1. Enhancement 1: Apple ITP Auth Trap & Cross-Origin Bearer Token Storage
 - **The Vulnerability:** iOS WKWebView enforces Intelligent Tracking Prevention (ITP). Any session relying on cross-origin cookies between `capacitor://localhost` and your external API domain (`api.yourcrm.com`) is stripped or blocked on iOS.
@@ -442,6 +442,32 @@ useEffect(() => {
 </dict>
 </plist>
 ```
+
+---
+
+### 2.5. Enhancement 5: Phone Book Contact Import & FAB Quick Action Speed Dial
+- **The Feature:** Sales agents on mobile devices can tap the floating `+` button to open the quick action speed-dial menu and choose:
+  1. `Add from Phonebook` (Reads address book contacts via native Contacts API)
+  2. `+ Add New Lead` (Manual inline form injection)
+- **The Native Bridge & Permissions:**
+  - Plugin: `@capacitor-community/contacts`
+  - Android Permission:
+    ```xml
+    <!-- Phone Book Contact Import -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    ```
+  - iOS Usage Description (`ios/App/App/Info.plist`):
+    ```xml
+    <!-- Contacts Usage Justification -->
+    <key>NSContactsUsageDescription</key>
+    <string>BluePlanet CRM requires read access to your device contacts to allow importing prospects directly into your leads pipeline.</string>
+    ```
+- **Backend Bulk Import Engine:**
+  - Endpoint: `POST /api/leads/bulk-import`
+  - Deduplication: Validates international E.164 phone numbers (with auto `+94` formatting for Sri Lanka local 10-digit formats), cross-references existing leads under `@@unique([tenantId, phoneNumber])`, creates non-duplicate leads under current agent assignment, and invalidates Redis/tenant caches.
+- **Frontend Components:**
+  - Trigger: `MobileFAB.tsx` speed dial stacked actions with `BookUser` and `UserPlus` icons.
+  - UI Sheet / Modal: `PhonebookImportModal.tsx` with device picker trigger, multi-contact selection, search, and quick paste support.
 
 ---
 

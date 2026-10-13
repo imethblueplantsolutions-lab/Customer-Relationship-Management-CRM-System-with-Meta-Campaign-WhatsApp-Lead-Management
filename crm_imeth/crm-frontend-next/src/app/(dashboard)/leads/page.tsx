@@ -26,9 +26,11 @@ import {
   UserCheck,
   RotateCcw,
   Check,
+  BookUser,
 } from "lucide-react";
 import Link from "next/link";
 import MergeLeadsModal from "@/components/leads/MergeLeadsModal";
+import PhonebookImportModal from "@/components/leads/PhonebookImportModal";
 import LeadFilters from "@/components/leads/LeadFilters";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { TableSkeleton } from "@/components/ui/Skeleton";
@@ -87,6 +89,7 @@ function LeadsPageContent() {
 
   // Add Lead form state
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showPhonebookModal, setShowPhonebookModal] = useState(false);
   const addFormRef = useRef<HTMLDivElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const [showMergeModal, setShowMergeModal] = useState(false);
@@ -161,12 +164,20 @@ function LeadsPageContent() {
     if (searchParams.get("action") === "new") {
       setShowAddForm(true);
     }
+    if (searchParams.get("action") === "phonebook") {
+      setShowPhonebookModal(true);
+    }
   }, [searchParams]);
 
   useEffect(() => {
     const handleOpen = () => setShowAddForm(true);
+    const handlePhonebook = () => setShowPhonebookModal(true);
     window.addEventListener("crm:open-add-lead", handleOpen);
-    return () => window.removeEventListener("crm:open-add-lead", handleOpen);
+    window.addEventListener("crm:open-phonebook-import", handlePhonebook);
+    return () => {
+      window.removeEventListener("crm:open-add-lead", handleOpen);
+      window.removeEventListener("crm:open-phonebook-import", handlePhonebook);
+    };
   }, []);
 
   useEffect(() => {
@@ -405,7 +416,7 @@ function LeadsPageContent() {
           className="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden animate-in slide-in-from-top-2 duration-200"
         >
           {/* Form Header */}
-          <div className="flex items-center justify-between bg-slate-50/70 border-b border-slate-200/80 px-5 py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/70 border-b border-slate-200/80 px-5 py-4">
             <div>
               <h3 className="text-base font-bold text-brand-primary flex items-center gap-2">
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-primary/10">
@@ -417,6 +428,16 @@ function LeadsPageContent() {
                 Insert a customer phone contact or organic sales prospect into
                 the pipeline.
               </p>
+            </div>
+            <div>
+              <button
+                type="button"
+                onClick={() => setShowPhonebookModal(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-bold transition-all shadow-2xs hover:shadow-xs cursor-pointer active:scale-95"
+              >
+                <BookUser className="h-4 w-4 text-emerald-600" />
+                <span>Add from Phone Book</span>
+              </button>
             </div>
           </div>
 
@@ -1107,6 +1128,13 @@ function LeadsPageContent() {
         isOpen={showMergeModal}
         onClose={() => setShowMergeModal(false)}
         leads={leads}
+        onSuccess={fetchLeads}
+      />
+
+      {/* ─── Phonebook Import Modal ───────────────────────────── */}
+      <PhonebookImportModal
+        isOpen={showPhonebookModal}
+        onClose={() => setShowPhonebookModal(false)}
         onSuccess={fetchLeads}
       />
     </div>

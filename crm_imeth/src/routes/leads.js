@@ -1475,5 +1475,144 @@ router.post('/bulk-delete', authenticate, authorize(['ADMIN', 'TEAM_LEAD']), asy
   }
 });
 
+// POST /bulk-import: Bulk import leads (Phonebook or CSV contact import)
+router.post('/bulk-import', authenticate, authorize(['ADMIN', 'TEAM_LEAD', 'AGENT']), async (req, res) => {
+  try {
+    const { contacts } = req.body;
+    const store = tenantStorage.getStore();
+    const tenantId = req.user?.tenantId || store?.tenantId;
+    const currentUserId = req.user?.userId || req.user?.id;
+
+    if (!tenantId) {
+      return res.status(400).json({ success: false, error: 'Tenant context could not be resolved' });
+    }
+
+    if (!Array.isArray(contacts) || contacts.length === 0) {
+      return res.status(400).json({ success: false, error: 'Array of contacts is required' });
+    }
+
+    if (contacts.length > 200) {
+      return res.status(400).json({ success: false, error: 'Maximum 200 contacts per import batch' });
+    }
+
+    // 1. Validate & clean incoming contacts
+    const validContacts = [];
+    const invalidContacts = [];
+
+    for (const c of contacts) {
+      let rawPhone = (c.phoneNumber || '').toString().trim().replace(/[\s()\-]/g, '');
+      // Format 0770660647 -> +94770660647 if Sri Lanka standard 10 digits
+      if (/^0\d{9}$/.test(rawPhone)) {
+        rawPhone = `+94${rawPhone.slice(1)}`;
+      } else if (/^[1-9]\d{8,14}$/.test(rawPhone) && !rawPhone.startsWith('+')) {
+        rawPhone = `+${rawPhone}`;
+      }
+
+      if (/^\+?[1-9]\d{7,14}$/.test(rawPhone)) {
+        validContacts.push({
+          name: (c.name || '').trim() || null,
+          displayName: (c.displayName || c.name || '').trim() || null,
+          phoneNumber: rawPhone,
+          whatsappNumber: (c.whatsappNumber || rawPhone).trim().replace(/[\s()\-]/g, '') || null,
+          email: c.email && typeof c.email === 'string' && c.email.includes('@') ? c.email.trim() : null,
+          companyName: c.companyName ? c.companyName.trim() : null,
+          notes: c.notes ? c.notes.trim() : null,
+          category: c.category || 'Phonebook Import',
+        });
+      } else {
+        invalidContacts.push({
+          name: c.name,
+          phoneNumber: c.phoneNumber,
+          reason: 'Invalid phone format (must comply with E.164)',
+        });
+      }
+    }
+
+    if (validContacts.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'No valid phone numbers found in the imported contacts',
+        invalidContacts,
+      });
+    }
+
+    // 2. Deduplicate against existing tenant leads
+    const phoneList = validContacts.map((c) => c.phoneNumber);
+    const existingLeads = await prisma.lead.findMany({
+      where: {
+        tenantId,
+        phoneNumber: { in: phoneList },
+      },
+      select: { phoneNumber: true },
+    });
+
+    const existingPhones = new Set(existingLeads.map((l) => l.phoneNumber));
+
+    // Internal dedup across imported batch as well
+    const seenBatchPhones = new Set();
+    const toCreate = [];
+    const skippedDuplicates = [];
+
+    for (const c of validContacts) {
+      if (existingPhones.has(c.phoneNumber) || seenBatchPhones.has(c.phoneNumber)) {
+        skippedDuplicates.push(c);
+      } else {
+        seenBatchPhones.add(c.phoneNumber);
+        toCreate.push(c);
+      }
+    }
+
+    // 3. Insert new leads
+    let createdLeads = [];
+    if (toCreate.length > 0) {
+      createdLeads = await prisma.$transaction(
+        toCreate.map((contact) =>
+          prisma.lead.create({
+            data: {
+              ...contact,
+              tenantId,
+              status: 'NEW',
+              assignedToId: currentUserId || null,
+            },
+          })
+        )
+      );
+    }
+
+    // 4. Invalidate tenant dashboard caches
+    await CacheService.invalidatePattern(`tenant:${tenantId}:dashboard:*`);
+    try {
+      const { io } = require('../index');
+      if (io && createdLeads.length > 0) {
+        io.to(`tenant:${tenantId}`).emit('leads_bulk_imported', {
+          count: createdLeads.length,
+          importedBy: currentUserId,
+        });
+      }
+    } catch (e) {
+      console.warn('[Socket] Failed to emit leads_bulk_imported:', e.message);
+    }
+
+    return res.status(201).json({
+      success: true,
+      data: {
+        created: createdLeads.length,
+        skipped: skippedDuplicates.length,
+        invalid: invalidContacts.length,
+        createdLeads,
+        skippedDuplicates: skippedDuplicates.map((s) => ({
+          name: s.name,
+          phoneNumber: s.phoneNumber,
+          reason: 'Phone number already exists in your organization',
+        })),
+        invalidContacts,
+      },
+    });
+  } catch (error) {
+    console.error('Error in bulk-import:', error);
+    return res.status(500).json({ success: false, error: error.message || 'Failed to bulk import leads' });
+  }
+});
+
 module.exports = router;
 

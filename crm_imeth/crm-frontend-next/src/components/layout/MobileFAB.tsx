@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Plus, UserPlus } from "lucide-react";
+import { Plus, UserPlus, BookUser } from "lucide-react";
 
 export default function MobileFAB() {
   const [open, setOpen] = useState(false);
@@ -35,6 +35,16 @@ export default function MobileFAB() {
     }
   };
 
+  const handleImportFromPhonebook = () => {
+    setOpen(false);
+    if (pathname === "/leads") {
+      window.dispatchEvent(new CustomEvent("crm:open-phonebook-import"));
+      router.push(`/leads?action=phonebook&t=${Date.now()}`);
+    } else {
+      router.push("/leads?action=phonebook");
+    }
+  };
+
   return (
     <div
       ref={fabRef}
@@ -59,6 +69,18 @@ export default function MobileFAB() {
               <span>+ Add New Lead</span>
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-primary/10 text-brand-primary">
                 <UserPlus className="h-4 w-4" />
+              </span>
+            </button>
+
+            {/* Action 2: Add Lead from Phone Book (under Add New Lead) */}
+            <button
+              type="button"
+              onClick={handleImportFromPhonebook}
+              className="flex items-center gap-2.5 rounded-full bg-white px-4 py-2.5 shadow-xl border border-slate-200/80 text-slate-800 text-xs font-bold active:scale-95 transition-all cursor-pointer hover:border-emerald-500/40 hover:text-emerald-700"
+            >
+              <span>Add Lead from Phone Book</span>
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                <BookUser className="h-4 w-4" />
               </span>
             </button>
           </div>
