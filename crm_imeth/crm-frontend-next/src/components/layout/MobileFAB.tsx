@@ -48,7 +48,7 @@ export default function MobileFAB() {
   return (
     <div
       ref={fabRef}
-      className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] right-4 z-40 md:hidden flex flex-col items-end"
+      className="fixed bottom-[calc(6.75rem+env(safe-area-inset-bottom))] right-4 z-40 md:hidden flex flex-col items-end"
     >
       {/* Speed Dial Menu Items */}
       {open && (
