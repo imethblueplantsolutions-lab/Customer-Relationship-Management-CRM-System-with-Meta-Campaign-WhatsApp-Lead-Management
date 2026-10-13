@@ -40,7 +40,7 @@ export const MAIN_CRM_THEME: ThemeConfig = {
   name: "Vibrant Blue",
   category: "light",
   tagline: "Vibrant Blue & Cyan (Main CRM)",
-  description: "Official CRM palette featuring Vibrant Blue, Bright Cyan, Pale Blue-Gray surfaces, and Deep Navy typography on an icy white canvas.",
+  description: "Official CRM palette featuring Vibrant Blue, Pale Blue-Gray surfaces, and Deep Navy typography on an icy white canvas.",
   colors: {
     background: "#F3F8FE",
     surface: "#DEEEFD",
@@ -55,9 +55,9 @@ export const MAIN_CRM_THEME: ThemeConfig = {
     { label: "C1 (Brand) Vibrant Blue", hex: "#1B7BED" },
     { label: "C2 (Accent) Bright Cyan", hex: "#18DBF5" },
     { label: "C3 (Base) Icy White", hex: "#F3F8FE" },
-    { label: "C4 (Surface) Pale Blue-Gray", hex: "#DEEEFD" },
-    { label: "C5 (Neutral) Deep Navy", hex: "#1B7BED" },
-  ],
+    { label: "C4 (Surface) Pale Blue-Gray", hex: "#DEEEFD" }
+  ]
+
 };
 
 /**
