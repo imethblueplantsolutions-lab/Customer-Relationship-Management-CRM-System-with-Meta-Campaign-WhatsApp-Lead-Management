@@ -8,7 +8,6 @@ import {
   Users,
   UserCheck,
   Network,
-  Menu,
   X,
   CheckCheck,
 } from "lucide-react";
@@ -84,7 +83,6 @@ export default function MobileBottomNav({
         label: "Home",
         icon: LayoutDashboard,
         matchesRoute: pathname === "/dashboard",
-        isDrawer: false,
         isNotification: false,
       },
       {
@@ -93,7 +91,6 @@ export default function MobileBottomNav({
         label: isAgent ? "My Leads" : "Leads",
         icon: Users,
         matchesRoute: pathname.startsWith("/leads"),
-        isDrawer: false,
         isNotification: false,
       },
       {
@@ -102,7 +99,6 @@ export default function MobileBottomNav({
         label: "Alerts",
         icon: NotificationCircleIcon,
         matchesRoute: false,
-        isDrawer: false,
         isNotification: true,
       },
     ];
@@ -116,20 +112,9 @@ export default function MobileBottomNav({
         matchesRoute: isSuperAdmin
           ? pathname.startsWith("/hierarchy")
           : pathname.startsWith("/users"),
-        isDrawer: false,
         isNotification: false,
       });
     }
-
-    items.push({
-      id: "more",
-      href: "#",
-      label: "More",
-      icon: Menu,
-      matchesRoute: false,
-      isDrawer: true,
-      isNotification: false,
-    });
 
     return items;
   }, [pathname, isAgent, isSuperAdmin]);
@@ -151,7 +136,6 @@ export default function MobileBottomNav({
 
   const handleItemClick = (
     idx: number,
-    isDrawer?: boolean,
     isNotification?: boolean
   ) => {
     setActiveIdx(idx);
@@ -167,12 +151,6 @@ export default function MobileBottomNav({
 
     if (isNotification) {
       setIsNotificationOpen(true);
-      return;
-    }
-
-    if (isDrawer) {
-      setIsNotificationOpen(false);
-      onOpenDrawer();
       return;
     }
 
@@ -224,23 +202,10 @@ export default function MobileBottomNav({
 
             return (
               <li key={tab.id} className="relative flex-1 h-full list-none">
-                {tab.isDrawer ? (
+                {tab.isNotification ? (
                   <button
                     type="button"
-                    onClick={() => handleItemClick(idx, true, false)}
-                    className={`magic-nav-item cursor-pointer ${isActive ? "active" : ""}`}
-                    aria-label="Open more menu drawer"
-                  >
-                    <span className="magic-circle-ring" />
-                    <span className="magic-nav-icon relative">
-                      <Icon className="w-[22px] h-[22px] stroke-[2.2]" />
-                    </span>
-                    <span className="magic-nav-text">{tab.label}</span>
-                  </button>
-                ) : tab.isNotification ? (
-                  <button
-                    type="button"
-                    onClick={() => handleItemClick(idx, false, true)}
+                    onClick={() => handleItemClick(idx, true)}
                     className={`magic-nav-item cursor-pointer ${isActive ? "active" : ""}`}
                     aria-label="Open notifications"
                   >
@@ -258,7 +223,7 @@ export default function MobileBottomNav({
                 ) : (
                   <Link
                     href={tab.href}
-                    onClick={() => handleItemClick(idx, false, false)}
+                    onClick={() => handleItemClick(idx, false)}
                     className={`magic-nav-item cursor-pointer ${isActive ? "active" : ""}`}
                     aria-label={tab.label}
                   >
