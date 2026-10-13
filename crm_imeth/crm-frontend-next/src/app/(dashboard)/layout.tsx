@@ -169,9 +169,11 @@ export default function DashboardLayout({
           onNavigate={() => setMobileOpen(false)}
         />
 
-        {/* Footer with Notification Bell & User Card */}
+        {/* Footer with Notification Bell (Desktop only) & User Card */}
         <div className="border-t border-white/10 p-4 space-y-3 shrink-0">
-          <NotificationDropdown isCollapsed={isCollapsed} />
+          <div className="hidden md:block">
+            <NotificationDropdown isCollapsed={isCollapsed} />
+          </div>
           <UserCard user={user} isCollapsed={isCollapsed} onLogout={logout} />
         </div>
       </aside>
