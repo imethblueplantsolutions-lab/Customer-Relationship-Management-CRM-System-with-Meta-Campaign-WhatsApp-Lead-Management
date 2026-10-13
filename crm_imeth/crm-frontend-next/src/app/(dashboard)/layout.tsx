@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
-import { X, ChevronLeft, ChevronRight, Settings, LogOut, Palette } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Settings, LogOut } from "lucide-react";
 import SidebarNav from "@/components/layout/SidebarNav";
 import NotificationDropdown from "@/components/layout/NotificationDropdown";
 import UserCard from "@/components/layout/UserCard";
@@ -267,18 +267,6 @@ export default function DashboardLayout({
                     Account Settings
                   </button>
 
-                  {/* Theme Options Link */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsProfileOpen(false);
-                      router.push("/settings?tab=theme");
-                    }}
-                    className="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-semibold text-brand-text hover:bg-brand-bg rounded-xl transition-colors cursor-pointer"
-                  >
-                    <Palette className="h-4 w-4 text-brand-primary" />
-                    Theme Options
-                  </button>
 
                   {/* Exit / Log Out Link */}
                   <button

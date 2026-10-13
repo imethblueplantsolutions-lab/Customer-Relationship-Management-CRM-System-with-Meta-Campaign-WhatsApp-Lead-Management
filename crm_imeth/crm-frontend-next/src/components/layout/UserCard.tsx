@@ -33,7 +33,7 @@ export default function UserCard({ user, isCollapsed, onLogout }: UserCardProps)
       <Link
         href="/settings"
         className="flex items-center gap-3 min-w-0 flex-1 group cursor-pointer"
-        title="Account Settings & Theme Options"
+        title="Account Settings"
       >
         {user?.avatar ? (
           <img
