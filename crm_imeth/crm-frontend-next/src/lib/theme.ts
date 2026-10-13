@@ -49,14 +49,14 @@ export const MAIN_CRM_THEME: ThemeConfig = {
     textSecondary: "#476685",
     primary: "#1B7BED",
     accent: "#18DBF5",
-    sidebar: "#0A2540",
+    sidebar: "#1B7BED",
   },
   swatches: [
     { label: "C1 (Brand) Vibrant Blue", hex: "#1B7BED" },
     { label: "C2 (Accent) Bright Cyan", hex: "#18DBF5" },
     { label: "C3 (Base) Icy White", hex: "#F3F8FE" },
     { label: "C4 (Surface) Pale Blue-Gray", hex: "#DEEEFD" },
-    { label: "C5 (Neutral) Deep Navy", hex: "#0A2540" },
+    { label: "C5 (Neutral) Deep Navy", hex: "#1B7BED" },
   ],
 };
 
