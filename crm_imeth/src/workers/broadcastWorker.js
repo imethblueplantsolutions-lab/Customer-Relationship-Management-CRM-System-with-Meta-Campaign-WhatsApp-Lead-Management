@@ -47,7 +47,7 @@ const broadcastWorker = new Worker(
       throw new Error(`Job ${job.id} missing required parameter: accessToken`);
     }
 
-    // Fetch the lead's phone number and verification status
+    // Fetch the lead's phone number and subscription status
     const lead = await prisma.lead.findUnique({
       where: { id: leadId },
       select: {
@@ -55,11 +55,22 @@ const broadcastWorker = new Worker(
         phoneNumber: true,
         name: true,
         tenantId: true,
+        isSubscribed: true,
       },
     });
 
     if (!lead || !lead.phoneNumber) {
       throw new Error(`Lead record not found or missing phone number for leadId: ${leadId}`);
+    }
+
+    // CAN-SPAM / TCPA compliance: Do not dispatch marketing templates to unsubscribed leads
+    if (lead.isSubscribed === false) {
+      console.log(`[BroadcastWorker] Lead ${lead.id} (${lead.phoneNumber}) has opted out of marketing communications. Skipping dispatch.`);
+      return {
+        leadId: lead.id,
+        status: 'SKIPPED_OPT_OUT',
+        message: 'Lead previously unsubscribed',
+      };
     }
 
     // Format phone number (remove + or whitespace if present)

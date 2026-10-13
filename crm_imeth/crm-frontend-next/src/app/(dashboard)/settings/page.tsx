@@ -34,6 +34,7 @@ import {
   Building2,
   ShieldAlert,
   MapPin,
+  CreditCard,
 } from "lucide-react";
 import { toast } from "sonner";
 import ActivityFeed from "@/components/hierarchy/ActivityFeed";
@@ -41,10 +42,11 @@ import ThemeOptionsTab from "@/components/settings/ThemeOptionsTab";
 import NotificationPreferencesTab from "@/components/settings/NotificationPreferencesTab";
 import IntegrationsTab from "@/components/settings/IntegrationsTab";
 import DangerZoneTab from "@/components/settings/DangerZoneTab";
+import BillingTab from "@/components/settings/BillingTab";
 
 // ─── Types ─────────────────────────────────────────────────
 export type SettingsTab = "account" | "theme" | "meta" | "audit";
-export type AccountSubTab = "profile" | "security" | "notifications" | "integrations" | "danger";
+export type AccountSubTab = "profile" | "security" | "billing" | "notifications" | "integrations" | "danger";
 
 interface TenantSettings {
   id: string;
@@ -1016,6 +1018,7 @@ function AccountSettingsTab({
   }[] = [
     { id: "profile", label: "Profile Data", icon: UserIcon },
     { id: "security", label: "Security & Passwords", icon: Lock },
+    { id: "billing", label: "Billing & Subscription", icon: CreditCard },
     { id: "notifications", label: "Notifications", icon: Bell },
     { id: "integrations", label: "Connected Accounts", icon: Webhook },
     { id: "danger", label: "Danger Zone & Export", icon: AlertTriangle },
@@ -1059,6 +1062,7 @@ function AccountSettingsTab({
       <div className="pt-1">
         {subTab === "profile" && <ProfileTab user={user} updateUser={updateUser} />}
         {subTab === "security" && <SecurityTab user={user} setSession={setSession} />}
+        {subTab === "billing" && <BillingTab />}
         {subTab === "notifications" && <NotificationPreferencesTab />}
         {subTab === "integrations" && <IntegrationsTab onNavigateToMeta={onNavigateToMeta} />}
         {subTab === "danger" && <DangerZoneTab user={user} onLogout={onLogout} />}
@@ -1074,6 +1078,7 @@ export default function AccountSettingsPage() {
   const { user, updateUser, setSession, logout } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<SettingsTab>("account");
+  const [initialSubTab, setInitialSubTab] = useState<AccountSubTab>("profile");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -1085,6 +1090,9 @@ export default function AccountSettingsPage() {
         setActiveTab("meta");
       } else if (tabParam === "audit") {
         setActiveTab("audit");
+      } else if (tabParam === "billing") {
+        setActiveTab("account");
+        setInitialSubTab("billing");
       } else if (tabParam === "account" || tabParam === "profile" || tabParam === "security") {
         setActiveTab("account");
       }
@@ -1278,6 +1286,7 @@ export default function AccountSettingsPage() {
                 setSession={setSession}
                 onNavigateToMeta={() => setActiveTab("meta")}
                 onLogout={handleLogout}
+                initialSubTab={initialSubTab}
               />
             )}
             {activeTab === "theme" && <ThemeOptionsTab />}

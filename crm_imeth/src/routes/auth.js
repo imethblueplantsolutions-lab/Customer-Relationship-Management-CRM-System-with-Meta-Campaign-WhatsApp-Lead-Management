@@ -710,7 +710,16 @@ router.post('/reset-password', async (req, res) => {
 // POST: Self-service Registration for new organization/account
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, companyName } = req.body;
+    const { name, email, password, companyName, ageConfirmed } = req.body;
+
+    // 1. COPPA Compliance: Age gate (blocks users under 13)
+    if (ageConfirmed !== true && ageConfirmed !== 'true') {
+      return res.status(403).json({
+        success: false,
+        error: 'COPPA Compliance: You must confirm that you are at least 13 years of age (and authorized for enterprise use) to create an account. Children under 13 are strictly prohibited.',
+      });
+    }
+
     if (!email || !password) {
       return res.status(400).json({ success: false, error: 'Email and password are required' });
     }
@@ -945,4 +954,57 @@ router.post('/seed', async (req, res) => {
   }
 });
 
+/**
+ * CAN-SPAM: Opt-out / Unsubscribe endpoint.
+ * GET /api/auth/unsubscribe?email=...&token=...
+ * POST /api/auth/unsubscribe (JSON: { email, token })
+ * Honors opt-out requests immediately across Leads and Users.
+ */
+async function handleUnsubscribe(req, res) {
+  try {
+    const email = (req.query.email || req.body?.email || '').toLowerCase().trim();
+    const token = req.query.token || req.body?.token;
+
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email parameter is required to process unsubscribe request' });
+    }
+
+    // Optional token validation for authenticated/secure email links
+    const { verifyUnsubscribeToken } = require('../services/mailer');
+    if (token && !verifyUnsubscribeToken(email, token)) {
+      return res.status(400).json({ success: false, error: 'Invalid or expired unsubscribe token' });
+    }
+
+    const now = new Date();
+
+    // 1. Mark all Leads matching this email as unsubscribed
+    const leadUpdate = await prisma.lead.updateMany({
+      where: { email },
+      data: { isSubscribed: false, unsubscribedAt: now },
+    });
+
+    // 2. Mark all Users matching this email as unsubscribed
+    const userUpdate = await prisma.user.updateMany({
+      where: { email },
+      data: { isSubscribed: false, unsubscribedAt: now },
+    });
+
+    console.log(`[CAN-SPAM Unsubscribe] Processed opt-out for ${email}. Affected leads: ${leadUpdate.count}, users: ${userUpdate.count}`);
+
+    return res.status(200).json({
+      success: true,
+      message: `You have successfully unsubscribed ${email} from all commercial and marketing communications. Opt-out honored immediately pursuant to CAN-SPAM regulations.`,
+      email,
+      timestamp: now.toISOString(),
+    });
+  } catch (error) {
+    console.error('[Unsubscribe Error]:', error);
+    return res.status(500).json({ success: false, error: 'Failed to process unsubscribe request' });
+  }
+}
+
+router.get('/unsubscribe', handleUnsubscribe);
+router.post('/unsubscribe', handleUnsubscribe);
+
 module.exports = router;
+

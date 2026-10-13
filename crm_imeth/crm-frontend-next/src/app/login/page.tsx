@@ -135,7 +135,8 @@ function LoginPageContent() {
   const [signUpCompanyName, setSignUpCompanyName] = useState("");
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const [showSignUpConfirmPassword, setShowSignUpConfirmPassword] = useState(false);
-  const [agreedToTerms, setAgreedToTerms] = useState(true);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [signUpError, setSignUpError] = useState("");
   const [signUpSuccess, setSignUpSuccess] = useState("");
   const [signUpLoading, setSignUpLoading] = useState(false);
@@ -235,6 +236,11 @@ function LoginPageContent() {
       return;
     }
 
+    if (!ageConfirmed) {
+      setSignUpError("COPPA Compliance: You must confirm that you are at least 13 years of age (and authorized for enterprise use) to create an account.");
+      return;
+    }
+
     if (!agreedToTerms) {
       setSignUpError("Please accept the Terms of Service and Privacy Policy to continue.");
       return;
@@ -250,6 +256,7 @@ function LoginPageContent() {
           email: cleanedEmail,
           password: signUpPassword,
           companyName: signUpCompanyName.trim() || undefined,
+          ageConfirmed: true,
         }),
       });
 
@@ -315,7 +322,8 @@ function LoginPageContent() {
     }
   }, [router, setSession, getDestination]);
 
-  useEffect(() => {
+  // GDPR Click-to-Load & Consent-Gated Google Identity Services (GSI)
+  const loadGoogleScript = useCallback((onReady?: () => void) => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     if (!clientId) return;
 
@@ -339,6 +347,7 @@ function LoginPageContent() {
         });
       }
       setGoogleInitialized(true);
+      onReady?.();
     };
 
     if (!document.getElementById(scriptId)) {
@@ -354,25 +363,54 @@ function LoginPageContent() {
     }
   }, [handleGoogleResponse]);
 
+  // GDPR: Only auto-load Google script if user previously granted third-party cookie/script consent
+  useEffect(() => {
+    const checkConsentAndLoad = () => {
+      try {
+        const stored = localStorage.getItem("gdpr_cookie_consent");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed.thirdParty) {
+            loadGoogleScript();
+          }
+        }
+      } catch (_) {}
+    };
+
+    checkConsentAndLoad();
+    window.addEventListener("consent_updated", checkConsentAndLoad);
+    return () => window.removeEventListener("consent_updated", checkConsentAndLoad);
+  }, [loadGoogleScript]);
+
   const handleGoogleSignIn = () => {
     setError("");
     setSuccessMsg("");
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
-    if (clientId && window.google?.accounts?.id) {
-      window.google.accounts.id.prompt((notification: unknown) => {
-        const notif = notification as { isNotDisplayed?: () => boolean; isSkippedMoment?: () => boolean };
-        if (notif?.isNotDisplayed?.() || notif?.isSkippedMoment?.()) {
-          const btn = document.querySelector("#google-signin-btn div[role=button]") as HTMLElement;
-          if (btn) btn.click();
+    if (!clientId) {
+      setSuccessMsg(
+        "Google Sign-In button is live on your UI! Live OAuth authentication will activate when your Google Cloud Client ID is added."
+      );
+      return;
+    }
+
+    // GDPR Click-to-Load: User interaction explicitly initiates the Google connection
+    if (!googleInitialized || !window.google?.accounts?.id) {
+      loadGoogleScript(() => {
+        if (window.google?.accounts?.id) {
+          window.google.accounts.id.prompt();
         }
       });
       return;
     }
 
-    setSuccessMsg(
-      "Google Sign-In button is live on your UI! Live OAuth authentication will activate when your Google Cloud Client ID is added."
-    );
+    window.google.accounts.id.prompt((notification: unknown) => {
+      const notif = notification as { isNotDisplayed?: () => boolean; isSkippedMoment?: () => boolean };
+      if (notif?.isNotDisplayed?.() || notif?.isSkippedMoment?.()) {
+        const btn = document.querySelector("#google-signin-btn div[role=button]") as HTMLElement;
+        if (btn) btn.click();
+      }
+    });
   };
 
 
@@ -491,6 +529,9 @@ function LoginPageContent() {
                         suppressHydrationWarning
                         type={showPassword ? "text" : "password"}
                         autoComplete="current-password"
+                        data-private="true"
+                        data-mask="true"
+                        spellCheck={false}
                         value={password}
                         onKeyDown={handleKeyEvent}
                         onKeyUp={handleKeyEvent}
@@ -665,6 +706,9 @@ function LoginPageContent() {
                         suppressHydrationWarning
                         type={showSignUpPassword ? "text" : "password"}
                         autoComplete="new-password"
+                        data-private="true"
+                        data-mask="true"
+                        spellCheck={false}
                         value={signUpPassword}
                         onKeyDown={handleKeyEvent}
                         onKeyUp={handleKeyEvent}
@@ -694,6 +738,9 @@ function LoginPageContent() {
                         suppressHydrationWarning
                         type={showSignUpConfirmPassword ? "text" : "password"}
                         autoComplete="new-password"
+                        data-private="true"
+                        data-mask="true"
+                        spellCheck={false}
                         value={signUpConfirmPassword}
                         onKeyDown={handleKeyEvent}
                         onKeyUp={handleKeyEvent}
@@ -736,6 +783,19 @@ function LoginPageContent() {
                     />
                   </div>
 
+                  {/* Age Gate Checkbox (COPPA Compliance - Blocks Under-13s) */}
+                  <label className="flex items-start gap-2 text-[11px] text-slate-700 pt-0.5 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={ageConfirmed}
+                      onChange={(e) => setAgeConfirmed(e.target.checked)}
+                      className="w-3.5 h-3.5 mt-0.5 rounded-sm border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600 shrink-0"
+                    />
+                    <span>
+                      I confirm that I am at least 18 years old (and at least 13) and authorized for enterprise use.
+                    </span>
+                  </label>
+
                   {/* Terms Checkbox */}
                   <label className="flex items-start gap-2 text-[11px] text-slate-600 pt-0.5 cursor-pointer select-none">
                     <input
@@ -744,7 +804,16 @@ function LoginPageContent() {
                       onChange={(e) => setAgreedToTerms(e.target.checked)}
                       className="w-3.5 h-3.5 mt-0.5 rounded-sm border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600 shrink-0"
                     />
-                    <span>I accept the Terms of Service and Privacy Policy</span>
+                    <span>
+                      I accept the{" "}
+                      <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline font-medium hover:text-blue-800">
+                        Terms of Service
+                      </a>{" "}
+                      and{" "}
+                      <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline font-medium hover:text-blue-800">
+                        Privacy Policy
+                      </a>
+                    </span>
                   </label>
 
                   {/* Submit Button */}

@@ -48,6 +48,12 @@ model User {
   lockoutUntil      DateTime?
   maxTeamLeads      Int?           @default(1)
   maxAgents         Int?           @default(1)
+  isSubscribed      Boolean        @default(true) // CAN-SPAM marketing email opt-in status
+  unsubscribedAt    DateTime?
+  dmcaStrikes       Int            @default(0)    // DMCA repeat infringer tracking
+  subscriptionStatus String        @default("FREE") // California ARL auto-renewal state (FREE, ACTIVE, CANCELLED)
+  subscriptionRenewalDate DateTime?
+  subscriptionPrice Float?
   tenantId          String
   tenant            Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   assignedLeads     Lead[]
@@ -77,6 +83,8 @@ model Lead {
   notes          String?
   status         String               @default("NEW")
   category       String?
+  isSubscribed   Boolean              @default(true) // CAN-SPAM marketing communication status
+  unsubscribedAt DateTime?
   tags           Tag[]                @relation("LeadTags")
   tenantId       String
   tenant         Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)

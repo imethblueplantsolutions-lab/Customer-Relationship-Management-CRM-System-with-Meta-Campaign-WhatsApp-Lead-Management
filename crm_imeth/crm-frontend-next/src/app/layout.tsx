@@ -5,6 +5,8 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { Toaster } from "sonner";
 
+import { CookieConsentBanner } from "@/components/common/CookieConsentBanner";
+
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
@@ -27,6 +29,7 @@ export default function RootLayout({
         <AuthProvider>
           <ThemeProvider>{children}</ThemeProvider>
         </AuthProvider>
+        <CookieConsentBanner />
         <Toaster
           position="top-right"
           richColors

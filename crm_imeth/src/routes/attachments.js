@@ -149,4 +149,128 @@ router.get('/:id/info', async (req, res) => {
   }
 });
 
+/**
+ * DELETE /api/attachments/:id
+ * General attachment removal (Creator, Admin, or Super Admin)
+ */
+router.delete('/:id', async (req, res) => {
+  try {
+    const attachment = await authorizeAttachmentAccess(req.params.id, req.user);
+    const isOwner = attachment.createdById === req.user.id || attachment.createdById === req.user.userId;
+    const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ success: false, error: 'Forbidden: You do not have permission to delete this attachment' });
+    }
+
+    await prisma.attachment.delete({
+      where: { id: attachment.id },
+    });
+
+    return res.status(200).json({ success: true, message: 'Attachment successfully deleted' });
+  } catch (error) {
+    const status = error.statusCode || 500;
+    return res.status(status).json({
+      success: false,
+      error: error.message || 'Failed to delete attachment',
+    });
+  }
+});
+
+/**
+ * DELETE /api/attachments/:id/takedown
+ * DMCA Safe Harbor Expeditious Removal & Repeat Infringer Policy Enforcement.
+ * Requires: ADMIN or SUPER_ADMIN role.
+ * Actions:
+ * 1. Permanently expunges infringing content from database.
+ * 2. Increments creator's DMCA strike count.
+ * 3. Enforces repeat infringer policy: bans/deactivates user upon reaching 3 strikes.
+ * 4. Logs immutable audit trail with DMCA notice details.
+ */
+router.delete('/:id/takedown', async (req, res) => {
+  try {
+    const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
+    if (!isAdmin) {
+      return res.status(403).json({ success: false, error: 'Forbidden: Only administrators can execute DMCA takedown actions' });
+    }
+
+    const { noticeId, claimantName, reason, applyStrike = true } = req.body || {};
+    const attachment = await authorizeAttachmentAccess(req.params.id, req.user);
+    const uploaderId = attachment.createdById;
+    const tenantId = req.user.tenantId;
+
+    // 1. Permanently remove the infringing attachment
+    await prisma.attachment.delete({
+      where: { id: attachment.id },
+    });
+
+    let uploaderStatus = 'active';
+    let newStrikeCount = 0;
+
+    // 2. Repeat Infringer Policy: Track strikes and terminate repeat offenders
+    if (uploaderId && applyStrike) {
+      const uploader = await prisma.user.findUnique({
+        where: { id: uploaderId },
+        select: { id: true, email: true, name: true, dmcaStrikes: true, isActive: true },
+      });
+
+      if (uploader) {
+        newStrikeCount = (uploader.dmcaStrikes || 0) + 1;
+        const shouldBan = newStrikeCount >= 3;
+
+        await prisma.user.update({
+          where: { id: uploaderId },
+          data: {
+            dmcaStrikes: newStrikeCount,
+            ...(shouldBan && { isActive: false }),
+          },
+        });
+
+        uploaderStatus = shouldBan ? 'terminated_repeat_infringer' : 'warning_issued';
+
+        if (shouldBan) {
+          console.warn(`[DMCA Repeat Infringer Policy] User ${uploader.email} reached ${newStrikeCount} strikes and has been permanently terminated.`);
+        }
+      }
+    }
+
+    // 3. Log enterprise audit event
+    const { logAudit } = require('../utils/auditLogger');
+    await logAudit({
+      tenantId,
+      performedById: req.user?.userId || req.user?.id,
+      targetUserId: uploaderId,
+      action: 'DMCA_TAKEDOWN_EXECUTED',
+      details: {
+        attachmentId: attachment.id,
+        fileName: attachment.fileName,
+        fileSize: attachment.fileSize,
+        noticeId: noticeId || 'DIRECT_DMCA_REQUEST',
+        claimantName: claimantName || 'Undisclosed Rightsholder',
+        reason: reason || 'Copyright Infringement Notice (17 U.S.C. 512(c))',
+        strikes: newStrikeCount,
+        uploaderStatus,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'DMCA Takedown executed successfully. Infringing material has been removed from service.',
+      details: {
+        attachmentId: attachment.id,
+        fileName: attachment.fileName,
+        uploaderId,
+        newStrikeCount,
+        uploaderStatus,
+      },
+    });
+  } catch (error) {
+    const status = error.statusCode || 500;
+    return res.status(status).json({
+      success: false,
+      error: error.message || 'Failed to process DMCA takedown',
+    });
+  }
+});
+
 module.exports = router;

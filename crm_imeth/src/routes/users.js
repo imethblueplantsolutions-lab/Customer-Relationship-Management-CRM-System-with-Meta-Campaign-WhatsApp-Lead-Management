@@ -1438,4 +1438,66 @@ router.delete('/:id', authorize(['SUPER_ADMIN']), async (req, res) => {
   }
 });
 
+/**
+ * POST /api/users/:id/ban
+ * Administrative ban/deactivation for Terms violations or DMCA Repeat Infringement.
+ * Invalidates tokenVersion to immediately revoke all active JWT tokens.
+ */
+router.post('/:id/ban', authorize(['ADMIN', 'SUPER_ADMIN']), async (req, res) => {
+  try {
+    const targetUserId = req.params.id;
+    const { reason = 'DMCA Repeat Infringer Policy Enforcement' } = req.body || {};
+
+    const targetUser = await prisma.user.findUnique({
+      where: { id: targetUserId },
+    });
+
+    if (!targetUser) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    if (['SUPER_ADMIN'].includes(targetUser.role)) {
+      return res.status(400).json({ success: false, error: 'Cannot ban root Super Admin account' });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: targetUserId },
+      data: {
+        isActive: false,
+        tokenVersion: { increment: 1 },
+      },
+    });
+
+    await logAudit({
+      tenantId: targetUser.tenantId,
+      performedById: req.user?.userId || req.user?.id,
+      targetUserId,
+      action: 'USER_BANNED',
+      details: {
+        reason,
+        email: targetUser.email,
+        previousStrikes: targetUser.dmcaStrikes,
+      },
+    });
+
+    // Real-time broadcast to force logout if connected via socket
+    try {
+      const { io } = require('../index');
+      if (io) {
+        io.to(`user:${targetUserId}`).emit('force_logout', { reason });
+        io.to(`tenant:${targetUser.tenantId}`).emit('user_updated', updatedUser);
+      }
+    } catch (_) {}
+
+    return res.status(200).json({
+      success: true,
+      message: `User ${targetUser.email} has been deactivated and banned. Active sessions revoked.`,
+      user: { id: updatedUser.id, email: updatedUser.email, isActive: updatedUser.isActive },
+    });
+  } catch (error) {
+    console.error('Error banning user:', error);
+    res.status(500).json({ success: false, error: 'Failed to ban user: ' + error.message });
+  }
+});
+
 module.exports = router;

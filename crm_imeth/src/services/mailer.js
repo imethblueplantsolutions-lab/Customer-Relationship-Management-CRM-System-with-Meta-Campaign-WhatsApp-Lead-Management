@@ -208,7 +208,236 @@ async function sendWelcomeEmail(email, name, tempPassword, role) {
   }
 }
 
+const COMPANY_CONFIG = require('../config/company');
+const crypto = require('crypto');
+
+/**
+ * Generates an HMAC unsubscribe verification token for an email address
+ * @param {string} email
+ * @returns {string}
+ */
+function generateUnsubscribeToken(email) {
+  const secret = process.env.JWT_SECRET || 'crm_unsubscribe_token_secret';
+  return crypto.createHmac('sha256', secret).update(email.toLowerCase().trim()).digest('hex');
+}
+
+/**
+ * Validates an HMAC unsubscribe token
+ * @param {string} email
+ * @param {string} token
+ * @returns {boolean}
+ */
+function verifyUnsubscribeToken(email, token) {
+  if (!email || !token) return false;
+  const expected = generateUnsubscribeToken(email);
+  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(token));
+}
+
+/**
+ * Dispatches a CAN-SPAM compliant marketing or promotional email.
+ * Guarantees:
+ * 1. Non-deceptive clear sender
+ * 2. Unsubscribe suppression check before sending
+ * 3. Physical postal address in footer
+ * 4. Working one-click unsubscribe link
+ * 
+ * @param {string} email - Destination email
+ * @param {string} subject - Email subject line
+ * @param {string} bodyHtml - Main HTML email body
+ * @param {object} [options] - Optional overrides (senderName, recipientName)
+ */
+async function sendMarketingEmail(email, subject, bodyHtml, options = {}) {
+  const cleanEmail = email.toLowerCase().trim();
+  const prisma = require('../config/db');
+
+  // 1. CAN-SPAM: Pre-flight Suppression List & Opt-Out Check
+  const [unsubscribedLead, unsubscribedUser] = await Promise.all([
+    prisma.lead.findFirst({
+      where: { email: cleanEmail, isSubscribed: false },
+      select: { id: true, unsubscribedAt: true },
+    }),
+    prisma.user.findFirst({
+      where: { email: cleanEmail, isSubscribed: false },
+      select: { id: true, unsubscribedAt: true },
+    }),
+  ]);
+
+  if (unsubscribedLead || unsubscribedUser) {
+    const errorMsg = `[CAN-SPAM Suppression] Recipient ${cleanEmail} has previously opted out of marketing communications. Dispatch aborted.`;
+    console.warn(errorMsg);
+    throw new Error(errorMsg);
+  }
+
+  // 2. Generate secure unsubscribe URL
+  const token = generateUnsubscribeToken(cleanEmail);
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const unsubscribeUrl = `${frontendUrl}/unsubscribe?email=${encodeURIComponent(cleanEmail)}&token=${token}`;
+
+  const postalAddress = COMPANY_CONFIG.postalAddress;
+  const senderName = options.senderName || process.env.EMAIL_FROM_NAME || COMPANY_CONFIG.name;
+  const fromEmail = process.env.EMAIL_USER || 'marketing@mycrm.example.com';
+
+  const fullHtml = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; color: #1e293b;">
+      <div style="padding-bottom: 16px; border-bottom: 1px solid #e2e8f0;">
+        <h2 style="margin: 0; color: #0F4C75; font-size: 20px;">${COMPANY_CONFIG.name}</h2>
+      </div>
+      <div style="padding: 24px 0; line-height: 1.6; font-size: 14px; color: #334155;">
+        ${bodyHtml}
+      </div>
+      <!-- CAN-SPAM Mandatory Compliance Footer -->
+      <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; font-size: 12px; color: #64748b; line-height: 1.5; background-color: #f8fafc; border-radius: 8px; padding: 16px; margin-top: 24px;">
+        <p style="margin: 0 0 8px 0; font-weight: 600; color: #475569;">
+          Physical Postal Address:
+        </p>
+        <p style="margin: 0 0 12px 0;">
+          ${postalAddress}
+        </p>
+        <p style="margin: 0 0 12px 0;">
+          You are receiving this commercial message because your email (${cleanEmail}) is registered with our services or opted into enterprise updates.
+        </p>
+        <p style="margin: 0;">
+          If you no longer wish to receive marketing communications, you may 
+          <a href="${unsubscribeUrl}" style="color: #0284c7; text-decoration: underline; font-weight: 600;" target="_blank">
+            unsubscribe here
+          </a> at any time. Opt-out requests are honored immediately.
+        </p>
+      </div>
+    </div>
+  `;
+
+  // Send via Resend or Nodemailer SMTP
+  if (process.env.RESEND_API_KEY) {
+    try {
+      await axios.post('https://api.resend.com/emails', {
+        from: `${senderName} <${process.env.RESEND_FROM || 'onboarding@resend.dev'}>`,
+        to: [cleanEmail],
+        subject,
+        html: fullHtml,
+        headers: {
+          'List-Unsubscribe': `<${unsubscribeUrl}>`,
+        },
+      }, {
+        headers: {
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      console.log(`[Mailer - Resend] Marketing email dispatched to ${cleanEmail}`);
+      return;
+    } catch (err) {
+      console.error('[Mailer - Resend] Marketing email dispatch failed:', err.response?.data || err.message);
+      throw new Error(`Marketing email delivery failed via Resend: ${err.message}`);
+    }
+  }
+
+  if (transporter) {
+    await transporter.sendMail({
+      from: `"${senderName}" <${fromEmail}>`,
+      to: cleanEmail,
+      subject,
+      html: fullHtml,
+      headers: {
+        'List-Unsubscribe': `<${unsubscribeUrl}>`,
+      },
+    });
+    console.log(`[Mailer - SMTP] Marketing email sent to ${cleanEmail}`);
+  } else {
+    console.log(`[Mailer DEV MODE] Marketing Email Dispatched to ${cleanEmail} with CAN-SPAM Footer`);
+  }
+}
+
+/**
+ * Sends a California ARL (Automatic Renewal Law) compliant subscription acknowledgment email.
+ * Satisfies Cal. Bus. & Prof. Code § 17602:
+ * 1. Details the automatic renewal terms, price, and billing frequency
+ * 2. Provides the cancellation policy and straightforward online cancellation instructions
+ * 
+ * @param {string} email 
+ * @param {string} name 
+ * @param {object} planDetails - { planName, price, billingInterval, nextBillingDate }
+ */
+async function sendSubscriptionConfirmationEmail(email, name, planDetails = {}) {
+  const cleanEmail = email.toLowerCase().trim();
+  const subject = `[MyCRM] Your Subscription Confirmation & Automatic Renewal Terms`;
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const cancelUrl = `${frontendUrl}/settings?tab=billing`;
+
+  const planName = planDetails.planName || 'Enterprise Growth Plan';
+  const price = planDetails.price !== undefined ? `$${planDetails.price}` : '$29.00';
+  const billingInterval = planDetails.billingInterval || 'monthly';
+  const nextBillingDate = planDetails.nextBillingDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString();
+
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 580px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
+      <div style="background: linear-gradient(135deg, #0F4C75, #3282B8); padding: 18px; text-align: center; border-radius: 8px; color: #ffffff;">
+        <h2 style="margin: 0; font-size: 20px;">Subscription Confirmation & Terms</h2>
+      </div>
+      <div style="padding: 24px 8px; color: #334155; line-height: 1.6;">
+        <p style="font-size: 15px; margin-top: 0;">Hello <strong>${name || 'Customer'}</strong>,</p>
+        <p style="font-size: 14px;">
+          Thank you for subscribing to <strong>${planName}</strong> on MyCRM. Below are your required terms and automatic renewal disclosures.
+        </p>
+        <div style="background-color: #f8fafc; border-left: 4px solid #0F4C75; padding: 16px; margin: 20px 0; border-radius: 4px;">
+          <p style="margin: 0 0 8px 0; font-size: 13px;"><strong>Plan:</strong> ${planName}</p>
+          <p style="margin: 0 0 8px 0; font-size: 13px;"><strong>Recurring Charge:</strong> ${price} / ${billingInterval}</p>
+          <p style="margin: 0 0 8px 0; font-size: 13px;"><strong>Billing Frequency:</strong> Charged automatically every ${billingInterval} on an ongoing basis</p>
+          <p style="margin: 0; font-size: 13px;"><strong>Next Scheduled Renewal:</strong> ${nextBillingDate}</p>
+        </div>
+        <h4 style="color: #0F4C75; margin-bottom: 8px;">Automatic Renewal & Cancellation Policy (California ARL Compliance)</h4>
+        <p style="font-size: 13px; color: #475569;">
+          Your subscription will automatically renew at the end of each ${billingInterval} billing cycle at the rate of ${price} until you cancel. 
+          You may cancel your subscription at any time without fees or penalties.
+        </p>
+        <p style="font-size: 13px; color: #475569;">
+          <strong>How to cancel online:</strong> You can cancel your subscription immediately online with zero hassle by logging into your account and navigating to 
+          <a href="${cancelUrl}" style="color: #0284c7; font-weight: bold;">Settings &gt; Billing &gt; Cancel Subscription</a>.
+        </p>
+      </div>
+      <div style="border-top: 1px solid #e2e8f0; padding-top: 14px; text-align: center; font-size: 11px; color: #94a3b8;">
+        ${COMPANY_CONFIG.name} &bull; ${COMPANY_CONFIG.postalAddress} &bull; &copy; 2026 All Rights Reserved
+      </div>
+    </div>
+  `;
+
+  // Dispatch via Resend or Nodemailer
+  if (process.env.RESEND_API_KEY) {
+    try {
+      await axios.post('https://api.resend.com/emails', {
+        from: `${process.env.EMAIL_FROM_NAME || 'MyCRM Billing'} <${process.env.RESEND_FROM || 'onboarding@resend.dev'}>`,
+        to: [cleanEmail],
+        subject,
+        html: htmlContent,
+      }, {
+        headers: {
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      return;
+    } catch (err) {
+      console.error('[Mailer - Resend] Subscription confirmation email failed:', err.message);
+    }
+  }
+
+  if (transporter) {
+    await transporter.sendMail({
+      from: `"${process.env.EMAIL_FROM_NAME || 'MyCRM Billing'}" <${process.env.EMAIL_USER}>`,
+      to: cleanEmail,
+      subject,
+      html: htmlContent,
+    });
+  } else {
+    console.log(`[Mailer DEV MODE] Subscription confirmation sent to ${cleanEmail}`);
+  }
+}
+
 module.exports = {
   sendOtpEmail,
   sendWelcomeEmail,
+  sendMarketingEmail,
+  sendSubscriptionConfirmationEmail,
+  generateUnsubscribeToken,
+  verifyUnsubscribeToken,
 };
+
