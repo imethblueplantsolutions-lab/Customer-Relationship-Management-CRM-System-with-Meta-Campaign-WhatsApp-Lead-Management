@@ -3,17 +3,11 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  LayoutDashboard,
-  Users,
-  UserCheck,
-  Network,
-  X,
-  CheckCheck,
-} from "lucide-react";
+import { X, CheckCheck } from "lucide-react";
 import type { User, Notification } from "@/types";
 import { useNotifications } from "@/hooks/use-notifications";
 import { formatRelativeTime } from "@/lib/utils";
+import { NAV_ITEMS } from "@/components/layout/SidebarNav";
 
 interface MobileBottomNavProps {
   user?: User | null;
@@ -74,50 +68,52 @@ export default function MobileBottomNav({
     useNotifications();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
-  // Define bottom navigation tabs with Notifications replacing Tasks
+  // Define bottom navigation tabs: all role-allowed sidebar items (except settings) + notifications
   const visibleTabs = useMemo(() => {
-    const items = [
-      {
-        id: "home",
-        href: "/dashboard",
-        label: "Home",
-        icon: LayoutDashboard,
-        matchesRoute: pathname === "/dashboard",
-        isNotification: false,
-      },
-      {
-        id: "leads",
-        href: "/leads",
-        label: isAgent ? "My Leads" : "Leads",
-        icon: Users,
-        matchesRoute: pathname.startsWith("/leads"),
-        isNotification: false,
-      },
-      {
-        id: "notifications",
-        href: "#",
-        label: "Alerts",
-        icon: NotificationCircleIcon,
-        matchesRoute: false,
-        isNotification: true,
-      },
-    ];
+    const tabs = NAV_ITEMS.filter((item) => {
+      if (item.hidden) return false;
+      if (item.href === "/settings") return false; // Except Account Settings
 
-    if (!isAgent) {
-      items.push({
-        id: "team",
-        href: isSuperAdmin ? "/hierarchy" : "/users",
-        label: isSuperAdmin ? "Hierarchy" : "Team",
-        icon: isSuperAdmin ? Network : UserCheck,
-        matchesRoute: isSuperAdmin
-          ? pathname.startsWith("/hierarchy")
-          : pathname.startsWith("/users"),
-        isNotification: false,
-      });
-    }
+      if (item.allowedRoles) {
+        if (role === "SUPER_ADMIN") return true;
+        if (!role || !item.allowedRoles.includes(role)) return false;
+      }
+      return true;
+    }).map((item) => {
+      const rawLabel =
+        typeof item.label === "function" ? item.label(role) : item.label;
+      const label =
+        rawLabel === "User Hierarchy"
+          ? "Hierarchy"
+          : rawLabel === "Dashboard"
+          ? "Home"
+          : rawLabel;
 
-    return items;
-  }, [pathname, isAgent, isSuperAdmin]);
+      return {
+        id: item.href,
+        href: item.href,
+        label,
+        icon: item.icon,
+        matchesRoute:
+          item.href === "/dashboard"
+            ? pathname === "/dashboard"
+            : pathname.startsWith(item.href),
+        isNotification: false,
+      };
+    });
+
+    // Keep notifications tab on the right as it sits
+    tabs.push({
+      id: "notifications",
+      href: "#",
+      label: "Alerts",
+      icon: NotificationCircleIcon as any,
+      matchesRoute: false,
+      isNotification: true,
+    });
+
+    return tabs;
+  }, [pathname, role]);
 
   // Find initial active index from current route
   const currentRouteIndex = useMemo(() => {

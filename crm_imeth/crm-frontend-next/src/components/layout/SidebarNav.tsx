@@ -17,7 +17,7 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import type { User } from "@/types";
 
-interface NavItem {
+export interface NavItem {
   href: string;
   label: string | ((role?: string) => string);
   icon: LucideIcon;
@@ -29,7 +29,7 @@ interface NavItem {
  * Navigation Item Registry with Role-Based Access Control (RBAC)
  * Role Hierarchy: SUPER_ADMIN > ADMIN > TEAM_LEAD > AGENT
  */
-const NAV_ITEMS: NavItem[] = [
+export const NAV_ITEMS: NavItem[] = [
   {
     href: "/dashboard",
     label: "Dashboard",
