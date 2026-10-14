@@ -41,22 +41,27 @@ const DEV_ORIGINS = [
 const ALLOWED_ORIGINS = isProduction ? PRODUCTION_ORIGINS : DEV_ORIGINS;
 
 function corsOriginHandler(origin, callback) {
+  // Allow requests with no origin (Render health checks, Meta WhatsApp webhooks, cron jobs, mobile webview, curl)
+  if (!origin) return callback(null, true);
+
   if (isProduction) {
     // In production, strictly only allow process.env.FRONTEND_URL and capacitor://localhost
-    if (origin && PRODUCTION_ORIGINS.includes(origin)) {
+    if (PRODUCTION_ORIGINS.includes(origin)) {
       return callback(null, true);
     }
     return callback(new Error(`CORS: Origin '${origin}' is not authorized`));
   }
 
-  // In development, allow requests with no origin (mobile apps, Postman) and dev origins
-  if (!origin) return callback(null, true);
+  // In development, allow dev origins
   if (DEV_ORIGINS.includes(origin)) return callback(null, true);
   callback(new Error(`CORS: Origin '${origin}' is not allowed in development`));
 }
 
 const app = express();
 app.set('trust proxy', 1);
+
+// Immediate Health Check (Serves Render health probes and external keepalive pings instantly without middleware)
+app.get(['/health', '/api/health'], (req, res) => res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() }));
 const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 
@@ -197,9 +202,6 @@ app.use(express.json({
 }));
 app.use(express.urlencoded({ extended: true }));
 app.use(sanitizeMiddleware);
-
-// Health Check (Root /health and /api/health for Render and external keepalive pings)
-app.get(['/health', '/api/health'], (req, res) => res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() }));
 
 // Public Routes (Bypassing tenant middleware)
 app.use('/api/webhook', require('./routes/webhook'));
