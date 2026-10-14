@@ -2,8 +2,6 @@
 -- PostgreSQL database dump
 --
 
-\restrict XoCqHvO6wHwEnGZuzhU2REWErYv1Qu73b8kkTrHjxO7InaSnIJmuukGs7PNesnO
-
 -- Dumped from database version 18.6
 -- Dumped by pg_dump version 18.6
 
@@ -1461,6 +1459,4 @@ CREATE POLICY tenant_isolation_user ON public."User" USING (("tenantId" = curren
 --
 -- PostgreSQL database dump complete
 --
-
-\unrestrict XoCqHvO6wHwEnGZuzhU2REWErYv1Qu73b8kkTrHjxO7InaSnIJmuukGs7PNesnO
 
