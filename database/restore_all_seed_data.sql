@@ -61,7 +61,7 @@ VALUES
   ('da92f8f0-0cad-482f-be9e-33991dfd78e0', '+15553100403', 'Michael Scott', 'CONTACTED', 'Manual Entry', 'WABA_ID_TEST', '1f06b787-c048-46f7-8c21-822c2e2d79c5', '2026-09-08 05:36:49.263', NOW()),
   ('6825b19d-f134-444d-91c8-fb29974d0d5d', '+15559113799', 'System Audit Lead', 'NEW', 'Manual Entry', 'WABA_ID_TEST', '5b29f14f-0ad7-48d1-b595-8cceae615630', '2026-09-08 07:17:21.617', NOW()),
   ('fa335e64-5423-478a-bde9-4c5060fbccb3', '1111111111', 'Laskahan', 'NEW', 'Manual Entry', 'WABA_ID_TEST', '5b29f14f-0ad7-48d1-b595-8cceae615630', '2026-09-08 07:38:47.542', NOW())
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT ("tenantId", "phoneNumber") DO NOTHING;
 
 -- 6. Insert Followups
 INSERT INTO public."Followup" (id, "leadId", "assignedToId", "createdById", type, "dueAt", note, completed, "createdAt", "updatedAt")
@@ -79,7 +79,7 @@ VALUES
   ('ab5440f9-1234-428d-8542-65a9d2447b34', 'outbound_1788162070458', '88a73b42-a5e4-4405-be1b-6542e68e3b88', 'OUTBOUND', 'CRM', 'Hi Jane, we have received your inquiry.', 'sent', NOW()),
   ('cc46b05d-5678-4cb2-8f5b-ff8d712673c4', 'outbound_1788163466408', 'a1295cdf-3b98-4cb2-8f5b-ff8d712673c4', 'OUTBOUND', 'CRM', 'Hello! Welcome to Blue Planet CRM.', 'sent', NOW()),
   ('50f7401d-9012-478a-bde9-4c5060fbccb3', 'outbound_1788853686999', 'fa335e64-5423-478a-bde9-4c5060fbccb3', 'OUTBOUND', 'CRM', 'Hi there, how can we assist you today?', 'sent', NOW())
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT ("messageId") DO NOTHING;
 
 -- 8. Insert Chatbot Flow & Nodes
 INSERT INTO public."Flow" (id, "tenantId", name, status, "triggerType", "executionCount", "createdAt", "updatedAt")
@@ -93,7 +93,7 @@ VALUES
   ('74cac567-3333-464f-a062-50143ce98503', '9bbb0fef-030a-464f-a062-50143ce98503', 'send_message_3', 'send_message', 65, 255, '{"text": "Here are our pricing packages."}'::jsonb),
   ('58cdb88a-4444-464f-a062-50143ce98503', '9bbb0fef-030a-464f-a062-50143ce98503', 'handoff_2', 'handoff', 242, 353, '{"department": "Sales Team"}'::jsonb),
   ('7b2f332f-5555-464f-a062-50143ce98503', '9bbb0fef-030a-464f-a062-50143ce98503', 'end_5', 'end', 250, 542, '{}'::jsonb)
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT ("flowId", "nodeKey") DO NOTHING;
 
 -- 9. Insert Notifications
 INSERT INTO public."Notification" (id, "userId", type, title, body, "isRead", "createdAt")
