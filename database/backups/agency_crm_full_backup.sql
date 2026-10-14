@@ -17,13 +17,6 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-DROP POLICY IF EXISTS tenant_isolation_user ON public."User";
-DROP POLICY IF EXISTS tenant_isolation_pipeline ON public."Pipeline";
-DROP POLICY IF EXISTS tenant_isolation_lead ON public."Lead";
-DROP POLICY IF EXISTS tenant_isolation_followup ON public."Followup";
-DROP POLICY IF EXISTS tenant_isolation_deal ON public."Deal";
-DROP POLICY IF EXISTS tenant_isolation_attachment ON public."Attachment";
-DROP POLICY IF EXISTS tenant_isolation_activity ON public."Activity";
 ALTER TABLE IF EXISTS ONLY public."_LeadTags" DROP CONSTRAINT IF EXISTS "_LeadTags_B_fkey";
 ALTER TABLE IF EXISTS ONLY public."_LeadTags" DROP CONSTRAINT IF EXISTS "_LeadTags_A_fkey";
 ALTER TABLE IF EXISTS ONLY public."User" DROP CONSTRAINT IF EXISTS "User_tenantId_fkey";
