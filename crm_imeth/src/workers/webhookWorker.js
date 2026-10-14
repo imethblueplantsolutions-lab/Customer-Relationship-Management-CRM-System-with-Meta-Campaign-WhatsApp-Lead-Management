@@ -532,7 +532,7 @@ const webhookWorker = new Worker('webhook-ingestion', async (job) => {
     console.log(`📡 [Worker] Broadcasted 'new_message' to room tenant:${tenantId}`);
   }
 
-}, { connection: redisClient, concurrency: 25 });
+}, { connection: redisClient, concurrency: 25, stalledInterval: 300000 });
 
 webhookWorker.on('completed', (job) => {
   console.log(`[Worker] Job ${job.id} completed successfully`);

@@ -169,7 +169,7 @@ const globalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: 'Too many requests. Please try again later.' },
-  skip: (req) => req.path === '/health', // Never rate-limit health checks
+  skip: (req) => req.path === '/health' || req.path === '/api/health', // Never rate-limit health checks
 });
 
 // Auth Rate Limiter: Brute-force protection on authentication endpoints (skips background token refresh)
@@ -198,8 +198,8 @@ app.use(express.json({
 app.use(express.urlencoded({ extended: true }));
 app.use(sanitizeMiddleware);
 
-// Health Check
-app.get('/health', (req, res) => res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() }));
+// Health Check (Root /health and /api/health for Render and external keepalive pings)
+app.get(['/health', '/api/health'], (req, res) => res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() }));
 
 // Public Routes (Bypassing tenant middleware)
 app.use('/api/webhook', require('./routes/webhook'));

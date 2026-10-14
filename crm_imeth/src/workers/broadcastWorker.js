@@ -156,6 +156,7 @@ const broadcastWorker = new Worker(
   {
     connection: redisClient,
     concurrency: 15,
+    stalledInterval: 300000,
     limiter: {
       max: 15,
       duration: 1000,

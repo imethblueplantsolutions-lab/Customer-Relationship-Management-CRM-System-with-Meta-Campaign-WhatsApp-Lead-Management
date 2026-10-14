@@ -1,0 +1,48 @@
+services:
+  - type: web
+    name: meta-crm-backend
+    env: node
+    plan: free
+    region: oregon
+    rootDir: crm_imeth
+    buildCommand: npm install && npx prisma generate
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM
+        value: onboarding@resend.dev
+      - key: EMAIL_FROM_NAME
+        value: MyCRM Security
+      - key: FRONTEND_URL
+        value: https://customer-relationship-management-cr-eight.vercel.app
+      - key: META_APP_SECRET
+        sync: false
+      - key: META_VERIFY_TOKEN
+        sync: false
+      - key: COMPANY_NAME
+        value: Blue Planet Solutions
+      - key: COMPANY_POSTAL_ADDRESS
+        value: No. 58, Ideal Shopping Complex, Bauddhaloka Mawatha, Gampaha, Sri Lanka.
+      - key: SUPPORT_EMAIL
+        value: info@blueplanet.lk
+      - key: PRIVACY_EMAIL
+        value: info@blueplanet.lk
+      - key: DMCA_EMAIL
+        value: info@blueplanet.lk
+      - key: DMCA_PHONE
+        value: (+94) 77 8651 776
+      - key: COMPANY_WEBSITE
+        value: https://blueplanet.lk/branding/

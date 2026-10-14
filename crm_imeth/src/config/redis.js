@@ -9,12 +9,13 @@ try {
 
   const redisOptions = {
     maxRetriesPerRequest: null,
+    enableReadyCheck: false,
     retryStrategy(times) {
-      if (times > 5) {
-        console.warn('⚠️  Redis unavailable after 5 retries. Running without Redis (caching/queues disabled).');
+      if (times > 20) {
+        console.warn('⚠️  Redis unavailable after 20 retries. Running without Redis (caching/queues disabled).');
         return null; // Stop retrying
       }
-      return Math.min(times * 500, 2000);
+      return Math.min(times * 500, 3000);
     },
     lazyConnect: true,
     ...(isTls ? { tls: { rejectUnauthorized: false } } : {})
