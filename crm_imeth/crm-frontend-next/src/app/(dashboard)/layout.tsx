@@ -122,44 +122,74 @@ export default function DashboardLayout({
         style={{ backgroundColor: "var(--color-bg-sidebar, #1B262C)" }}
         className={`fixed inset-y-0 left-0 z-50 flex flex-col h-[100dvh] text-white shadow-2xl transition-all duration-300 ease-in-out pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] md:pt-0 md:pb-0 md:static ${
           mobileOpen ? "translate-x-0 w-72" : "-translate-x-full md:translate-x-0"
-        } ${isCollapsed ? "md:w-20" : "md:w-64"}`}
+        } ${isCollapsed ? "md:w-20" : "md:w-72"}`}
       >
         {/* Brand Header */}
-        <div className="flex h-18 shrink-0 items-center justify-between border-b border-white/10 px-4">
-          <div className="flex items-center gap-3 overflow-hidden">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-[#0F4C75] to-[#3282B8] text-xl shadow-md shadow-[#3282B8]/20">
-              💬
-            </span>
-            {!isCollapsed && (
-              <div className="min-w-0 transition-opacity duration-200">
-                <h1 className="text-fluid-title font-bold tracking-tight text-white truncate">
-                  MyCRM
-                </h1>
+        <div
+          className={`relative flex h-18 shrink-0 items-center border-b border-white/10 transition-all duration-200 ${
+            isCollapsed ? "justify-center px-2" : "justify-between px-4"
+          }`}
+        >
+          {isCollapsed ? (
+            /* Collapsed Brand Header: Perfectly Centered Uncropped Logo */
+            <>
+              <button
+                type="button"
+                onClick={() => setIsCollapsed(false)}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-[#0F4C75] to-[#3282B8] text-xl shadow-md shadow-[#3282B8]/20 hover:scale-105 active:scale-95 transition-transform cursor-pointer"
+                title="Expand sidebar"
+                aria-label="Expand sidebar"
+              >
+                💬
+              </button>
+
+              {/* Edge Expand Toggle Button */}
+              <button
+                type="button"
+                onClick={() => setIsCollapsed(false)}
+                className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-50 h-6 w-6 items-center justify-center rounded-full bg-[#0F4C75] hover:bg-[#3282B8] border border-white/40 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                title="Expand sidebar"
+                aria-label="Expand sidebar"
+              >
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            </>
+          ) : (
+            /* Maximized Brand Header */
+            <>
+              <div className="flex items-center gap-3 overflow-hidden min-w-0">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-[#0F4C75] to-[#3282B8] text-xl shadow-md shadow-[#3282B8]/20">
+                  💬
+                </span>
+                <div className="min-w-0 transition-opacity duration-200">
+                  <h1 className="text-fluid-title font-bold tracking-tight text-white truncate">
+                    MyCRM
+                  </h1>
+                </div>
               </div>
-            )}
-          </div>
 
-          {/* Mobile Close Button */}
-          <button
-            onClick={() => setMobileOpen(false)}
-            className="md:hidden rounded-lg p-2 text-slate-400 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
-            aria-label="Close menu"
-          >
-            <X className="h-5 w-5" />
-          </button>
+              {/* Mobile Close Button */}
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                className="md:hidden rounded-lg p-2 text-slate-400 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+                aria-label="Close menu"
+              >
+                <X className="h-5 w-5" />
+              </button>
 
-          {/* Desktop Minimize Toggle Button */}
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden md:flex rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
-            title={isCollapsed ? "Expand sidebar" : "Minimize sidebar"}
-          >
-            {isCollapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <ChevronLeft className="h-4 w-4" />
-            )}
-          </button>
+              {/* Desktop Minimize Toggle Button */}
+              <button
+                type="button"
+                onClick={() => setIsCollapsed(true)}
+                className="hidden md:flex rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+                title="Minimize sidebar"
+                aria-label="Minimize sidebar"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+            </>
+          )}
         </div>
 
         {/* Navigation Items (Decomposed into SidebarNav) */}

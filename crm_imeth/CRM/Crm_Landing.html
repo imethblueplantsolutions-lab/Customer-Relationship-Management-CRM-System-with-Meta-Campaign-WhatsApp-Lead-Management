@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyCrm | Smart Lead Management Platform for Growing Businesses</title>
+  <meta name="description" content="MyCrm is a smart lead management platform built specifically for businesses. Add lead details to a visual dashboard, handle leads instantly, and give managers a clear view of performance and agent activity.">
+  <meta name="keywords" content="CRM, lead management, sales management, multi-tenant CRM, lead distribution, RBAC, sales tracking">
+  <meta name="author" content="MyCrm Solutions">
+  
+  <!-- Open Graph / Social Sharing -->
+  <meta property="og:title" content="MyCrm | Smart Lead Management Platform for Growing Businesses">
+  <meta property="og:description" content="Stop passing around leads in spreadsheets. Manage, assign, and close deals on one centralized visual dashboard.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="images/hero/hero-crypgo-mockup.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+  <!-- Pure Vanilla Stylesheet (Zero Frameworks) -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ========================================================================
+       1. FIXED GLASSMORPHIC NAVIGATION HEADER
+       ======================================================================== -->
+  <header class="site-header">
+    <div class="container nav-container">
+      
+      <!-- Left: Brand Logo & Interactive Theme Toggler -->
+      <div class="brand-wrapper">
+        <a href="#" class="brand-wrapper" aria-label="MyCrm Home">
+          <div class="brand-logo-icon">
+            <!-- 4-Square CRM Grid SVG -->
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+            </svg>
+          </div>
+          <span class="brand-text">My<span>Crm</span></span>
+        </a>
+
+        <!-- Pure JS Light/Dark Theme Switcher -->
+        <button id="theme-toggle-btn" class="theme-toggle-btn" type="button" aria-label="Toggle theme" title="Toggle theme">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Center: Desktop Navigation Anchor Links -->
+      <nav class="desktop-nav" aria-label="Primary navigation">
+        <a href="#problem" class="nav-link">Why Leads Leak</a>
+        <a href="#dashboard-preview" class="nav-link">Visual Dashboard</a>
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#screenshots" class="nav-link">App Preview</a>
+        <a href="#pricing" class="nav-link">Pricing</a>
+        <a href="#faq" class="nav-link">FAQ</a>
+      </nav>
+
+      <!-- Right: Action CTAs -->
+      <div class="header-actions">
+        <a href="https://customer-relationship-management-cr-eight.vercel.app/login" class="nav-sign-in">
+          Sign In
+        </a>
+        <a href="https://customer-relationship-management-cr-eight.vercel.app/login?mode=signup" class="btn-cta-primary">
+          <span>Get Started Free</span> →
+        </a>
+
+        <!-- Mobile Hamburger Button -->
+        <button id="mobile-menu-toggle" class="mobile-menu-toggle" type="button" aria-label="Open mobile menu" aria-expanded="false">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Mobile Drawer -->
+    <div id="mobile-nav-drawer" class="mobile-nav-drawer">
+      <a href="#problem" class="mobile-nav-link">Why Leads Leak</a>
+      <a href="#dashboard-preview" class="mobile-nav-link">Visual Dashboard</a>
+      <a href="#features" class="mobile-nav-link">Features</a>
+      <a href="#screenshots" class="mobile-nav-link">App Preview</a>
+      <a href="#pricing" class="mobile-nav-link">Pricing</a>
+      <a href="#faq" class="mobile-nav-link">FAQ</a>
+      <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+        <a href="https://customer-relationship-management-cr-eight.vercel.app/login" style="flex: 1; text-align: center; padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--border-light); font-weight: 700; font-size: 0.875rem;">
+          Sign In
+        </a>
+        <a href="https://customer-relationship-management-cr-eight.vercel.app/login?mode=signup" class="btn-cta-primary" style="flex: 2;">
+          Get Started Free →
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       2. HERO SECTION (2-Col Desktop / Stacked Mobile)
+       ======================================================================== -->
+  <section class="hero-section">
+    <div class="container hero-grid">
+      
+      <!-- Left Column: Value Proposition & CTAs -->
+      <div>
+        <!-- Pill Badge -->
+        <div class="pill-badge">
+          <span class="pulse-dot"></span>
+          <span>Smart Lead Management Platform for Growing Teams</span>
+        </div>
+
+        <!-- H1 Headline -->
+        <h1 class="hero-heading">
+          Stop Passing Around Leads in Spreadsheets. Manage, Assign &amp; Close on One 
+          <span class="text-gradient-hero">Visual Dashboard</span>
+        </h1>
+
+        <!-- Core Business Description -->
+        <p class="hero-description">
+          MyCrm is a smart lead management platform built specifically for businesses. It acts like a platform for lead management for business adding lead details to a visual dashboard. Instead of passing around leads in business, your team can instantly handle leads while managers get a clear view of leads performance, and agent activity.
+        </p>
+
+        <!-- CTAs -->
+        <div class="hero-ctas">
+          <a href="https://customer-relationship-management-cr-eight.vercel.app/login?mode=signup" class="btn-hero-primary">
+            <span>Explore MyCrm →</span>
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+            </svg>
+          </a>
+
+          <a href="#dashboard-preview" class="btn-hero-secondary">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" style="color: var(--color-primary);">
+              <path fill-rule="evenodd" d="M2.25 13.5a8.25 8.25 0 018.25-8.25.75.75 0 01.75.75v6.75H18a.75.75 0 01.75.75 8.25 8.25 0 01-16.5 0z" clip-rule="evenodd" />
+              <path fill-rule="evenodd" d="M12.75 3a.75.75 0 01.75-.75 8.25 8.25 0 018.25 8.25.75.75 0 01-.75.75h-7.5a.75.75 0 01-.75-.75V3z" clip-rule="evenodd" />
+            </svg>
+            <span>Explore Visual Dashboard ↓</span>
+          </a>
+        </div>
+
+        <!-- Trust Proof Points -->
+        <p class="hero-proof-points">
+          <span>⚡ 5-minute team setup</span>
+          <span>•</span>
+          <span>✓ 100% Multi-Tenant Data Isolation</span>
+          <span>•</span>
+          <span>✓ 3-Tier RBAC Access</span>
+        </p>
+      </div>
+
+      <!-- Right Column: Hand-Held Smartphone Graphic & Frosted Glass Badges -->
+      <div class="hero-mockup-wrapper">
+        <div class="hero-ambient-glow"></div>
+
+        <div class="hero-image-box">
+          <img src="images/hero/hero-crypgo-mockup.png" alt="MyCrm Visual Lead Management Mobile Dashboard" width="420" height="560">
+
+          <!-- Floating Glass Badge 1: +75% Conversion Lift -->
+          <div class="floating-badge floating-badge-top">
+            <div class="badge-ring-box">
+              <svg class="badge-ring-svg" viewBox="0 0 36 36">
+                <path stroke="var(--border-light)" fill="none" stroke-width="3.5" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                <path stroke="var(--color-accent)" fill="none" stroke-dasharray="75, 100" stroke-width="3.5" stroke-linecap="round" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              </svg>
+              <span class="badge-ring-pct">+75%</span>
+            </div>
+            <div>
+              <span class="badge-text-title">Conversion Lift</span>
+              <span class="badge-text-sub">Zero dropped leads</span>
+            </div>
+          </div>
+
+          <!-- Floating Glass Badge 2: Live Activity -->
+          <div class="floating-badge floating-badge-bottom">
+            <div class="badge-icon-box">
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+              </svg>
+            </div>
+            <div>
+              <span class="badge-text-title">1,420 Active Leads Assigned</span>
+              <span class="badge-text-sub" style="color: var(--color-success); font-weight: 600;">98% Handled • Real-time Sync</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       3. BUSINESS TRUST METRICS BAR
+       ======================================================================== -->
+  <section class="metrics-bar">
+    <div class="container">
+      <div class="metrics-grid">
+        <div>
+          <div class="metric-item-val">100%</div>
+          <div class="metric-item-label">Tenant Data Isolation</div>
+          <div class="metric-item-detail">Cryptographic Row-Level Security</div>
+        </div>
+        <div>
+          <div class="metric-item-val">3-Tier</div>
+          <div class="metric-item-label">Role-Based Access Control</div>
+          <div class="metric-item-detail">Admins, Team Leads &amp; Sales Agents</div>
+        </div>
+        <div>
+          <div class="metric-item-val">Simultaneous</div>
+          <div class="metric-item-label">Multi-Device Concurrency</div>
+          <div class="metric-item-detail">Desktop, Tablet &amp; Mobile Sync</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       4. PAS SECTION (Problem - Agitation - Solution)
+       ======================================================================== -->
+  <section id="problem" class="section-wrapper">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag tag-danger">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+          </svg>
+          The Lead Management Bottleneck
+        </span>
+        <h2 class="section-title">Why Passing Around Leads Destroys Business Revenue</h2>
+        <p class="section-subtitle">
+          Generating leads for your business is only half the battle. Handing them off seamlessly and maintaining visibility is where unorganized teams fail.
+        </p>
+      </div>
+
+      <div class="pas-grid">
+        <!-- Step 1: The Problem -->
+        <div class="pas-card">
+          <div>
+            <div class="pas-card-header">
+              <span class="pas-badge badge-rose">1. The Problem</span>
+              <svg class="pas-icon" fill="currentColor" viewBox="0 0 24 24" style="color: var(--color-danger);">
+                <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+              </svg>
+            </div>
+            <h3 class="pas-card-title">Passing Around Leads in Business Causes Costly Delays</h3>
+            <p class="pas-card-desc">
+              When business leads are passed around through messy spreadsheets, email chains, and chat groups, ownership vanishes. By the time someone remembers to reach out, your buyer has already signed with a faster competitor.
+            </p>
+          </div>
+          <div class="pas-card-footer">
+            <span class="pas-footer-tag">Performance Impact</span>
+            <span class="pas-footer-metric">68% Leads Unfollowed</span>
+          </div>
+        </div>
+
+        <!-- Step 2: The Agitation -->
+        <div class="pas-card">
+          <div>
+            <div class="pas-card-header">
+              <span class="pas-badge badge-amber">2. The Agitation</span>
+              <svg class="pas-icon" fill="currentColor" viewBox="0 0 24 24" style="color: var(--color-warning);">
+                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+              </svg>
+            </div>
+            <h3 class="pas-card-title">Managers Have Zero Real-Time Visibility into Activity</h3>
+            <p class="pas-card-desc">
+              Without a unified visual dashboard, managers have no way to track agent activity, identify stalled deals, or balance team capacity. Customer data sits unprotected in personal inboxes with zero tenant security.
+            </p>
+          </div>
+          <div class="pas-card-footer">
+            <span class="pas-footer-tag">Performance Impact</span>
+            <span class="pas-footer-metric">0% Live Agent Tracking</span>
+          </div>
+        </div>
+
+        <!-- Step 3: The Solution -->
+        <div class="pas-card">
+          <div>
+            <div class="pas-card-header">
+              <span class="pas-badge badge-blue">3. The MyCrm Solution</span>
+              <svg class="pas-icon" fill="currentColor" viewBox="0 0 24 24" style="color: var(--color-primary);">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            </div>
+            <h3 class="pas-card-title">Centralized Visual Dashboard &amp; Instant Lead Assignment</h3>
+            <p class="pas-card-desc">
+              MyCrm gives managers a crystal-clear view of lead velocity, performance, and agent activity. Team Leads assign work in one click, customer data is locked by tenant, and agents log progress from any device.
+            </p>
+          </div>
+          <div class="pas-card-footer">
+            <span class="pas-footer-tag">Performance Impact</span>
+            <span class="pas-footer-metric">3x Faster Closure</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       5. INTERACTIVE 3-TIER RBAC & VISUAL COMMAND CENTER
+       ======================================================================== -->
+  <section id="dashboard-preview" class="section-wrapper">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+          </svg>
+          Interactive 3-Tier RBAC &amp; Visual Command Center
+        </span>
+        <h2 class="section-title">One Centralized Dashboard. Tailored for Every Role.</h2>
+        <p class="section-subtitle">
+          Switch roles below to experience how Admins, Team Leads, and Sales Agents securely collaborate with dedicated views, instant manual lead assignment, and zero cross-tenant data leakage.
+        </p>
+      </div>
+
+      <!-- Role Switcher Tab Buttons -->
+      <div class="role-tabs">
+        <button type="button" class="role-tab-btn" data-role="admin">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .55-.45 1-1 1H6c-.55 0-1-.45-1-1v-1h14v1z"/>
+          </svg>
+          <span>Admin View</span>
+        </button>
+
+        <button type="button" class="role-tab-btn active" data-role="team_lead">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+          </svg>
+          <span>Team Lead View</span>
+          <span class="role-interactive-badge">Interactive</span>
+        </button>
+
+        <button type="button" class="role-tab-btn" data-role="sales_agent">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+          <span>Sales Agent View</span>
+        </button>
+      </div>
+
+      <!-- Live Assignment Toast Alert -->
+      <div id="live-toast-alert" class="live-toast-alert">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="color: var(--color-accent);">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+          </svg>
+          <span id="toast-message">Lead assigned successfully</span>
+        </div>
+        <span style="font-family: var(--font-mono); font-size: 0.65rem; opacity: 0.85;">Real-time sync</span>
+      </div>
+
+      <!-- Terminal Simulated Window -->
+      <div class="dashboard-terminal-window">
+        <!-- Window Titlebar -->
+        <div class="window-titlebar">
+          <div class="window-dots">
+            <span class="window-dot dot-red"></span>
+            <span class="window-dot dot-yellow"></span>
+            <span class="window-dot dot-green"></span>
+            <span id="window-url-text" class="window-url-text">tenant://acme-corp.mycrm.cloud / TEAM_LEAD</span>
+          </div>
+          <div class="window-sync-status">
+            <span class="pulse-dot" style="width: 0.45rem; height: 0.45rem;"></span>
+            <span>Multi-Device Live Sync</span>
+          </div>
+        </div>
+
+        <!-- 1. ADMIN ROLE VIEW -->
+        <div id="role-view-admin" class="role-view-content">
+          <div class="admin-stats-grid">
+            <div class="admin-stat-card">
+              <span class="admin-stat-label">Tenant Security Status</span>
+              <div class="admin-stat-val">
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" style="color: var(--color-success);">
+                  <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+                </svg>
+                <span>100% Isolated</span>
+              </div>
+              <span class="admin-stat-sub" style="color: var(--color-success); font-weight: 600;">Zero Cross-Tenant Leakage</span>
+            </div>
+
+            <div class="admin-stat-card">
+              <span class="admin-stat-label">Total Configured Users</span>
+              <div class="admin-stat-val">64 Members</div>
+              <span class="admin-stat-sub">4 Admins • 12 Leads • 48 Reps</span>
+            </div>
+
+            <div class="admin-stat-card">
+              <span class="admin-stat-label">Concurrent Active Sessions</span>
+              <div class="admin-stat-val" style="color: var(--color-primary);">38 Live Devices</div>
+              <span class="admin-stat-sub">Web, Tablet &amp; Mobile</span>
+            </div>
+
+            <div class="admin-stat-card">
+              <span class="admin-stat-label">Platform Health</span>
+              <div class="admin-stat-val" style="color: var(--color-success);">99.98% Uptime</div>
+              <span class="admin-stat-sub">Global Redundant Clusters</span>
+            </div>
+          </div>
+
+          <!-- Admin RBAC Matrix Table -->
+          <div class="table-responsive" style="background: rgba(222, 238, 253, 0.5); border: 1px solid var(--border-light); padding: 1rem;">
+            <h4 style="font-size: 0.875rem; font-weight: 800; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" style="color: var(--color-primary);">
+                <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+              </svg>
+              RBAC Access Control &amp; Hierarchy Authority
+            </h4>
+            <table class="admin-matrix-table">
+              <thead>
+                <tr>
+                  <th>Role Tier</th>
+                  <th>Authority Scope</th>
+                  <th>Lead Assignment</th>
+                  <th>Tenant Config</th>
+                  <th>Device Limit</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight: 800; color: var(--color-primary);">Admin</td>
+                  <td>Full System, Tenant Isolation, Integrations</td>
+                  <td>All Teams &amp; Territories</td>
+                  <td>Full Read/Write</td>
+                  <td>Unlimited Concurrent</td>
+                </tr>
+                <tr>
+                  <td style="font-weight: 800; color: var(--color-accent);">Team Lead</td>
+                  <td>Supervise Assigned Sales Agents, Monitor Queues</td>
+                  <td>Assign &amp; Reassign within Team</td>
+                  <td>Read Team Profiles</td>
+                  <td>Simultaneous Multi-Device</td>
+                </tr>
+                <tr>
+                  <td style="font-weight: 800; color: var(--text-muted);">Sales Agent</td>
+                  <td>Direct Inbound Interaction &amp; Follow-ups</td>
+                  <td>Work Assigned Leads Only</td>
+                  <td>No Access</td>
+                  <td>Web &amp; Mobile App</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 2. TEAM LEAD VIEW (INTERACTIVE ASSIGNMENT) -->
+        <div id="role-view-team_lead" class="role-view-content active">
+          <div class="team-lead-grid">
+            
+            <!-- Left: Incoming Lead Queue -->
+            <div>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem;">
+                <h4 style="font-size: 0.875rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
+                  <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" style="color: var(--color-primary);">
+                    <path d="M19 3H4.99c-1.11 0-1.98.89-1.98 2L3 19c0 1.1.88 2 1.99 2H19c1.1 0 2-.9 2-2V5c0-1.11-.9-2-2-2zm0 12h-4c0 1.66-1.35 3-3 3s-3-1.34-3-3H4.99V5H19v10z"/>
+                  </svg>
+                  Incoming Lead Queue (Manual Assignment)
+                </h4>
+                <span id="unassigned-count-badge" style="font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.65rem; border-radius: var(--radius-full); background: rgba(27, 123, 237, 0.12); color: var(--color-primary);">
+                  1 Unassigned
+                </span>
+              </div>
+
+              <!-- Lead Card 1 (Interactive Unassigned) -->
+              <div id="lead-card-L-101" class="lead-item-card">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 800; color: var(--color-primary);">L-101</span>
+                    <span style="font-size: 0.875rem; font-weight: 800; color: var(--text-main);">Apex Logistics Ltd</span>
+                    <span style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; padding: 0.1rem 0.45rem; border-radius: 4px; background: rgba(16, 185, 129, 0.12); color: var(--color-success);">$18,500</span>
+                  </div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                    <span>Contact: Marcus Vance</span> • <span>Via Desktop Web</span>
+                  </div>
+                </div>
+                <div class="lead-action-area">
+                  <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                    <button type="button" class="btn-assign" data-assign-lead="L-101" data-agent="Maya Patel">
+                      Assign to Maya →
+                    </button>
+                    <button type="button" class="btn-assign-sub" data-assign-lead="L-101" data-agent="David Miller">
+                      To David
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lead Card 2 (Assigned) -->
+              <div id="lead-card-L-102" class="lead-item-card">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 800; color: var(--color-primary);">L-102</span>
+                    <span style="font-size: 0.875rem; font-weight: 800; color: var(--text-main);">Horizon Retail Tech</span>
+                    <span style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; padding: 0.1rem 0.45rem; border-radius: 4px; background: rgba(16, 185, 129, 0.12); color: var(--color-success);">$9,200</span>
+                  </div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                    <span>Contact: Elena Rostova</span> • <span>Via iPad Tablet</span>
+                  </div>
+                </div>
+                <div class="lead-action-area">
+                  <span style="font-size: 0.75rem; font-weight: 700; padding: 0.35rem 0.75rem; border-radius: var(--radius-md); background: rgba(16, 185, 129, 0.15); color: var(--color-success); border: 1px solid rgba(16, 185, 129, 0.25); display: flex; align-items: center; gap: 0.35rem;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                    Assigned to Maya Patel
+                  </span>
+                </div>
+              </div>
+
+              <!-- Lead Card 3 (In Negotiation) -->
+              <div id="lead-card-L-103" class="lead-item-card">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 800; color: var(--color-primary);">L-103</span>
+                    <span style="font-size: 0.875rem; font-weight: 800; color: var(--text-main);">Quantum Cloud Labs</span>
+                    <span style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; padding: 0.1rem 0.45rem; border-radius: 4px; background: rgba(16, 185, 129, 0.12); color: var(--color-success);">$34,000</span>
+                  </div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                    <span>Contact: Jordan Hayes</span> • <span>Via Mobile App</span>
+                  </div>
+                </div>
+                <div class="lead-action-area">
+                  <span style="font-size: 0.75rem; font-weight: 700; padding: 0.35rem 0.75rem; border-radius: var(--radius-md); background: rgba(27, 123, 237, 0.15); color: var(--color-primary); border: 1px solid rgba(27, 123, 237, 0.25); display: flex; align-items: center; gap: 0.35rem;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                    Assigned to David Miller
+                  </span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Right: Agent Capacity & Activity -->
+            <div style="background: rgba(222, 238, 253, 0.5); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 1.25rem;">
+              <h4 style="font-size: 0.875rem; font-weight: 800; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                <span style="display: flex; align-items: center; gap: 0.5rem;">
+                  <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" style="color: var(--color-accent);">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+                  </svg>
+                  Agent Capacity &amp; Activity
+                </span>
+                <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-muted);">Live Sync</span>
+              </h4>
+
+              <div class="agent-capacity-row">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <div class="avatar-circle">MP</div>
+                  <div>
+                    <div style="font-size: 0.8rem; font-weight: 800; display: flex; align-items: center; gap: 0.4rem;">
+                      <span>Maya Patel</span>
+                      <span style="width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #34D399;"></span>
+                    </div>
+                    <span style="font-size: 0.7rem; color: var(--text-muted);">Senior Sales Closer</span>
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <span id="agent-leads-maya" style="font-size: 0.775rem; font-weight: 800; color: var(--color-primary); display: block;">14 Active Leads</span>
+                  <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--color-success);">38 Deals Closed</span>
+                </div>
+              </div>
+
+              <div class="agent-capacity-row">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <div class="avatar-circle">DM</div>
+                  <div>
+                    <div style="font-size: 0.8rem; font-weight: 800; display: flex; align-items: center; gap: 0.4rem;">
+                      <span>David Miller</span>
+                      <span style="width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #34D399;"></span>
+                    </div>
+                    <span style="font-size: 0.7rem; color: var(--text-muted);">Lead Sales Rep</span>
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <span id="agent-leads-david" style="font-size: 0.775rem; font-weight: 800; color: var(--color-primary); display: block;">9 Active Leads</span>
+                  <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--color-success);">24 Deals Closed</span>
+                </div>
+              </div>
+
+              <div class="agent-capacity-row">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <div class="avatar-circle">SC</div>
+                  <div>
+                    <div style="font-size: 0.8rem; font-weight: 800; display: flex; align-items: center; gap: 0.4rem;">
+                      <span>Sarah Chen</span>
+                      <span style="width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #FBBF24;"></span>
+                    </div>
+                    <span style="font-size: 0.7rem; color: var(--text-muted);">Account Executive</span>
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <span style="font-size: 0.775rem; font-weight: 800; color: var(--color-primary); display: block;">6 Active Leads</span>
+                  <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--color-success);">19 Deals Closed</span>
+                </div>
+              </div>
+
+              <div class="agent-capacity-row">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <div class="avatar-circle">JW</div>
+                  <div>
+                    <div style="font-size: 0.8rem; font-weight: 800; display: flex; align-items: center; gap: 0.4rem;">
+                      <span>James Wilson</span>
+                      <span style="width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #34D399;"></span>
+                    </div>
+                    <span style="font-size: 0.7rem; color: var(--text-muted);">Sales Specialist</span>
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <span style="font-size: 0.775rem; font-weight: 800; color: var(--color-primary); display: block;">4 Active Leads</span>
+                  <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--color-success);">12 Deals Closed</span>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 3. SALES AGENT VIEW -->
+        <div id="role-view-sales_agent" class="role-view-content">
+          <div style="background: rgba(27, 123, 237, 0.1); border: 1px solid rgba(27, 123, 237, 0.25); border-radius: var(--radius-lg); padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.25rem;">
+            <div>
+              <h4 style="font-size: 0.925rem; font-weight: 800;">Welcome back, Maya Patel (Senior Sales Closer)</h4>
+              <p style="font-size: 0.775rem; color: var(--text-muted); margin-top: 0.25rem;">Your work queue is synchronized across your Desktop Web and Mobile App sessions.</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <span style="padding: 0.35rem 0.85rem; border-radius: var(--radius-md); background: var(--color-primary); color: #FFFFFF; font-size: 0.75rem; font-weight: 800;">14 Active Leads</span>
+              <span style="padding: 0.35rem 0.85rem; border-radius: var(--radius-md); background: rgba(16, 185, 129, 0.15); color: var(--color-success); border: 1px solid rgba(16, 185, 129, 0.25); font-size: 0.75rem; font-weight: 800;">3 Follow-ups Today</span>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+            <div style="background: rgba(222, 238, 253, 0.7); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 1.25rem;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 800; color: var(--color-primary); margin-bottom: 0.5rem;">
+                <span>Step 1: Contacted</span>
+                <span style="color: var(--text-muted); font-family: var(--font-mono);">10:45 AM</span>
+              </div>
+              <h5 style="font-size: 0.875rem; font-weight: 800;">Marcus Vance • Apex Logistics</h5>
+              <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Budget $18,500. Requested proposal review for multi-branch deployment.</p>
+              <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; font-size: 0.75rem;">
+                <span style="color: var(--color-success); font-weight: 700;">Proposal Sent</span>
+                <span style="color: var(--color-primary); font-weight: 800; cursor: pointer;">Log Call</span>
+              </div>
+            </div>
+
+            <div style="background: rgba(222, 238, 253, 0.7); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 1.25rem;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 800; color: var(--color-warning); margin-bottom: 0.5rem;">
+                <span>Step 2: Follow-Up</span>
+                <span style="color: var(--text-muted); font-family: var(--font-mono);">Today 2:00 PM</span>
+              </div>
+              <h5 style="font-size: 0.875rem; font-weight: 800;">Elena Rostova • Horizon Tech</h5>
+              <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Demo scheduled with Technical VP. Custom integration checklist prepared.</p>
+              <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; font-size: 0.75rem;">
+                <span style="color: var(--color-warning); font-weight: 700;">Demo Prepared</span>
+                <span style="color: var(--color-primary); font-weight: 800; cursor: pointer;">Launch Meet</span>
+              </div>
+            </div>
+
+            <div style="background: rgba(222, 238, 253, 0.7); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 1.25rem;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 800; color: var(--color-success); margin-bottom: 0.5rem;">
+                <span>Step 3: Closing</span>
+                <span style="color: var(--text-muted); font-family: var(--font-mono);">Verifying</span>
+              </div>
+              <h5 style="font-size: 0.875rem; font-weight: 800;">Jordan Hayes • Quantum Cloud</h5>
+              <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Enterprise 48-seat contract signed. Final security clearance pending.</p>
+              <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; font-size: 0.75rem;">
+                <span style="color: var(--color-success); font-weight: 700;">$34,000 Won</span>
+                <span style="color: var(--text-muted); font-size: 0.65rem; font-family: var(--font-mono);">Auto-synced</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       6. 6-PILLAR BENTO FEATURE BREAKDOWN
+       ======================================================================== -->
+  <section id="features" class="section-wrapper">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/>
+          </svg>
+          Complete Business CRM Capabilities
+        </span>
+        <h2 class="section-title">Everything Your Sales Team Needs to Manage &amp; Close Leads</h2>
+        <p class="section-subtitle">
+          From direct lead intake and instant assignment to scheduled follow-ups, activity history, and role-based access control.
+        </p>
+      </div>
+
+      <div class="bento-grid">
+        
+        <!-- Feature 1: Lead Intake & Assignment -->
+        <div class="bento-card">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="bento-icon-box">
+                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                </svg>
+              </div>
+              <span class="bento-metric-pill">Zero Dropped Leads</span>
+            </div>
+            <span class="bento-tag">Lead Intake &amp; Assignment</span>
+            <h3 class="bento-card-title">Direct Lead Intake &amp; Instant 1-Click Assignment</h3>
+            <p class="bento-card-desc">
+              Never let valuable inquiries sit unattended. Incoming leads land in a dedicated unassigned queue where Team Leads can assign or reassign them to specific sales reps in one click with instant notification.
+            </p>
+          </div>
+          <div class="bento-card-footer">
+            <span style="color: var(--color-primary); font-weight: 700; display: flex; align-items: center; gap: 0.35rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+              Active Feature
+            </span>
+            <span>Team Protected</span>
+          </div>
+        </div>
+
+        <!-- Feature 2: Task Management -->
+        <div class="bento-card">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="bento-icon-box">
+                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                </svg>
+              </div>
+              <span class="bento-metric-pill">Never Miss a Follow-up</span>
+            </div>
+            <span class="bento-tag">Task Management</span>
+            <h3 class="bento-card-title">Scheduled Follow-ups with Overdue Task Alerts</h3>
+            <p class="bento-card-desc">
+              Keep every deal moving forward. Set exact follow-up dates, assign task priorities (High, Medium, Low), and receive clear alerts on overdue leads so prospects are never forgotten or neglected.
+            </p>
+          </div>
+          <div class="bento-card-footer">
+            <span style="color: var(--color-primary); font-weight: 700; display: flex; align-items: center; gap: 0.35rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+              Active Feature
+            </span>
+            <span>Team Protected</span>
+          </div>
+        </div>
+
+        <!-- Feature 3: Customer History -->
+        <div class="bento-card">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="bento-icon-box">
+                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                </svg>
+              </div>
+              <span class="bento-metric-pill">Full Interaction Context</span>
+            </div>
+            <span class="bento-tag">Customer History</span>
+            <h3 class="bento-card-title">Chronological Lead Timeline &amp; Activity History</h3>
+            <p class="bento-card-desc">
+              Maintain a unified audit of every prospect interaction. Log call summaries, meeting outcomes, stage transitions, and internal sales notes in a permanent chronological feed accessible to the team.
+            </p>
+          </div>
+          <div class="bento-card-footer">
+            <span style="color: var(--color-primary); font-weight: 700; display: flex; align-items: center; gap: 0.35rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+              Active Feature
+            </span>
+            <span>Team Protected</span>
+          </div>
+        </div>
+
+        <!-- Feature 4: Role Governance -->
+        <div class="bento-card">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="bento-icon-box">
+                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                </svg>
+              </div>
+              <span class="bento-metric-pill">Tailored Role Permissions</span>
+            </div>
+            <span class="bento-tag">Role Governance</span>
+            <h3 class="bento-card-title">3-Tier Access Hierarchy: Admins, Leads &amp; Agents</h3>
+            <p class="bento-card-desc">
+              Clear operational boundaries across your organization: Admins manage accounts and tenant settings; Team Leads supervise agent capacity and lead distribution; Sales Agents focus on direct client discussions.
+            </p>
+          </div>
+          <div class="bento-card-footer">
+            <span style="color: var(--color-primary); font-weight: 700; display: flex; align-items: center; gap: 0.35rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+              Active Feature
+            </span>
+            <span>Team Protected</span>
+          </div>
+        </div>
+
+        <!-- Feature 5: Data Confidentiality -->
+        <div class="bento-card">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="bento-icon-box">
+                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                </svg>
+              </div>
+              <span class="bento-metric-pill">100% Data Confidentiality</span>
+            </div>
+            <span class="bento-tag">Data Confidentiality</span>
+            <h3 class="bento-card-title">Strict Multi-Tenant Customer Data Protection</h3>
+            <p class="bento-card-desc">
+              Keep your customer records and business details safe. Strict tenant-level boundaries ensure client data, deals, and team notes are completely isolated and confidential from any other organization.
+            </p>
+          </div>
+          <div class="bento-card-footer">
+            <span style="color: var(--color-primary); font-weight: 700; display: flex; align-items: center; gap: 0.35rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+              Active Feature
+            </span>
+            <span>Team Protected</span>
+          </div>
+        </div>
+
+        <!-- Feature 6: Cross-Platform Access -->
+        <div class="bento-card">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="bento-icon-box">
+                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M4 6h18V4H4c-1.1 0-2 .9-2 2v11H0v3h14v-3H4V6zm19 2h-6c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h6c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zm-1 9h-4v-7h4v7z"/>
+                </svg>
+              </div>
+              <span class="bento-metric-pill">Simultaneous Team Access</span>
+            </div>
+            <span class="bento-tag">Cross-Platform Access</span>
+            <h3 class="bento-card-title">Concurrent Team Logins on Desktop, Tablet &amp; Mobile</h3>
+            <p class="bento-card-desc">
+              Enable your entire team to work together simultaneously. Access MyCrm smoothly across desktop web browsers, iPad/tablets, and mobile web with real-time sync and zero login session conflicts.
+            </p>
+          </div>
+          <div class="bento-card-footer">
+            <span style="color: var(--color-primary); font-weight: 700; display: flex; align-items: center; gap: 0.35rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+              Active Feature
+            </span>
+            <span>Team Protected</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       7. INTERACTIVE APP SCREENSHOTS CAROUSEL
+       ======================================================================== -->
+  <section id="screenshots" class="section-wrapper" style="background: rgba(222, 238, 253, 0.35);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M21 3H3C1.9 3 1 3.9 1 5v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14z"/>
+          </svg>
+          Interface Gallery
+        </span>
+        <h2 class="section-title">Explore the Real MyCrm User Interface</h2>
+        <p class="section-subtitle">
+          Hover over any app screen to inspect details and pause the automated tour. Built specifically for clean visual lead assignment, 3-tier role governance, and high-velocity deal tracking.
+        </p>
+      </div>
+
+      <!-- Carousel Container -->
+      <div id="carousel-outer-wrapper" class="carousel-outer-wrapper">
+        <div id="carousel-track" class="carousel-track">
+          
+          <!-- Slide 1: Centralized Command Dashboard -->
+          <div class="carousel-slide">
+            <div class="screenshot-mockup-card">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="pas-badge badge-blue">Super Admin View</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">System Authority</span>
+              </div>
+              <h3 style="font-size: 1.25rem; font-weight: 800; margin-top: 0.75rem; margin-bottom: 0.5rem;">Centralized Visual Command Dashboard</h3>
+              <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6;">Global command center displaying tenant isolation security health, cross-branch lead velocity, real-time closure rates, and team capacity allocation.</p>
+              
+              <div class="mockup-inner-terminal">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1rem;">
+                  <div style="background: var(--bg-card); padding: 0.75rem; border-radius: var(--radius-md);">
+                    <span style="font-size: 0.7rem; color: var(--text-muted);">Active Tenant Leads</span>
+                    <div style="font-size: 1.15rem; font-weight: 800; color: var(--color-primary); font-family: var(--font-mono);">1,420</div>
+                    <span style="font-size: 0.65rem; color: var(--color-success);">+18.4% lift</span>
+                  </div>
+                  <div style="background: var(--bg-card); padding: 0.75rem; border-radius: var(--radius-md);">
+                    <span style="font-size: 0.7rem; color: var(--text-muted);">Unassigned Queue</span>
+                    <div style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); font-family: var(--font-mono);">12 Leads</div>
+                    <span style="font-size: 0.65rem; color: var(--color-success);">-65% drop</span>
+                  </div>
+                </div>
+                <table style="width: 100%; font-size: 0.75rem; text-align: left; border-collapse: collapse;">
+                  <tr style="border-bottom: 1px solid var(--border-light); color: var(--text-muted);">
+                    <th style="padding: 0.4rem;">Company</th>
+                    <th style="padding: 0.4rem;">Rep</th>
+                    <th style="padding: 0.4rem;">Value</th>
+                    <th style="padding: 0.4rem;">Status</th>
+                  </tr>
+                  <tr>
+                    <td style="padding: 0.4rem; font-weight: 700;">Apex Logistics Ltd</td>
+                    <td style="padding: 0.4rem;">Marcus Vance</td>
+                    <td style="padding: 0.4rem; font-family: var(--font-mono);">$18,500</td>
+                    <td style="padding: 0.4rem; color: var(--color-success); font-weight: 700;">Assigned</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 0.4rem; font-weight: 700;">Horizon Retail Tech</td>
+                    <td style="padding: 0.4rem;">Elena Rostova</td>
+                    <td style="padding: 0.4rem; font-family: var(--font-mono);">$9,200</td>
+                    <td style="padding: 0.4rem; color: var(--color-warning); font-weight: 700;">Negotiation</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 2: 1-Click Dynamic Lead Assignment -->
+          <div class="carousel-slide">
+            <div class="screenshot-mockup-card">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="pas-badge badge-blue" style="color: var(--color-accent); border-color: var(--color-accent);">Team Lead View</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Workload Balancing</span>
+              </div>
+              <h3 style="font-size: 1.25rem; font-weight: 800; margin-top: 0.75rem; margin-bottom: 0.5rem;">1-Click Dynamic Lead Assignment Matrix</h3>
+              <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6;">Team Leads can evaluate live sales agent capacity, spot incoming unassigned inquiries instantly, and reassign deals in one click to keep response times under 5 minutes.</p>
+              
+              <div class="mockup-inner-terminal">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; font-size: 0.75rem;">
+                  <span style="font-weight: 800;">Maya Patel (Senior Closer)</span>
+                  <span style="font-family: var(--font-mono); font-weight: 700; color: var(--color-primary);">Capacity 93% • 14 Leads</span>
+                </div>
+                <div style="background: rgba(27, 123, 237, 0.15); border-radius: var(--radius-full); height: 6px; overflow: hidden; margin-bottom: 1rem;">
+                  <div style="background: var(--color-primary); width: 93%; height: 100%;"></div>
+                </div>
+                <div style="background: var(--bg-card); border-radius: var(--radius-md); padding: 0.75rem; font-size: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-weight: 800;">BioGen Innovations</div>
+                    <span style="color: var(--text-muted); font-size: 0.7rem;">Inbound Form • $15,400</span>
+                  </div>
+                  <span style="font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.6rem; border-radius: 4px; background: rgba(16, 185, 129, 0.15); color: var(--color-success);">Assigned to Maya</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 3: Agent High-Velocity Deal Terminal -->
+          <div class="carousel-slide">
+            <div class="screenshot-mockup-card">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="pas-badge badge-rose" style="color: var(--color-success); border-color: var(--color-success); background: rgba(16, 185, 129, 0.15);">Sales Agent View</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Prospect Execution</span>
+              </div>
+              <h3 style="font-size: 1.25rem; font-weight: 800; margin-top: 0.75rem; margin-bottom: 0.5rem;">Agent High-Velocity Deal Terminal</h3>
+              <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6;">A distraction-free workspace dedicated to customer interaction. Reps track daily overdue follow-ups, update lead stages, schedule calls, and record interaction logs.</p>
+              
+              <div class="mockup-inner-terminal">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1rem;">
+                  <div style="background: var(--bg-card); padding: 0.75rem; border-radius: var(--radius-md);">
+                    <span style="font-size: 0.7rem; color: var(--text-muted);">Today's Follow-ups</span>
+                    <div style="font-size: 1.15rem; font-weight: 800; color: var(--color-success); font-family: var(--font-mono);">8 Pending</div>
+                    <span style="font-size: 0.65rem; color: var(--text-muted);">Due Today</span>
+                  </div>
+                  <div style="background: var(--bg-card); padding: 0.75rem; border-radius: var(--radius-md);">
+                    <span style="font-size: 0.7rem; color: var(--text-muted);">Closed This Month</span>
+                    <div style="font-size: 1.15rem; font-weight: 800; color: var(--color-primary); font-family: var(--font-mono);">$64,200</div>
+                    <span style="font-size: 0.65rem; color: var(--color-success);">+28% vs avg</span>
+                  </div>
+                </div>
+                <div style="background: var(--bg-card); border-radius: var(--radius-md); padding: 0.75rem; font-size: 0.75rem;">
+                  <div style="font-weight: 800;">Call with CFO (Apex Logistics)</div>
+                  <span style="color: var(--text-muted); font-size: 0.7rem;">Today 2:30 PM • Ready to sign</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 4: Executive Revenue & Conversion Analytics -->
+          <div class="carousel-slide">
+            <div class="screenshot-mockup-card">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="pas-badge badge-amber">Analytics View</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Performance Intel</span>
+              </div>
+              <h3 style="font-size: 1.25rem; font-weight: 800; margin-top: 0.75rem; margin-bottom: 0.5rem;">Executive Revenue &amp; Lead Velocity Analytics</h3>
+              <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6;">Deep actionable analytics on lead stage conversion funnel, agent closure velocity, drop-off reduction, and multi-tenant department benchmarks.</p>
+              
+              <div class="mockup-inner-terminal">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+                  <div style="background: var(--bg-card); padding: 0.75rem; border-radius: var(--radius-md);">
+                    <span style="font-size: 0.7rem; color: var(--text-muted);">Avg Response Time</span>
+                    <div style="font-size: 1.15rem; font-weight: 800; color: var(--color-primary); font-family: var(--font-mono);">4.2 mins</div>
+                    <span style="font-size: 0.65rem; color: var(--color-success);">3x faster</span>
+                  </div>
+                  <div style="background: var(--bg-card); padding: 0.75rem; border-radius: var(--radius-md);">
+                    <span style="font-size: 0.7rem; color: var(--text-muted);">Lead-to-Won Ratio</span>
+                    <div style="font-size: 1.15rem; font-weight: 800; color: var(--color-accent); font-family: var(--font-mono);">32.6%</div>
+                    <span style="font-size: 0.65rem; color: var(--color-success);">+8.4%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 5: Simultaneous Multi-Device Cloud Sync -->
+          <div class="carousel-slide">
+            <div class="screenshot-mockup-card">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="pas-badge badge-blue">Multi-Device View</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Desktop, iPad &amp; Mobile</span>
+              </div>
+              <h3 style="font-size: 1.25rem; font-weight: 800; margin-top: 0.75rem; margin-bottom: 0.5rem;">Simultaneous Multi-Device Cloud Sync</h3>
+              <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6;">Seamless real-time synchronization across web browsers, iPad tablets, and mobile devices. Zero session collisions or concurrent login overwrites.</p>
+              
+              <div class="mockup-inner-terminal">
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.75rem;">
+                  <div style="display: flex; justify-content: space-between; padding: 0.45rem; background: var(--bg-card); border-radius: 6px;">
+                    <span>Desktop Web (Chrome)</span>
+                    <span style="color: var(--color-success); font-weight: 700;">Connected</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 0.45rem; background: var(--bg-card); border-radius: 6px;">
+                    <span>iPad Pro (Safari)</span>
+                    <span style="color: var(--color-success); font-weight: 700;">Connected</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 0.45rem; background: var(--bg-card); border-radius: 6px;">
+                    <span>iPhone 15 Mobile Web</span>
+                    <span style="color: var(--color-success); font-weight: 700;">Connected</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Controls: Arrows & Indicator Dots -->
+        <div class="carousel-controls">
+          <button id="carousel-prev" class="carousel-arrow-btn" type="button" aria-label="Previous Slide">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+          </button>
+
+          <div id="carousel-dots" class="carousel-dots"></div>
+
+          <button id="carousel-next" class="carousel-arrow-btn" type="button" aria-label="Next Slide">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       8. SEGMENTED PRICING TABLE
+       ======================================================================== -->
+  <section id="pricing" class="section-wrapper">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/>
+          </svg>
+          Transparent Business Pricing
+        </span>
+        <h2 class="section-title">Start Free Today. Upgrade as Your Team Scales.</h2>
+        <p class="section-subtitle">
+          Create an account to start with our Free Access plan (1 Team Lead and 1 Sales Agent). Scale to Professional at Rs. 3,000/mo or Custom Enterprise.
+        </p>
+
+        <!-- Monthly vs Annual Billing Toggle Switch -->
+        <div class="billing-toggle-wrapper">
+          <span id="billing-monthly-label" style="font-size: 0.875rem; font-weight: 700;">Monthly Billing</span>
+          
+          <button id="billing-switch" class="billing-switch" type="button" role="switch" aria-checked="false" aria-label="Toggle Annual Billing">
+            <div class="billing-switch-thumb">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </div>
+          </button>
+
+          <span id="billing-annual-label" style="font-size: 0.875rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; opacity: 0.6;">
+            Annual Billing
+            <span class="discount-pill">Save 20%</span>
+          </span>
+        </div>
+
+        <!-- Mobile Segmented Tabs (< 1024px) -->
+        <div class="mobile-pricing-tabs">
+          <button type="button" class="mobile-pricing-tab-btn" data-tier="free">Free Access</button>
+          <button type="button" class="mobile-pricing-tab-btn active" data-tier="growth">Professional</button>
+          <button type="button" class="mobile-pricing-tab-btn" data-tier="agency">Enterprise</button>
+        </div>
+      </div>
+
+      <!-- Pricing Cards Grid -->
+      <div class="pricing-grid">
+        
+        <!-- Tier 1: Free Access -->
+        <div id="pricing-card-free" class="pricing-card">
+          <div>
+            <h3 class="pricing-plan-name">Free Access</h3>
+            <p class="pricing-plan-desc">Start instantly by creating your login account. Perfect for small businesses testing visual lead assignment.</p>
+            
+            <div class="pricing-price-box">
+              <span class="pricing-price-val">Rs. 0</span>
+              <span class="pricing-period">/ forever</span>
+            </div>
+
+            <ul class="pricing-feature-list">
+              <li class="pricing-feature-item">
+                <svg class="pricing-check-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span>Instant Free Account Creation (No Credit Card)</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="pricing-check-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span>1 Admin + 1 Team Lead + 1 Sales Agent Only</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="pricing-check-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span>Centralized Visual Command Dashboard</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="pricing-check-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span>Manual Lead Assignment &amp; Follow-Up Tracking</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="pricing-check-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span>Simultaneous Multi-Device Login (Web &amp; Mobile)</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="pricing-check-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span>100% Cryptographic Tenant Data Isolation</span>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <a href="https://customer-relationship-management-cr-eight.vercel.app/login?mode=signup" class="btn-cta-primary" style="width: 100%; height: 3rem;">
+              Create Free Account →
+            </a>
+            <span style="font-size: 0.725rem; color: var(--text-muted); display: block; text-align: center; margin-top: 0.75rem;">
+              100% Free forever • Instant access
+            </span>
+          </div>
+        </div>
+
+        <!-- Tier 2: Professional (Featured) -->
+        <div id="pricing-card-growth" class="pricing-card featured">
+          <span class="pricing-badge-top">MOST POPULAR</span>
+          <div>
+            <h3 class="pricing-plan-name">Professional</h3>
+            <p class="pricing-plan-desc">Built for scaling businesses requiring full 3-tier role hierarchy, live agent tracking, and higher team limits.</p>
+            
+            <div class="pricing-price-box">
+              <span id="pro-price-val" class="pricing-price-val">Rs. 3,000</span>
+              <span id="pro-period-val" class="pricing-period">/ month</span>
+            </div>
+
+            <ul class="pricing-feature-list">
+              <li class="pricing-feature-item">
+                <svg class="pricing-check-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span>Full 3-Tier RBAC (Admins, Leads, Sales Agents)</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="pricing-check-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span>Add Multiple Team Leads &amp; Sales Agents</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="pricing-check-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span>Live Agent Activity &amp; Capacity Monitoring</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="pricing-check-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span>Instant 1-Click Lead Reassignment Rules</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="pricing-check-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span>Cross-Platform Desktop, Tablet &amp; Mobile Sync</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="pricing-check-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span>Advanced Visual Analytics &amp; Conversion Metrics</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="pricing-check-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span>Strict Multi-Tenant Database Isolation</span>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <a href="https://customer-relationship-management-cr-eight.vercel.app/login?mode=signup" class="btn-cta-primary" style="width: 100%; height: 3rem;">
+              Claim Professional Plan →
+            </a>
+            <span style="font-size: 0.725rem; color: var(--text-muted); display: block; text-align: center; margin-top: 0.75rem;">
+              Instant setup • Cancel anytime
+            </span>
+          </div>
+        </div>
+
+        <!-- Tier 3: Enterprise -->
+        <div id="pricing-card-agency" class="pricing-card">
+          <div>
+            <h3 class="pricing-plan-name">Enterprise</h3>
+            <p class="pricing-plan-desc">For multi-branch companies, large sales floors, and organizations needing dedicated custom enterprise capacity.</p>
+            
+            <div class="pricing-price-box">
+              <span class="pricing-price-val">Custom</span>
+            </div>
+
+            <ul class="pricing-feature-list">
+              <li class="pricing-feature-item">
+                <svg class="pricing-check-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span>Full 3-Tier RBAC (Admins, Leads, Sales Agents)</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="pricing-check-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span>Add Multiple Team Leads &amp; Sales Agents</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="pricing-check-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span>Live Agent Activity &amp; Capacity Monitoring</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="pricing-check-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span>Instant 1-Click Lead Reassignment Rules</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="pricing-check-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span>Cross-Platform Desktop, Tablet &amp; Mobile Sync</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="pricing-check-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span>Advanced Visual Analytics &amp; Conversion Metrics</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="pricing-check-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span>Strict Multi-Tenant Database Isolation</span>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <a href="https://customer-relationship-management-cr-eight.vercel.app/login?mode=signup" class="btn-hero-secondary" style="width: 100%; height: 3rem;">
+              Contact for Custom Plan →
+            </a>
+            <span style="font-size: 0.725rem; color: var(--text-muted); display: block; text-align: center; margin-top: 0.75rem;">
+              Tailored contract • Dedicated onboarding
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Guarantees Grid -->
+      <div class="pricing-guarantee-grid">
+        <div>
+          <span style="font-weight: 800; font-size: 0.875rem; display: block; color: var(--text-main);">100% Tenant Isolation</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">Strict cryptographic boundaries</span>
+        </div>
+        <div>
+          <span style="font-weight: 800; font-size: 0.875rem; display: block; color: var(--text-main);">3-Tier RBAC Access</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">Admin, Lead &amp; Agent control</span>
+        </div>
+        <div>
+          <span style="font-weight: 800; font-size: 0.875rem; display: block; color: var(--text-main);">Multi-Device Concurrency</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">Web, tablet &amp; mobile sync</span>
+        </div>
+        <div>
+          <span style="font-weight: 800; font-size: 0.875rem; display: block; color: var(--text-main);">24/7 Priority Support</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">Human assistance anytime</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       9. ZERO-JANK FAQ ACCORDION
+       ======================================================================== -->
+  <section id="faq" class="section-wrapper">
+    <div class="container container-narrow">
+      <div class="section-header">
+        <span class="section-tag">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-2h2v2zm1.07-7.75l-.9.92C12.45 11.9 12 12.5 12 14h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.67z"/>
+          </svg>
+          Clear Answers
+        </span>
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <p class="section-subtitle">
+          Everything you need to know about MyCrm, roles, multi-tenancy, and team access.
+        </p>
+      </div>
+
+      <div class="faq-accordion-list">
+        
+        <!-- FAQ 1 -->
+        <div class="faq-item open">
+          <button type="button" class="faq-question-btn">
+            <span>How does MyCrm stop leads from getting lost or passed around?</span>
+            <div class="faq-chevron-box">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+              </svg>
+            </div>
+          </button>
+          <div class="faq-answer-panel">
+            Instead of forwarding leads across unmonitored spreadsheets, emails, or personal chat groups, MyCrm immediately brings all lead details into a visual command dashboard. Team Leads can instantly assign leads to specific sales reps with clear ownership and real-time status tracking.
+          </div>
+        </div>
+
+        <!-- FAQ 2 -->
+        <div class="faq-item">
+          <button type="button" class="faq-question-btn">
+            <span>What are the distinct access permissions for Admins, Team Leads, and Sales Agents?</span>
+            <div class="faq-chevron-box">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+              </svg>
+            </div>
+          </button>
+          <div class="faq-answer-panel">
+            Admins hold full system authority to manage employee accounts, configure tenant settings, and oversee integrations. Team Leads oversee team performance, monitor real-time agent activity, and dynamically assign or reassign leads. Sales Agents focus strictly on their assigned prospects, logging customer notes, and scheduling follow-ups.
+          </div>
+        </div>
+
+        <!-- FAQ 3 -->
+        <div class="faq-item">
+          <button type="button" class="faq-question-btn">
+            <span>How does multi-tenant isolation protect our company's confidential customer data?</span>
+            <div class="faq-chevron-box">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+              </svg>
+            </div>
+          </button>
+          <div class="faq-answer-panel">
+            MyCrm enforces strict tenant boundaries at the database layer using cryptographic row-level security. Your customer data, lead notes, and employee details are completely isolated and inaccessible to any other organization or unauthorized role tier.
+          </div>
+        </div>
+
+        <!-- FAQ 4 -->
+        <div class="faq-item">
+          <button type="button" class="faq-question-btn">
+            <span>Can multiple team members access MyCrm simultaneously from different devices?</span>
+            <div class="faq-chevron-box">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+              </svg>
+            </div>
+          </button>
+          <div class="faq-answer-panel">
+            Yes! MyCrm natively supports multi-device concurrent logins. Sales reps and managers can access the platform simultaneously from desktop web browsers, iPad/tablets, and mobile applications with zero session conflicts or data overrides.
+          </div>
+        </div>
+
+        <!-- FAQ 5 -->
+        <div class="faq-item">
+          <button type="button" class="faq-question-btn">
+            <span>Can Team Leads reassign leads if an agent is overloaded or away?</span>
+            <div class="faq-chevron-box">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+              </svg>
+            </div>
+          </button>
+          <div class="faq-answer-panel">
+            Absolutely. Team Leads have real-time visibility into each agent's active lead count and status. If an agent is in a call or unavailable, a Team Lead can reassign any lead to another rep in a single click.
+          </div>
+        </div>
+
+        <!-- FAQ 6 -->
+        <div class="faq-item">
+          <button type="button" class="faq-question-btn">
+            <span>Can I use MyCrm for free without entering a credit card?</span>
+            <div class="faq-chevron-box">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+              </svg>
+            </div>
+          </button>
+          <div class="faq-answer-panel">
+            Yes! You can get started immediately by creating a login account with our Free Access plan. The free plan allows you to add 1 Team Lead and 1 Sales Agent with complete visual dashboard tracking and multi-device access. When your sales team expands, you can upgrade to Professional in one click.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       10. HIGH-URGENCY BOTTOM CONVERSION BANNER
+       ======================================================================== -->
+  <section class="section-wrapper" style="padding-bottom: 2rem;">
+    <div class="container container-narrow">
+      <div class="bottom-banner-card">
+        <h2 class="bottom-banner-title">
+          Ready to Stop Passing Around Leads and Start Closing?
+        </h2>
+        <p class="bottom-banner-desc">
+          Configure your employee roster, assign work seamlessly, and gain clear visibility into your team's performance. Start with our Free Access plan today.
+        </p>
+        <div style="display: flex; justify-content: center;">
+          <a href="https://customer-relationship-management-cr-eight.vercel.app/login?mode=signup" class="btn-bottom-cta">
+            Get Started Free →
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       11. MINIMAL ENTERPRISE FOOTER
+       ======================================================================== -->
+  <footer class="site-footer">
+    <div class="container footer-flex">
+      <p>© 2026 MyCrm Solutions. All rights reserved. Multi-Tenant Enterprise Lead Management Platform.</p>
+      <div class="footer-links">
+        <a href="https://customer-relationship-management-cr-eight.vercel.app/privacy" class="footer-link">Privacy Policy</a>
+        <a href="https://customer-relationship-management-cr-eight.vercel.app/terms" class="footer-link">Terms of Service</a>
+        <a href="https://customer-relationship-management-cr-eight.vercel.app/status" class="footer-link">System Status</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================
+       12. MOBILE STICKY CONVERSION BAR (< 768px)
+       ======================================================================== -->
+  <div id="mobile-sticky-bar" class="mobile-sticky-bar" aria-hidden="true">
+    <div>
+      <p style="font-size: 0.775rem; font-weight: 800; color: var(--text-main);">Organize &amp; Assign Leads</p>
+      <p style="font-size: 0.675rem; color: var(--text-muted);">14-day free trial • All devices</p>
+    </div>
+    <a href="https://customer-relationship-management-cr-eight.vercel.app/login?mode=signup" class="btn-cta-primary" style="height: 2.25rem; font-size: 0.75rem; padding: 0 1rem;">
+      Try Free →
+    </a>
+  </div>
+
+  <!-- Pure Vanilla JavaScript -->
+  <script src="js/main.js"></script>
+</body>
+</html>
