@@ -11,13 +11,26 @@ interface PricingPlan {
   name: string;
   badge?: string;
   description: string;
-  monthlyPrice: number;
-  annualMonthlyPrice: number;
+  monthlyPriceFormatted: string;
+  annualPriceFormatted: string;
+  periodLabel: string;
+  isCustom?: boolean;
   highlighted?: boolean;
   ctaText: string;
+  ctaSubtext: string;
   features: string[];
   metaHighlight: string;
 }
+
+const SHARED_CORE_FEATURES = [
+  "Full 3-Tier RBAC (Admins, Leads, Sales Agents)",
+  "Add Multiple Team Leads & Sales Agents",
+  "Live Agent Activity & Capacity Monitoring",
+  "Instant 1-Click Lead Reassignment Rules",
+  "Cross-Platform Desktop, Tablet & Mobile Sync",
+  "Advanced Visual Analytics & Conversion Metrics",
+  "Strict Multi-Tenant Database Isolation",
+];
 
 const PLANS: PricingPlan[] = [
   {
@@ -25,9 +38,11 @@ const PLANS: PricingPlan[] = [
     name: "Free Access",
     badge: "FREE FOREVER",
     description: "Start instantly by creating your login account. Perfect for small businesses testing visual lead assignment.",
-    monthlyPrice: 0,
-    annualMonthlyPrice: 0,
-    ctaText: "Create Free Account",
+    monthlyPriceFormatted: "Rs. 0",
+    annualPriceFormatted: "Rs. 0",
+    periodLabel: "/ forever",
+    ctaText: "Create Free Account →",
+    ctaSubtext: "100% Free forever • Instant access",
     metaHighlight: "1 Team Lead + 1 Sales Agent Only",
     features: [
       "Instant Free Account Creation (No Credit Card)",
@@ -44,39 +59,27 @@ const PLANS: PricingPlan[] = [
     badge: "MOST POPULAR",
     highlighted: true,
     description: "Built for scaling businesses requiring full 3-tier role hierarchy, live agent tracking, and higher team limits.",
-    monthlyPrice: 79,
-    annualMonthlyPrice: 63,
-    ctaText: "Claim Professional Free Trial",
+    monthlyPriceFormatted: "Rs. 3,000",
+    annualPriceFormatted: "Rs. 2,400",
+    periodLabel: "/ month",
+    ctaText: "Claim Professional Plan →",
+    ctaSubtext: "Instant setup • Cancel anytime",
     metaHighlight: "Up to 20 Team Members",
-    features: [
-      "Full 3-Tier RBAC (Admins, Leads, Sales Agents)",
-      "Add Multiple Team Leads & Sales Agents",
-      "Live Agent Activity & Capacity Monitoring",
-      "Instant 1-Click Lead Reassignment Rules",
-      "Cross-Platform Desktop, Tablet & Mobile Sync",
-      "Advanced Visual Analytics & Conversion Metrics",
-      "Strict Multi-Tenant Database Isolation",
-      "Priority Live Chat Support",
-    ],
+    features: SHARED_CORE_FEATURES,
   },
   {
     id: "agency",
     name: "Enterprise",
-    badge: "SCALING BUSINESSES",
-    description: "For multi-branch companies, large sales floors, and organizations needing dedicated tenant infrastructure.",
-    monthlyPrice: 199,
-    annualMonthlyPrice: 159,
-    ctaText: "Get Started as Enterprise",
+    badge: "CUSTOM SCALE",
+    description: "For multi-branch companies, large sales floors, and organizations needing dedicated custom enterprise capacity.",
+    monthlyPriceFormatted: "Custom",
+    annualPriceFormatted: "Custom",
+    periodLabel: "",
+    isCustom: true,
+    ctaText: "Contact for Custom Plan →",
+    ctaSubtext: "Tailored contract • Dedicated onboarding",
     metaHighlight: "Unlimited Members & Devices",
-    features: [
-      "Unlimited Concurrent Logins & Team Members",
-      "Custom Role Permissions & Security Audit Logs",
-      "Dedicated Multi-Tenant Instance with Custom SLA",
-      "Automated Workload Balancing Rules",
-      "Executive Multi-Department Dashboards",
-      "Direct API Integrations & Webhook Sync",
-      "Dedicated Account Manager & Live Setup",
-    ],
+    features: SHARED_CORE_FEATURES,
   },
 ];
 
@@ -98,7 +101,7 @@ export default function Pricing() {
           Start Free Today. Upgrade as Your Team Scales.
         </h2>
         <p className="text-[#476685] dark:text-slate-400 text-sm sm:text-base mt-3 max-w-2xl mx-auto leading-relaxed">
-          Create an account to start with our Free Access plan (1 Team Lead and 1 Sales Agent). No credit card required.
+          Create an account to start with our Free Access plan (1 Team Lead and 1 Sales Agent). Scale to Professional at Rs. 3,000/mo or Custom Enterprise.
         </p>
 
         {/* Monthly / Annual Billing Toggle */}
@@ -152,7 +155,7 @@ export default function Pricing() {
                 <span>{plan.name}</span>
                 {plan.badge && (
                   <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold ${isSelected ? "bg-white/20 text-white" : "bg-[#18DBF5]/20 text-[#1B7BED] dark:text-[#18DBF5]"}`}>
-                    {plan.id === "free" ? "Free" : "Popular"}
+                    {plan.id === "free" ? "Free" : plan.id === "growth" ? "Popular" : "Custom"}
                   </span>
                 )}
               </button>
@@ -165,7 +168,11 @@ export default function Pricing() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch">
         {PLANS.map((plan) => {
           const isMobileVisible = mobileTier === plan.id;
-          const displayPrice = billingCycle === "annual" ? plan.annualMonthlyPrice : plan.monthlyPrice;
+          const displayPrice = plan.isCustom
+            ? "Custom"
+            : billingCycle === "annual"
+            ? plan.annualPriceFormatted
+            : plan.monthlyPriceFormatted;
 
           return (
             <div
@@ -181,6 +188,8 @@ export default function Pricing() {
                 <div className={`absolute -top-3.5 left-1/2 -translate-x-1/2 px-3.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider shadow-md ${
                   plan.id === "free"
                     ? "bg-[#DEEEFD] text-[#1B7BED] border border-[#1B7BED]/30 dark:bg-slate-800 dark:text-[#18DBF5]"
+                    : plan.isCustom
+                    ? "bg-slate-800 text-slate-200 border border-slate-700"
                     : "bg-gradient-to-r from-[#1B7BED] to-[#18DBF5] text-slate-950"
                 }`}>
                   {plan.badge}
@@ -202,19 +211,23 @@ export default function Pricing() {
                 {/* Price Display */}
                 <div className="my-6 pb-6 border-b border-[#C8E0F8] dark:border-slate-800">
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-4xl sm:text-5xl font-extrabold text-[#0A2540] dark:text-white tracking-tight">
-                      ${displayPrice}
+                    <span className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#0A2540] dark:text-white tracking-tight">
+                      {displayPrice}
                     </span>
-                    <span className="text-[#476685] dark:text-slate-400 text-sm font-medium">
-                      {displayPrice === 0 ? "/ forever" : "/ month"}
-                    </span>
+                    {plan.periodLabel && (
+                      <span className="text-[#476685] dark:text-slate-400 text-sm font-medium">
+                        {plan.periodLabel}
+                      </span>
+                    )}
                   </div>
                   <p className="text-[11px] text-[#476685] dark:text-slate-500 mt-1">
-                    {displayPrice === 0
+                    {plan.isCustom
+                      ? "Custom pricing tailored to your scale • Dedicated SLA"
+                      : plan.id === "free"
                       ? "Start by creating an account • No credit card needed"
                       : billingCycle === "annual"
-                      ? `Billed annually ($${displayPrice * 12}/yr)`
-                      : "Billed monthly, cancel anytime"}
+                      ? `Billed annually (${plan.annualPriceFormatted} × 12/yr • Save 20%)`
+                      : `Billed monthly (${plan.monthlyPriceFormatted}), cancel anytime`}
                   </p>
                 </div>
 
@@ -251,7 +264,7 @@ export default function Pricing() {
                   <Icon icon="solar:arrow-right-linear" className="w-4 h-4" />
                 </a>
                 <p className="text-center text-[11px] text-[#476685] dark:text-slate-500 mt-2.5">
-                  {displayPrice === 0 ? "100% Free forever • Instant access" : "14 days free • No credit card required"}
+                  {plan.ctaSubtext}
                 </p>
               </div>
             </div>
