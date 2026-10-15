@@ -176,3 +176,46 @@
 .blog-details p {
     @apply dark:text-white/60 text-muted
 }
+
+/* React Multi Carousel Theme Customizations */
+.react-multi-carousel-list {
+    position: relative;
+}
+.react-multi-carousel-track {
+    display: flex;
+    align-items: stretch;
+}
+.react-multiple-carousel__arrow {
+    background: rgba(27, 123, 237, 0.85) !important;
+    border-radius: 9999px !important;
+    backdrop-filter: blur(8px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 4px 14px rgba(27, 123, 237, 0.3) !important;
+    transition: all 0.2s ease !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    z-index: 20 !important;
+}
+.react-multiple-carousel__arrow:hover {
+    background: #1B7BED !important;
+    transform: scale(1.08) !important;
+}
+.react-multiple-carousel__arrow--left {
+    left: 8px !important;
+}
+.react-multiple-carousel__arrow--right {
+    right: 8px !important;
+}
+.react-multi-carousel-dot button {
+    border-color: #C8E0F8 !important;
+    background: #DEEEFD !important;
+    transition: all 0.3s ease !important;
+    width: 9px !important;
+    height: 9px !important;
+}
+.react-multi-carousel-dot--active button {
+    background: #1B7BED !important;
+    border-color: #18DBF5 !important;
+    width: 26px !important;
+    border-radius: 9999px !important;
+}
