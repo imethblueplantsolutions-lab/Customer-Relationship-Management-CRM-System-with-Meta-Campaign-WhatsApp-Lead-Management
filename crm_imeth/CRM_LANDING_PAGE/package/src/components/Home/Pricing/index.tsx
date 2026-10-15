@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Icon } from "@iconify/react";
 
 type BillingCycle = "monthly" | "annual";
-type PricingTierId = "starter" | "growth" | "agency";
+type PricingTierId = "free" | "growth" | "agency";
 
 interface PricingPlan {
   id: PricingTierId;
@@ -21,20 +21,21 @@ interface PricingPlan {
 
 const PLANS: PricingPlan[] = [
   {
-    id: "starter",
-    name: "Starter Team",
-    description: "Ideal for growing businesses organizing their first visual lead pipeline and employee roles.",
-    monthlyPrice: 29,
-    annualMonthlyPrice: 23,
-    ctaText: "Start 14-Day Free Trial",
-    metaHighlight: "Up to 5 Team Members",
+    id: "free",
+    name: "Free Access",
+    badge: "FREE FOREVER",
+    description: "Start instantly by creating your login account. Perfect for small businesses testing visual lead assignment.",
+    monthlyPrice: 0,
+    annualMonthlyPrice: 0,
+    ctaText: "Create Free Account",
+    metaHighlight: "1 Team Lead + 1 Sales Agent Only",
     features: [
-      "1 Admin + 1 Team Lead + 3 Sales Agents",
-      "Manual Lead Assignment & Rebalancing",
-      "Centralized Visual Dashboard",
-      "Simultaneous Multi-Device Login",
-      "Tenant-Level Data Encryption",
-      "Standard Email & Community Support",
+      "Instant Free Account Creation (No Credit Card)",
+      "1 Admin + 1 Team Lead + 1 Sales Agent Only",
+      "Centralized Visual Command Dashboard",
+      "Manual Lead Assignment & Follow-Up Tracking",
+      "Simultaneous Multi-Device Login (Web & Mobile)",
+      "100% Cryptographic Tenant Data Isolation",
     ],
   },
   {
@@ -42,19 +43,19 @@ const PLANS: PricingPlan[] = [
     name: "Professional",
     badge: "MOST POPULAR",
     highlighted: true,
-    description: "Built for scaling businesses requiring full 3-tier role hierarchy, live agent tracking, and high lead volumes.",
+    description: "Built for scaling businesses requiring full 3-tier role hierarchy, live agent tracking, and higher team limits.",
     monthlyPrice: 79,
     annualMonthlyPrice: 63,
     ctaText: "Claim Professional Free Trial",
     metaHighlight: "Up to 20 Team Members",
     features: [
       "Full 3-Tier RBAC (Admins, Leads, Sales Agents)",
+      "Add Multiple Team Leads & Sales Agents",
       "Live Agent Activity & Capacity Monitoring",
       "Instant 1-Click Lead Reassignment Rules",
       "Cross-Platform Desktop, Tablet & Mobile Sync",
       "Advanced Visual Analytics & Conversion Metrics",
       "Strict Multi-Tenant Database Isolation",
-      "CSV Lead Export & Custom Fields",
       "Priority Live Chat Support",
     ],
   },
@@ -94,10 +95,10 @@ export default function Pricing() {
           Transparent Business Pricing
         </span>
         <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-[#0A2540] dark:text-white tracking-tight">
-          Priced to Pay for Itself in a Single Converted Deal
+          Start Free Today. Upgrade as Your Team Scales.
         </h2>
         <p className="text-[#476685] dark:text-slate-400 text-sm sm:text-base mt-3 max-w-2xl mx-auto leading-relaxed">
-          No hidden fees or surprise costs. Every plan includes visual dashboard tracking, role-based access, and simultaneous multi-device logins.
+          Create an account to start with our Free Access plan (1 Team Lead and 1 Sales Agent). No credit card required.
         </p>
 
         {/* Monthly / Annual Billing Toggle */}
@@ -149,9 +150,9 @@ export default function Pricing() {
                 }`}
               >
                 <span>{plan.name}</span>
-                {plan.highlighted && (
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? "bg-white/20 text-white" : "bg-[#18DBF5]/20 text-[#1B7BED] dark:text-[#18DBF5]"}`}>
-                    Popular ★
+                {plan.badge && (
+                  <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold ${isSelected ? "bg-white/20 text-white" : "bg-[#18DBF5]/20 text-[#1B7BED] dark:text-[#18DBF5]"}`}>
+                    {plan.id === "free" ? "Free" : "Popular"}
                   </span>
                 )}
               </button>
@@ -177,7 +178,11 @@ export default function Pricing() {
             >
               {/* Highlighted Ribbon Badge */}
               {plan.badge && (
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-gradient-to-r from-[#1B7BED] to-[#18DBF5] text-slate-950 shadow-md">
+                <div className={`absolute -top-3.5 left-1/2 -translate-x-1/2 px-3.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider shadow-md ${
+                  plan.id === "free"
+                    ? "bg-[#DEEEFD] text-[#1B7BED] border border-[#1B7BED]/30 dark:bg-slate-800 dark:text-[#18DBF5]"
+                    : "bg-gradient-to-r from-[#1B7BED] to-[#18DBF5] text-slate-950"
+                }`}>
                   {plan.badge}
                 </div>
               )}
@@ -200,10 +205,16 @@ export default function Pricing() {
                     <span className="text-4xl sm:text-5xl font-extrabold text-[#0A2540] dark:text-white tracking-tight">
                       ${displayPrice}
                     </span>
-                    <span className="text-[#476685] dark:text-slate-400 text-sm font-medium">/ month</span>
+                    <span className="text-[#476685] dark:text-slate-400 text-sm font-medium">
+                      {displayPrice === 0 ? "/ forever" : "/ month"}
+                    </span>
                   </div>
                   <p className="text-[11px] text-[#476685] dark:text-slate-500 mt-1">
-                    {billingCycle === "annual" ? `Billed annually ($${displayPrice * 12}/yr)` : "Billed monthly, cancel anytime"}
+                    {displayPrice === 0
+                      ? "Start by creating an account • No credit card needed"
+                      : billingCycle === "annual"
+                      ? `Billed annually ($${displayPrice * 12}/yr)`
+                      : "Billed monthly, cancel anytime"}
                   </p>
                 </div>
 
@@ -240,7 +251,7 @@ export default function Pricing() {
                   <Icon icon="solar:arrow-right-linear" className="w-4 h-4" />
                 </a>
                 <p className="text-center text-[11px] text-[#476685] dark:text-slate-500 mt-2.5">
-                  14 days free • No credit card required
+                  {displayPrice === 0 ? "100% Free forever • Instant access" : "14 days free • No credit card required"}
                 </p>
               </div>
             </div>
@@ -248,7 +259,7 @@ export default function Pricing() {
         })}
       </div>
 
-      {/* Trust & Compliance Row (Zero Meta/WhatsApp specifics) */}
+      {/* Trust & Compliance Row */}
       <div className="mt-14 pt-8 border-t border-[#C8E0F8] dark:border-slate-800/80 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
         <div className="p-3">
           <Icon icon="solar:shield-check-bold" className="w-6 h-6 text-[#1B7BED] dark:text-[#18DBF5] mx-auto mb-1.5" />

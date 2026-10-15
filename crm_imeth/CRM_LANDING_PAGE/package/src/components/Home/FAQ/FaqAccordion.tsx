@@ -35,9 +35,9 @@ const FAQS: FaqItem[] = [
       "Absolutely. Team Leads have real-time visibility into each agent's active lead count and status. If an agent is in a call or unavailable, a Team Lead can reassign any lead to another rep in a single click.",
   },
   {
-    question: "Is there a free trial to test MyCrm with our team before committing?",
+    question: "Can I use MyCrm for free without entering a credit card?",
     answer:
-      "Yes. You can test MyCrm free for 14 days with no credit card required. Invite your Team Leads and Sales Agents, configure your employee roles, and experience the visual dashboard firsthand.",
+      "Yes! You can get started immediately by creating a login account with our Free Access plan. The free plan allows you to add 1 Team Lead and 1 Sales Agent with complete visual dashboard tracking and multi-device access. When your sales team expands, you can upgrade to Professional in one click.",
   },
 ];
 
