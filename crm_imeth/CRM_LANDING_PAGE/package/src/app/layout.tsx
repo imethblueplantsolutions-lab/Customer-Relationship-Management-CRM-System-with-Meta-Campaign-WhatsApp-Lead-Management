@@ -11,8 +11,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className="dark scroll-smooth">
-      <body className={`${dmsans.className} bg-[#07090E] text-slate-100 antialiased`}>
+    <html lang="en" suppressHydrationWarning className="scroll-smooth">
+      <body className={`${dmsans.className} bg-[#F3F8FE] text-[#0A2540] dark:bg-[#07090E] dark:text-slate-100 transition-colors duration-200 antialiased`}>
         <ThemeProvider
           attribute="class"
           enableSystem={false}

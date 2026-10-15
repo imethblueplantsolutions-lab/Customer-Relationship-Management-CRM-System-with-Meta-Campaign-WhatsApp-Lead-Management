@@ -1,31 +1,66 @@
-'use client'
+'use client';
+
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 const ThemeToggler = () => {
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div 
+        aria-hidden="true" 
+        className="w-9 h-9 rounded-xl border border-[#C8E0F8] dark:border-slate-800 bg-[#DEEEFD]/50 dark:bg-slate-900/50" 
+      />
+    );
+  }
+
+  const isDark = theme === "dark";
+
   return (
     <button
-      aria-label="theme toggler"
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className="text-body-color flex h-8 w-8 items-center justify-center duration-300 dark:text-white"
+      type="button"
+      aria-label={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+      title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      className="group relative flex h-9 w-9 items-center justify-center rounded-xl border border-[#C8E0F8] bg-[#DEEEFD] text-[#0A2540] transition-all duration-200 hover:border-[#1B7BED] hover:bg-[#cbe2f8] hover:text-[#1B7BED] dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 dark:hover:border-[#18DBF5] dark:hover:bg-slate-800 dark:hover:text-[#18DBF5] shadow-xs cursor-pointer"
     >
-      <span>
+      {isDark ? (
+        // Sun Icon for Dark Mode (click to switch to Light)
         <svg
-          viewBox="0 0 16 16"
-          className="hidden h-6 w-6 fill-current dark:block"
+          className="h-4.5 w-4.5 transition-transform duration-300 group-hover:rotate-45 text-[#18DBF5]"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
         >
-          <path d="M4.50663 3.2267L3.30663 2.03337L2.36663 2.97337L3.55996 4.1667L4.50663 3.2267ZM2.66663 7.00003H0.666626V8.33337H2.66663V7.00003ZM8.66663 0.366699H7.33329V2.33337H8.66663V0.366699V0.366699ZM13.6333 2.97337L12.6933 2.03337L11.5 3.2267L12.44 4.1667L13.6333 2.97337ZM11.4933 12.1067L12.6866 13.3067L13.6266 12.3667L12.4266 11.1734L11.4933 12.1067ZM13.3333 7.00003V8.33337H15.3333V7.00003H13.3333ZM7.99996 3.6667C5.79329 3.6667 3.99996 5.46003 3.99996 7.6667C3.99996 9.87337 5.79329 11.6667 7.99996 11.6667C10.2066 11.6667 12 9.87337 12 7.6667C12 5.46003 10.2066 3.6667 7.99996 3.6667ZM7.33329 14.9667H8.66663V13H7.33329V14.9667ZM2.36663 12.36L3.30663 13.3L4.49996 12.1L3.55996 11.16L2.36663 12.36Z" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+          />
         </svg>
-
+      ) : (
+        // Moon Icon for Light Mode (click to switch to Dark)
         <svg
-          viewBox="0 0 23 23"
-          className="h-8 w-8 fill-current dark:hidden"
+          className="h-4.5 w-4.5 transition-transform duration-300 group-hover:-rotate-12 text-[#1B7BED]"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
         >
-          <g clipPath="url(#clip0_40_125)">
-            <path d="M16.6111 15.855C17.591 15.1394 18.3151 14.1979 18.7723 13.1623C16.4824 13.4065 14.1342 12.4631 12.6795 10.4711C11.2248 8.47905 11.0409 5.95516 11.9705 3.84818C10.8449 3.9685 9.72768 4.37162 8.74781 5.08719C5.7759 7.25747 5.12529 11.4308 7.29558 14.4028C9.46586 17.3747 13.6392 18.0253 16.6111 15.855Z" />
-          </g>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+          />
         </svg>
-      </span>
+      )}
     </button>
   );
 };

@@ -10,24 +10,34 @@ interface FaqItem {
 
 const FAQS: FaqItem[] = [
   {
-    question: "Do I need an approved Meta WhatsApp Business API account to start?",
+    question: "How does MyCrm stop leads from getting lost or passed around?",
     answer:
-      "No. You can launch immediately using 1-click WhatsApp Web/App redirection on the Starter plan, or connect your official Meta WhatsApp Cloud API credentials for automated 0-second background drip sequences.",
+      "Instead of forwarding leads across unmonitored spreadsheets, emails, or personal chat groups, MyCrm immediately brings all lead details into a visual command dashboard. Team Leads can instantly assign leads to specific sales reps with clear ownership and real-time status tracking.",
   },
   {
-    question: "Does BluePlanet CRM completely replace Zapier or Make.com?",
+    question: "What are the distinct access permissions for Admins, Team Leads, and Sales Agents?",
     answer:
-      "Yes. BluePlanet CRM provides native, zero-latency Meta Lead Ads webhook endpoints out of the box. You eliminate third-party automation subscription fees and avoid webhook task limits.",
+      "Admins hold full system authority to manage employee accounts, configure tenant settings, and oversee integrations. Team Leads oversee team performance, monitor real-time agent activity, and dynamically assign or reassign leads. Sales Agents focus strictly on their assigned prospects, logging customer notes, and scheduling follow-ups.",
   },
   {
-    question: "How does multi-agent routing and data isolation work for agencies?",
+    question: "How does multi-tenant isolation protect our company's confidential customer data?",
     answer:
-      "Every workspace is protected by strict PostgreSQL tenant isolation and Role-Based Access Control (RBAC). Agency owners can manage multiple client sub-accounts and restrict sales reps to only their assigned leads.",
+      "MyCrm enforces strict tenant boundaries at the database layer using cryptographic row-level security. Your customer data, lead notes, and employee details are completely isolated and inaccessible to any other organization or unauthorized role tier.",
   },
   {
-    question: "What happens after the 14-day free trial ends?",
+    question: "Can multiple team members access MyCrm simultaneously from different devices?",
     answer:
-      "You can start your 14-day trial without entering a credit card. At the end of 14 days, you can pick a monthly or annual plan to keep your webhooks active, or export your lead data in one click.",
+      "Yes! MyCrm natively supports multi-device concurrent logins. Sales reps and managers can access the platform simultaneously from desktop web browsers, iPad/tablets, and mobile applications with zero session conflicts or data overrides.",
+  },
+  {
+    question: "Can Team Leads reassign leads if an agent is overloaded or away?",
+    answer:
+      "Absolutely. Team Leads have real-time visibility into each agent's active lead count and status. If an agent is in a call or unavailable, a Team Lead can reassign any lead to another rep in a single click.",
+  },
+  {
+    question: "Is there a free trial to test MyCrm with our team before committing?",
+    answer:
+      "Yes. You can test MyCrm free for 14 days with no credit card required. Invite your Team Leads and Sales Agents, configure your employee roles, and experience the visual dashboard firsthand.",
   },
 ];
 
@@ -41,12 +51,16 @@ export default function FaqAccordion() {
   return (
     <section id="faq" className="scroll-mt-24 py-16 md:py-24 px-4 sm:px-6 max-w-4xl mx-auto">
       <div className="text-center mb-10 md:mb-12">
-        <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 mb-3">
-          Objection-Busting FAQ
+        <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#1B7BED]/10 text-[#1B7BED] dark:bg-[#18DBF5]/10 dark:text-[#18DBF5] border border-[#1B7BED]/20 dark:border-[#18DBF5]/25 mb-3">
+          <Icon icon="solar:question-circle-bold" className="w-4 h-4" />
+          Clear Answers
         </span>
-        <h2 className="text-2xl sm:text-4xl font-bold text-white tracking-tight">
+        <h2 className="text-2xl sm:text-4xl font-extrabold text-[#0A2540] dark:text-white tracking-tight">
           Frequently Asked Questions
         </h2>
+        <p className="text-[#476685] dark:text-slate-400 text-sm sm:text-base mt-2">
+          Everything you need to know about MyCrm, roles, multi-tenancy, and team access.
+        </p>
       </div>
 
       <div className="space-y-3.5">
@@ -55,27 +69,33 @@ export default function FaqAccordion() {
           return (
             <div
               key={item.question}
-              className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden transition-colors"
+              className="bg-[#DEEEFD]/70 dark:bg-slate-900/90 border border-[#C8E0F8] dark:border-slate-800 rounded-2xl overflow-hidden transition-colors shadow-xs"
             >
               <button
                 type="button"
                 onClick={() => toggleItem(idx)}
                 aria-expanded={isOpen}
-                className="w-full min-h-[56px] px-5 py-4 text-left flex items-center justify-between gap-4 cursor-pointer"
+                className="w-full py-4.5 px-5 sm:px-6 flex items-center justify-between gap-4 text-left cursor-pointer"
               >
-                <span className="text-sm sm:text-base font-bold text-white">
+                <span className="text-sm sm:text-base font-bold text-[#0A2540] dark:text-white">
                   {item.question}
                 </span>
-                <Icon
-                  icon="solar:alt-arrow-down-bold"
-                  className={`w-5 h-5 text-slate-400 shrink-0 transition-transform duration-300 ${
-                    isOpen ? "rotate-180 text-emerald-400" : ""
-                  }`}
-                />
+                <span className="w-8 h-8 rounded-xl bg-white/70 dark:bg-slate-800 flex items-center justify-center shrink-0 border border-[#C8E0F8] dark:border-slate-700/80">
+                  <Icon
+                    icon="solar:alt-arrow-down-linear"
+                    className={`w-4 h-4 text-[#1B7BED] dark:text-[#18DBF5] transition-transform duration-300 ${
+                      isOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </span>
               </button>
 
-              <div className="accordion-content" data-open={isOpen}>
-                <div className="accordion-inner px-5 pb-5 text-xs sm:text-sm text-slate-400 leading-relaxed border-t border-slate-800/60 pt-3">
+              {/* Zero-Jank CSS Grid Content Container */}
+              <div
+                className="accordion-content"
+                data-open={isOpen ? "true" : "false"}
+              >
+                <div className="accordion-inner px-5 sm:px-6 pb-5 pt-1 text-xs sm:text-sm text-[#476685] dark:text-slate-400 leading-relaxed border-t border-[#C8E0F8]/80 dark:border-slate-800/80">
                   {item.answer}
                 </div>
               </div>
