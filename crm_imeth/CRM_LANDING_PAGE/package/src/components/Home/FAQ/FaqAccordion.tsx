@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Icon } from "@iconify/react";
 
 interface FaqItem {
@@ -42,12 +42,6 @@ const FAQS: FaqItem[] = [
 ];
 
 export default function FaqAccordion() {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
-
-  const toggleItem = (idx: number) => {
-    setOpenIndex((prev) => (prev === idx ? null : idx));
-  };
-
   return (
     <section id="faq" className="scroll-mt-24 py-16 md:py-24 px-4 sm:px-6 max-w-4xl mx-auto">
       <div className="text-center mb-10 md:mb-12">
@@ -64,44 +58,29 @@ export default function FaqAccordion() {
       </div>
 
       <div className="space-y-3.5">
-        {FAQS.map((item, idx) => {
-          const isOpen = openIndex === idx;
-          return (
-            <div
-              key={item.question}
-              className="bg-[#DEEEFD]/70 dark:bg-slate-900/90 border border-[#C8E0F8] dark:border-slate-800 rounded-2xl overflow-hidden transition-colors shadow-xs"
-            >
-              <button
-                type="button"
-                onClick={() => toggleItem(idx)}
-                aria-expanded={isOpen}
-                className="w-full py-4.5 px-5 sm:px-6 flex items-center justify-between gap-4 text-left cursor-pointer"
-              >
-                <span className="text-sm sm:text-base font-bold text-[#0A2540] dark:text-white">
-                  {item.question}
-                </span>
-                <span className="w-8 h-8 rounded-xl bg-white/70 dark:bg-slate-800 flex items-center justify-center shrink-0 border border-[#C8E0F8] dark:border-slate-700/80">
-                  <Icon
-                    icon="solar:alt-arrow-down-linear"
-                    className={`w-4 h-4 text-[#1B7BED] dark:text-[#18DBF5] transition-transform duration-300 ${
-                      isOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                </span>
-              </button>
+        {FAQS.map((item, idx) => (
+          <details
+            key={item.question}
+            open={idx === 0}
+            className="group bg-[#DEEEFD]/70 dark:bg-slate-900/90 border border-[#C8E0F8] dark:border-slate-800 rounded-2xl overflow-hidden transition-all duration-200 shadow-xs"
+          >
+            <summary className="w-full py-4.5 px-5 sm:px-6 flex items-center justify-between gap-4 text-left cursor-pointer list-none select-none [&::-webkit-details-marker]:hidden focus:outline-none">
+              <span className="text-sm sm:text-base font-bold text-[#0A2540] dark:text-white group-hover:text-[#1B7BED] dark:group-hover:text-[#18DBF5] transition-colors">
+                {item.question}
+              </span>
+              <span className="w-8 h-8 rounded-xl bg-white/70 dark:bg-slate-800 flex items-center justify-center shrink-0 border border-[#C8E0F8] dark:border-slate-700/80 transition-transform duration-300 group-open:rotate-180">
+                <Icon
+                  icon="solar:alt-arrow-down-linear"
+                  className="w-4 h-4 text-[#1B7BED] dark:text-[#18DBF5]"
+                />
+              </span>
+            </summary>
 
-              {/* Zero-Jank CSS Grid Content Container */}
-              <div
-                className="accordion-content"
-                data-open={isOpen ? "true" : "false"}
-              >
-                <div className="accordion-inner px-5 sm:px-6 pb-5 pt-1 text-xs sm:text-sm text-[#476685] dark:text-slate-400 leading-relaxed border-t border-[#C8E0F8]/80 dark:border-slate-800/80">
-                  {item.answer}
-                </div>
-              </div>
+            <div className="px-5 sm:px-6 pb-5 pt-2 text-xs sm:text-sm text-[#476685] dark:text-slate-400 leading-relaxed border-t border-[#C8E0F8]/80 dark:border-slate-800/80 animate-fade-in">
+              {item.answer}
             </div>
-          );
-        })}
+          </details>
+        ))}
       </div>
     </section>
   );

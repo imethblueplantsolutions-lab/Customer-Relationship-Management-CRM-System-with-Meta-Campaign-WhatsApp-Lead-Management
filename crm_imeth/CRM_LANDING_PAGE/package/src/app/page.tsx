@@ -256,14 +256,14 @@ export default function LandingPage() {
             Ready to Stop Passing Around Leads and Start Closing?
           </h2>
           <p className="text-slate-200 text-sm sm:text-base max-w-xl mx-auto mt-3 leading-relaxed">
-            Configure your employee roster, assign work seamlessly, and gain clear visibility into your team&apos;s performance today.
+            Configure your employee roster, assign work seamlessly, and gain clear visibility into your team&apos;s performance. Start with our Free Access plan today.
           </p>
           <div className="mt-7 flex justify-center">
             <a
               href={CRM_SIGNUP_URL}
               className="cta-primary-btn h-12 px-8 rounded-xl bg-gradient-to-r from-[#18DBF5] to-white text-slate-950 font-bold text-sm sm:text-base inline-flex items-center gap-2 shadow-xl shadow-[#18DBF5]/25 cursor-pointer"
             >
-              Launch Your 14-Day Free Trial →
+              Get Started Free →
             </a>
           </div>
         </div>
