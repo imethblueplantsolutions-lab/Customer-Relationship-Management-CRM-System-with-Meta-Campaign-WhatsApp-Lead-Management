@@ -17,43 +17,63 @@ interface BentoItem {
 const BENTO_FEATURES: BentoItem[] = [
   {
     id: "manual-assignment",
-    tag: "Manual Lead Management",
-    title: "Customize Your Employees & Assign Work Instantly",
+    tag: "Lead Intake & Assignment",
+    title: "Direct Lead Intake & Instant 1-Click Assignment",
     description:
-      "Structure your sales roster your way. Customize employee profiles, balance workloads dynamically, and assign or reassign incoming leads in seconds so no customer inquiry ever slips through the cracks.",
+      "Never let valuable inquiries sit unattended. Incoming leads land in a dedicated unassigned queue where Team Leads can assign or reassign them to specific sales reps in one click with instant notification.",
     metricBadge: "Zero Dropped Leads",
     icon: "solar:user-hand-up-bold-duotone",
-    colSpan: "lg:col-span-7",
+    colSpan: "lg:col-span-6",
   },
   {
-    id: "tenant-security",
-    tag: "Secure Team Management",
-    title: "Strict Multi-Tenant Customer Data Isolation",
+    id: "followups-tasks",
+    tag: "Task Management",
+    title: "Scheduled Follow-ups with Overdue Task Alerts",
     description:
-      "Keep customer records confidential and secure across organizations, Admins, Team Leads, and Sales Agents using strict tenant-level cryptographic boundaries and row-level security.",
-    metricBadge: "100% Tenant Boundary",
-    icon: "solar:shield-keyhole-bold-duotone",
-    colSpan: "lg:col-span-5",
+      "Keep every deal moving forward. Set exact follow-up dates, assign task priorities (High, Medium, Low), and receive clear alerts on overdue leads so prospects are never forgotten or neglected.",
+    metricBadge: "Never Miss a Follow-up",
+    icon: "solar:calendar-date-bold-duotone",
+    colSpan: "lg:col-span-6",
   },
   {
-    id: "multi-device",
-    tag: "Multi-Device & Concurrent Access",
-    title: "Simultaneous Team Access Across All Devices",
+    id: "activity-timeline",
+    tag: "Customer History",
+    title: "Chronological Lead Timeline & Activity History",
     description:
-      "Empower your entire sales force to collaborate concurrently. Seamlessly access MyCrm simultaneously across desktop web browsers, tablets, and mobile applications with instant real-time synchronization.",
-    metricBadge: "Zero Session Conflicts",
-    icon: "solar:devices-bold-duotone",
-    colSpan: "lg:col-span-5",
+      "Maintain a unified audit of every prospect interaction. Log call summaries, meeting outcomes, stage transitions, and internal sales notes in a permanent chronological feed accessible to the team.",
+    metricBadge: "Full Interaction Context",
+    icon: "solar:document-text-bold-duotone",
+    colSpan: "lg:col-span-6",
   },
   {
     id: "rbac-dashboard",
-    tag: "Visual Dashboard & 3-Tier RBAC",
-    title: "Clear Performance Visibility with Role-Based Access",
+    tag: "Role Governance",
+    title: "3-Tier Access Hierarchy: Admins, Leads & Agents",
     description:
-      "Three distinct authority tiers: Admins manage user accounts and system configuration; Team Leads monitor live agent activity and distribute leads; Sales Agents manage interactions, logs, and scheduled follow-ups.",
-    metricBadge: "Clear Hierarchy & Control",
-    icon: "solar:chart-square-bold-duotone",
-    colSpan: "lg:col-span-7",
+      "Clear operational boundaries across your organization: Admins manage accounts and tenant settings; Team Leads supervise agent capacity and lead distribution; Sales Agents focus on direct client discussions.",
+    metricBadge: "Tailored Role Permissions",
+    icon: "solar:users-group-two-rounded-bold-duotone",
+    colSpan: "lg:col-span-6",
+  },
+  {
+    id: "tenant-security",
+    tag: "Data Confidentiality",
+    title: "Strict Multi-Tenant Customer Data Protection",
+    description:
+      "Keep your customer records and business details safe. Strict tenant-level boundaries ensure client data, deals, and team notes are completely isolated and confidential from any other organization.",
+    metricBadge: "100% Data Confidentiality",
+    icon: "solar:shield-keyhole-bold-duotone",
+    colSpan: "lg:col-span-6",
+  },
+  {
+    id: "multi-device",
+    tag: "Cross-Platform Access",
+    title: "Concurrent Team Logins on Desktop, Tablet & Mobile",
+    description:
+      "Enable your entire team to work together simultaneously. Access MyCrm smoothly across desktop web browsers, iPad/tablets, and mobile web with real-time sync and zero login session conflicts.",
+    metricBadge: "Simultaneous Team Access",
+    icon: "solar:devices-bold-duotone",
+    colSpan: "lg:col-span-6",
   },
 ];
 
@@ -63,13 +83,13 @@ export default function BentoFeatures() {
       <div className="text-center max-w-3xl mx-auto mb-10 md:mb-14">
         <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#1B7BED]/10 text-[#1B7BED] dark:bg-[#18DBF5]/10 dark:text-[#18DBF5] border border-[#1B7BED]/20 dark:border-[#18DBF5]/25 mb-3">
           <Icon icon="solar:widget-5-bold" className="w-4 h-4" />
-          Enterprise CRM Capabilities
+          Complete Business CRM Capabilities
         </span>
         <h2 className="text-2xl sm:text-4xl font-extrabold text-[#0A2540] dark:text-white tracking-tight">
-          Engineered for High-Velocity Business Teams
+          Everything Your Sales Team Needs to Manage &amp; Close Leads
         </h2>
         <p className="text-[#476685] dark:text-slate-400 text-sm sm:text-base mt-3 leading-relaxed">
-          Everything managers and sales reps need to capture, organize, assign, and convert business leads with total visibility.
+          From direct lead intake and instant assignment to scheduled follow-ups, activity history, and role-based access control.
         </p>
       </div>
 
@@ -80,7 +100,7 @@ export default function BentoFeatures() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.4, delay: idx * 0.08 }}
+            transition={{ duration: 0.4, delay: idx * 0.06 }}
             className={item.colSpan}
           >
             {/* Inner div isolates CSS hover transitions from outer Motion transforms */}
@@ -111,9 +131,9 @@ export default function BentoFeatures() {
               <div className="mt-6 pt-4 border-t border-[#C8E0F8] dark:border-slate-800/80 flex items-center justify-between text-xs text-[#476685] dark:text-slate-400">
                 <span className="flex items-center gap-1.5 font-semibold text-[#1B7BED] dark:text-[#18DBF5]">
                   <Icon icon="solar:check-circle-bold" className="w-4 h-4" />
-                  Built into Core Platform
+                  Active Feature
                 </span>
-                <span className="font-mono text-[11px] opacity-75">Tenant Protected</span>
+                <span className="font-mono text-[11px] opacity-75">Team Protected</span>
               </div>
             </div>
           </motion.div>
