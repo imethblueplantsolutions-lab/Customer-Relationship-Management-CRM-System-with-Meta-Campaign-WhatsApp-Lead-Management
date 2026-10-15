@@ -5,7 +5,6 @@ import ThemeToggler from "@/components/Layout/Header/ThemeToggler";
 import PasSection from "@/components/PAS/PasSection";
 import DashboardPreview from "@/components/Home/VisualDashboard/DashboardPreview";
 import BentoFeatures from "@/components/Home/BentoFeatures/BentoFeatures";
-import RoiCalculator from "@/components/PAS/RoiCalculator";
 import Pricing from "@/components/Home/Pricing";
 import FaqAccordion from "@/components/Home/FAQ/FaqAccordion";
 import MobileStickyBar from "@/components/MobileStickyBar/MobileStickyBar";
@@ -57,7 +56,6 @@ export default function LandingPage() {
             <a href="#problem" className="hover:text-[#1B7BED] dark:hover:text-white transition-colors">Why Leads Leak</a>
             <a href="#dashboard-preview" className="hover:text-[#1B7BED] dark:hover:text-white transition-colors">Visual Dashboard</a>
             <a href="#features" className="hover:text-[#1B7BED] dark:hover:text-white transition-colors">Features</a>
-            <a href="#roi-calculator" className="hover:text-[#1B7BED] dark:hover:text-white transition-colors">ROI Calculator</a>
             <a href="#pricing" className="hover:text-[#1B7BED] dark:hover:text-white transition-colors">Pricing</a>
             <a href="#faq" className="hover:text-[#1B7BED] dark:hover:text-white transition-colors">FAQ</a>
           </nav>
@@ -245,10 +243,7 @@ export default function LandingPage() {
       {/* 6. 4-Pillar Bento Feature Breakdown (The 5 User Goals) */}
       <BentoFeatures />
 
-      {/* 7. Sticky-Top Mobile ROI & Capacity Calculator */}
-      <RoiCalculator />
-
-      {/* 8. Segmented Mobile Pricing Table (Free of WhatsApp/Meta fees) */}
+      {/* 7. Segmented Mobile Pricing Table (Free of WhatsApp/Meta fees) */}
       <Pricing />
 
       {/* 9. Zero-Jank CSS Grid FAQ Accordion */}
