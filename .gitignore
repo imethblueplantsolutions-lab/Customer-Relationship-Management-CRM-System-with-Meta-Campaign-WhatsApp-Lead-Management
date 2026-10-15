@@ -3,3 +3,6 @@ utils_codes
 *.env
 *.env.*
 node_modules
+.next
+dist
+*.log

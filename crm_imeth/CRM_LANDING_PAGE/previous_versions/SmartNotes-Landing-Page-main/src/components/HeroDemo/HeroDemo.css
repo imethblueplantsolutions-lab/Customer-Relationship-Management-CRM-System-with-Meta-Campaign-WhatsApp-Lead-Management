@@ -1,0 +1,399 @@
+.hero-demo {
+  width: 100%;
+  max-width: 520px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1.25rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 40px rgba(16, 185, 129, 0.08);
+  overflow: hidden;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  margin: 0 auto;
+}
+
+.hero-demo:hover {
+  border-color: rgba(16, 185, 129, 0.35);
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.7), 0 0 50px rgba(16, 185, 129, 0.15);
+}
+
+.hero-demo__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.25rem;
+  background: rgba(7, 9, 14, 0.7);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.hero-demo__dots {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.dot--red { background: #ef4444; }
+.dot--yellow { background: #f59e0b; }
+.dot--green { background: #10b981; }
+
+.hero-demo__title-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.hero-demo__status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--whatsapp-green);
+  background: rgba(37, 211, 102, 0.1);
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(37, 211, 102, 0.25);
+}
+
+.status-pulse {
+  width: 6px;
+  height: 6px;
+  background: var(--whatsapp-green);
+  border-radius: 50%;
+  animation: pulse-glow 1.5s infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+.hero-demo__latency {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Steps Switcher */
+.hero-demo__steps-nav {
+  display: flex;
+  border-bottom: 1px solid var(--border-subtle);
+  background: rgba(14, 19, 31, 0.5);
+}
+
+.step-btn {
+  flex: 1;
+  padding: 0.65rem 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  transition: all 0.2s ease;
+}
+
+.step-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.step-btn--active {
+  color: var(--text-primary);
+  border-bottom-color: var(--cta-emerald);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.step-num {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-btn--active .step-num {
+  background: var(--cta-emerald);
+  color: #042f2e;
+  font-weight: 800;
+}
+
+/* Stage Area */
+.hero-demo__stage {
+  padding: 1.25rem;
+  min-height: 230px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+}
+
+.demo-card {
+  display: none;
+  flex-direction: column;
+  gap: 1rem;
+  animation: fadeInSlide 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.demo-card--visible {
+  display: flex;
+}
+
+@keyframes fadeInSlide {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.demo-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.platform-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.platform-tag--meta {
+  color: #38bdf8;
+}
+
+.platform-tag--whatsapp {
+  color: #25d366;
+}
+
+.badge-new, .badge-connected, .badge-won {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.375rem;
+  letter-spacing: 0.04em;
+}
+
+.badge-new {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.badge-connected {
+  background: rgba(37, 211, 102, 0.15);
+  color: #25d366;
+  border: 1px solid rgba(37, 211, 102, 0.3);
+}
+
+.badge-won {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+/* Lead Info Content */
+.demo-card__content {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem;
+  background: rgba(22, 30, 49, 0.7);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.75rem;
+}
+
+.lead-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0f4c75 0%, #3282b8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: white;
+  flex-shrink: 0;
+}
+
+.lead-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 0.15rem 0;
+}
+
+.lead-campaign {
+  font-size: 0.75rem;
+  color: #38bdf8;
+  margin: 0 0 0.15rem 0;
+}
+
+.lead-phone {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* WhatsApp Preview */
+.wa-chat-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.75rem;
+  background: #0b141a;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(37, 211, 102, 0.15);
+}
+
+.wa-bubble {
+  max-width: 85%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.wa-bubble--out {
+  align-self: flex-end;
+  background: #005c4b;
+  color: #e9edef;
+  border-top-right-radius: 0.1rem;
+}
+
+.wa-bubble--in {
+  align-self: flex-start;
+  background: #202c33;
+  color: #e9edef;
+  border-top-left-radius: 0.1rem;
+}
+
+.wa-text {
+  font-size: 0.78rem;
+  line-height: 140%;
+  margin: 0;
+}
+
+.wa-time {
+  font-size: 0.625rem;
+  color: rgba(255, 255, 255, 0.6);
+  align-self: flex-end;
+}
+
+/* Kanban Preview */
+.kanban-preview {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 0.75rem;
+}
+
+.kanban-col {
+  padding: 0.65rem;
+  background: rgba(22, 30, 49, 0.5);
+  border: 1px dashed var(--border-subtle);
+  border-radius: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.col-title {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.col-empty {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 0.75rem 0;
+}
+
+.kanban-card-active {
+  background: var(--bg-surface);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+  padding: 0.6rem;
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.k-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+}
+
+.k-val {
+  color: var(--cta-emerald);
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+
+.k-desc {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.k-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.625rem;
+  padding-top: 0.2rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.k-badge {
+  color: #25d366;
+}
+
+.k-agent {
+  color: var(--text-muted);
+}
+
+/* Demo Action Bar */
+.demo-action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.7rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.response-timer, .wa-metric, .won-metric {
+  font-weight: 700;
+  color: var(--cta-emerald);
+}
+
+.routing-status, .wa-tag, .won-tag {
+  color: var(--text-muted);
+}

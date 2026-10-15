@@ -1,0 +1,67 @@
+.trust-bar {
+  padding: 2.25rem var(--container-px);
+  background: rgba(14, 19, 31, 0.4);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.trust-bar__header {
+  text-align: center;
+}
+
+.trust-bar__lead {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.trust-bar__grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem 2rem;
+  max-width: 1100px;
+  width: 100%;
+}
+
+.trust-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.75rem;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.trust-badge:hover {
+  border-color: rgba(16, 185, 129, 0.4);
+  transform: translateY(-2px);
+}
+
+.trust-badge__icon {
+  font-size: 1.25rem;
+}
+
+.trust-badge__text {
+  display: flex;
+  flex-direction: column;
+}
+
+.trust-badge__title {
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.trust-badge__subtitle {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}

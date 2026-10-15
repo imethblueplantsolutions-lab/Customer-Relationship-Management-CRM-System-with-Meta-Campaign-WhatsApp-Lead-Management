@@ -83,6 +83,12 @@ function LoginPageContent() {
   // Mode toggle state
   const [isSignUpActive, setIsSignUpActive] = useState(false);
 
+  // Cross-App handoff query params (?mode=signup&email=...&plan=...)
+  const modeParam = searchParams.get("mode");
+  const emailParam = searchParams.get("email");
+  const planParam = searchParams.get("plan");
+  const signUpPasswordInputRef = useRef<HTMLInputElement>(null);
+
   // Sign In Form state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -106,10 +112,23 @@ function LoginPageContent() {
 
   // Phase 3.1: Smart Desktop Auto-Focus (only when fine pointer/mouse is active, never on mobile)
   useEffect(() => {
-    if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    if (modeParam === "signup") {
+      setIsSignUpActive(true);
+      if (emailParam) {
+        setSignUpEmail(emailParam);
+        if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+          setTimeout(() => signUpPasswordInputRef.current?.focus(), 150);
+        }
+      }
+    } else if (emailParam) {
+      setEmail(emailParam);
+      if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+        setTimeout(() => passwordInputRef.current?.focus(), 150);
+      }
+    } else if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
       emailInputRef.current?.focus();
     }
-  }, []);
+  }, [modeParam, emailParam]);
 
   // Phase 3.2: Caps Lock Warning Indicator
   const [isCapsLockOn, setIsCapsLockOn] = useState(false);
@@ -703,6 +722,7 @@ function LoginPageContent() {
                         <Lock className="w-4 h-4" />
                       </div>
                       <input
+                        ref={signUpPasswordInputRef}
                         suppressHydrationWarning
                         type={showSignUpPassword ? "text" : "password"}
                         autoComplete="new-password"

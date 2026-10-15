@@ -1,0 +1,276 @@
+:root {
+  /* Dark Luxury Surfaces */
+  --bg-canvas: #07090E;
+  --bg-surface: #0E131F;
+  --bg-elevated: #161E31;
+  --border-subtle: #1E293B;
+  --border-highlight: rgba(16, 185, 129, 0.35);
+
+  /* Legacy tokens mapped for backward compatibility */
+  --primary-400: var(--bg-canvas);
+  --primary-300: var(--bg-surface);
+  --primary-200: #737373;
+  --primary-100: #94A3B8;
+  --primary-50: #F8FAFC;
+
+  /* Typography Colors */
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+
+  /* Brand & Conversion Accents */
+  --whatsapp-green: #25D366;
+  --cta-emerald: #10B981;
+  --cta-emerald-hover: #059669;
+  --meta-blue: #0081FB;
+  --ocean-navy: #0F4C75;
+  --ocean-blue: #3282B8;
+
+  /* Upgraded High-Luminance Mud-Free Text Gradient */
+  --text-gradient: linear-gradient(135deg, #34D399 0%, #38BDF8 55%, #0081FB 100%);
+  --gradient: var(--text-gradient);
+  --secondary-300: var(--ocean-navy);
+  --secondary-200: var(--cta-emerald);
+  --secondary-100: #38BDF8;
+
+  /* Fluid Responsive Typography (320px mobile -> 1280px desktop) */
+  --font-h1: clamp(2rem, 5vw + 0.75rem, 3.75rem);
+  --font-h2: clamp(1.5rem, 3.5vw + 0.5rem, 2.5rem);
+  --font-h3: clamp(1.35rem, 2.8vw + 0.4rem, 2.25rem);
+  --font-h5: clamp(1.15rem, 2vw + 0.2rem, 1.5rem);
+  --font-body: clamp(0.95rem, 1vw + 0.5rem, 1.125rem);
+
+  /* Fluid Section Spacing */
+  --section-py: clamp(3.5rem, 7vw, 6.5rem);
+  --container-px: clamp(1rem, 4vw, 2.5rem);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-canvas);
+}
+
+/* Typography Utility Classes */
+.text-large {
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: clamp(1.1rem, 1.5vw, 1.25rem);
+  line-height: 150%;
+  margin: 0;
+}
+
+.text-reg {
+  font-family: "DM Sans", sans-serif;
+  font-size: 1rem;
+  line-height: 160%;
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.text-med {
+  font-family: "DM Sans", sans-serif;
+  font-size: 1.125rem;
+  line-height: 150%;
+  margin: 0;
+}
+
+.text-small {
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.875rem;
+  line-height: 140%;
+  margin: 0;
+}
+
+.text-tiny {
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.75rem;
+  line-height: 150%;
+  margin: 0;
+}
+
+.h1 {
+  font-family: "DM Sans", sans-serif;
+  font-size: var(--font-h1);
+  line-height: 108%;
+  letter-spacing: -0.04em;
+  font-weight: 800;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.h2 {
+  font-family: "DM Sans", sans-serif;
+  font-size: var(--font-h2);
+  line-height: 120%;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.h3 {
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-weight: 700;
+  font-size: var(--font-h3);
+  line-height: 125%;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.h5 {
+  font-family: "DM Sans", sans-serif;
+  font-weight: 700;
+  font-size: var(--font-h5);
+  line-height: 145%;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+/* 1. Hero Action Zone: Mobile-First Stack -> Desktop Inline */
+.hero__action-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 480px;
+  margin-inline: 0;
+}
+
+.hero__email-input {
+  width: 100%;
+  height: 3rem; /* 48px ergonomic touch target */
+  padding: 0 1rem;
+  font-size: 1rem; /* Explicitly 16px to prevent iOS Safari auto-zoom */
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.75rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hero__email-input:focus {
+  border-color: var(--cta-emerald);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.hero__submit-btn {
+  width: 100%;
+  height: 3rem; /* 48px */
+  padding: 0 1.5rem;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #042F2E;
+  background-color: var(--cta-emerald);
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: transform 0.15s ease, background-color 0.2s ease;
+}
+
+.hero__submit-btn:hover {
+  background-color: var(--cta-emerald-hover);
+}
+
+.hero__submit-btn:active {
+  transform: scale(0.98);
+}
+
+@media (min-width: 640px) {
+  .hero__action-form {
+    flex-direction: row;
+    padding: 0.375rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 1rem;
+  }
+  .hero__email-input {
+    border: none;
+    background: transparent;
+    height: 2.75rem;
+  }
+  .hero__email-input:focus {
+    box-shadow: none;
+  }
+  .hero__submit-btn {
+    width: auto;
+    height: 2.75rem;
+    border-radius: 0.65rem;
+  }
+}
+
+/* 2. Mobile Pricing & Feature Horizontal Snap Carousel (< 768px) */
+@media (max-width: 767px) {
+  .mobile-snap-carousel {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    margin-inline: calc(var(--container-px) * -1);
+    padding-inline: var(--container-px);
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .mobile-snap-carousel::-webkit-scrollbar {
+    display: none;
+  }
+  .mobile-snap-card {
+    flex: 0 0 85vw;
+    max-width: 340px;
+    scroll-snap-align: center;
+  }
+}
+
+/* 3. Sticky Mobile Thumb-Zone CTA Bar */
+.mobile-sticky-cta {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+  background: rgba(14, 19, 31, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border-subtle);
+  transform: translateY(100%);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mobile-sticky-cta--visible {
+  transform: translateY(0);
+}
+
+@media (min-width: 768px) {
+  .mobile-sticky-cta {
+    display: none;
+  }
+}
